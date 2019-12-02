@@ -1,12 +1,12 @@
 {
-  "name": "textract-demo",
+  "name": "amazon-textract-demo",
   "version": "0.6.0",
   "description": "A web app and Cloud Formation template that demonstrates the capabilities of the AWS Textract API.",
   "main": "handler.js",
   "repository": {
     "type": "git"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "private": true,
   "browserslist": [
     "> 1%",
@@ -14,7 +14,7 @@
     "Firefox ESR"
   ],
   "stack": {
-    "name": "V079TextractDemo",
+    "name": "V081TextractDemo",
     "region": "us-west-2"
   },
   "scripts": {
