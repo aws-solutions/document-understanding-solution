@@ -1,0 +1,174 @@
+$font-stack-primary: 'Amazon Ember', system, -apple-system, BlinkMacSystemFont, sans-serif;
+
+$type-color-default: color(gray, 20);
+$type-color-subtle: color(gray, 40);
+$type-color-code-inline: color(magenta, 30);
+$type-color-code-block: color(gray, 80);
+
+$type-selection-color: color(gray, 80);
+$type-selection-background: lighten(color(blue), 50);
+
+
+$type-size-presets: (
+  type-heading-h1: (
+    default:                  (font-size: rem(24), line-height: (48.01/36)),
+    '<=tabletLandscape':      (font-size: rem(24), line-height: (40.01/28)),
+    '<=tabletLandscapeSmall': (font-size: rem(22), line-height: (32/26)),
+    '<=mobileLandscapeLarge': (font-size: rem(20), line-height: (28/24)),
+    '<=tabletPortrait':       (font-size: rem(18), line-height: (28/22)),
+  ),
+  type-heading-h2: (
+    default:                  (font-size: rem(36), line-height: (48.01/36)),
+    '<=tabletLandscape':      (font-size: rem(28), line-height: (40.01/28)),
+    '<=tabletLandscapeSmall': (font-size: rem(26), line-height: (32/26)),
+    '<=mobileLandscapeLarge': (font-size: rem(24), line-height: (28/24)),
+    '<=tabletPortrait':       (font-size: rem(22), line-height: (28/22)),
+  ),
+  type-heading-h3: (
+    default:                  (font-size: rem(28), line-height: (40.01/28)),
+    '<=tabletLandscape':      (font-size: rem(22), line-height: (32/22)),
+    '<=mobileLandscapeLarge': (font-size: rem(20), line-height: (28/20)),
+  ),
+  type-heading-h4: (
+    default:                  (font-size: rem(18), line-height: (32/22)),
+    '<=tabletLandscape':      (font-size: rem(16), line-height: (28/18)),
+  ),
+  type-heading-h5: (
+    default:                  (font-size: rem(16), line-height: (24/16)),
+  ),
+  type-body-lead: (
+    default:                  (font-size: rem(22), line-height: (34.01/22)),
+    '<=tabletLandscape':      (font-size: rem(18), line-height: (28/18)),
+  ),
+  type-body-primary: (
+    default:                  (font-size: rem(16), line-height: (24/16)),
+  ),
+  type-body-secondary: (
+    default:                  (font-size: rem(14), line-height: (20.01/14)),
+  ),
+  type-body-supplemental: (
+    default:                  (font-size: rem(12), line-height: (16.01/12)),
+  ),
+);
+
+
+
+
+// Output CSS for font-size and line-height
+// @type {Number} $font-size    The font-size in px
+// @type {Number} $line-height  A unitless line-height
+@mixin type-size($font-size, $line-height) {
+  font-size: $font-size;
+  line-height: $line-height;
+}
+
+
+// Generate responsive CSS for font-size and line-height with the configurations
+// in $type-size-presets.
+// @type {String} $style  A top-level key from $type-size-presets
+@mixin type-size-responsive($style) {
+  @if map-has-key($type-size-presets, $style) == false {
+    @error '$style must exist in $type-size-presets, received: #{$style}';
+  }
+
+  $preset-breakpoints: map-get($type-size-presets, $style);
+
+  @each $breakpoint, $styles in $preset-breakpoints {
+    @if $breakpoint == default {
+      // Default Styles
+      @include type-size($styles...)
+
+    } @else {
+      // Media Queries
+      @include media($breakpoint) {
+        @include type-size($styles...)
+      }
+    }
+  }
+}
+
+
+// HEADING TYPE MIXINS
+// =================================================================================================
+@mixin type-heading-h1($color: $type-color-default) {
+  @include type-size-responsive('type-heading-h1');
+  font-weight: bold;
+  color: $color;
+}
+
+@mixin type-heading-h2($color: $type-color-default) {
+  @include type-size-responsive('type-heading-h2');
+  font-weight: 500;
+  color: $color;
+}
+
+@mixin type-heading-h3($color: $type-color-default) {
+  @include type-size-responsive('type-heading-h3');
+  font-weight: normal;
+  color: $color;
+}
+
+@mixin type-heading-h4($color: $type-color-default) {
+  @include type-size-responsive('type-heading-h4');
+  font-weight: bold;
+  color: $color;
+}
+
+@mixin type-heading-h5($color: $type-color-default) {
+  @include type-size-responsive('type-heading-h5');
+  font-weight: bold;
+  color: $color;
+}
+
+
+
+// BODY TYPE MIXINS
+// =================================================================================================
+@mixin type-body-lead($color: $type-color-default) {
+  @include type-size-responsive('type-body-lead');
+  color: $color;
+}
+
+@mixin type-body-primary($color: $type-color-default) {
+  @include type-size-responsive('type-body-primary');
+  color: $color;
+}
+
+@mixin type-body-secondary($color: $type-color-default) {
+  @include type-size-responsive('type-body-secondary');
+  color: $color;
+}
+
+@mixin type-body-supplemental($color: $type-color-default) {
+  @include type-size-responsive('type-body-supplemental');
+  font-weight: bold;
+  color: $color;
+}
+
+@mixin no-content($color: $type-color-default) {
+  @include type-heading-h4(color(gray, 60));
+  margin: 5em 0;
+  text-align: center;
+}
+
+// TYPE SELECTION MIXINS
+// =================================================================================================
+@mixin type-selection {
+  ::selection {
+    color: $type-selection-color;
+    background: $type-selection-background;
+  }
+
+  ::-moz-selection {
+    color: $type-selection-color;
+    background: $type-selection-background;
+  }
+}
+
+
+// MISCELLANEOUS MIXINS
+// =================================================================================================
+@mixin all-caps {
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}

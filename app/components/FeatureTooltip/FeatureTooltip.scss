@@ -1,0 +1,64 @@
+@import '../../styles/shared/index';
+
+// Tooltip wrapper
+.tooltip {
+  position: relative;
+  display: inline-block;
+  font-size: 0;
+
+  // Trigger
+  > img {
+    width: rem(32);
+    height: rem(32);
+    cursor: pointer;
+  }
+}
+
+// Tooltip overlay
+.overlay {
+  @include absolute(0, null, null, 100%);
+  @include type-body-primary();
+  width: rem(400);
+  margin-left: rem(16);
+  overflow: hidden;
+  background-color: color(white);
+  border-radius: rem(5);
+  box-shadow: 2px 2px 20px rgba(color(black), 0.25);
+
+  header {
+    display: flex;
+    padding: rem(8) rem(12) rem(8) rem(16);
+    background-color: color(gray, 70);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  // Title
+  h4 {
+    @include type-heading-h5(color(gray, 30));
+    margin: 0;
+  }
+
+  // Description
+  p {
+    padding: 0 rem(16);
+  }
+
+  // Close button
+  svg {
+    cursor: pointer;
+
+    &:hover g {
+      stroke: color(orange, 20);
+    }
+  }
+
+  @include media-grid(4) {
+    top: 100%;
+    left: 0;
+    width: 90vw;
+    max-width: rem(400);
+    margin-top: rem(16);
+    margin-left: 0;
+  }
+}

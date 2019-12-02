@@ -1,0 +1,74 @@
+$palettes: (
+  orange: (
+    core: #f6761d,
+    10: #ffcc83,
+    20: #f90,
+    30: #f6761d,
+    40: #d45b07
+  ),
+  purple: (
+    core: #4d27aa,
+    10: #c5a1ff,
+    20: #955cef,
+    30: #753bd2,
+    40: #4d27aa
+  ),
+  red: (
+    core: #bf0816,
+    10: #ffa7a7,
+    20: #ff5252,
+    30: #db2d2d,
+    40: #bf0816
+  ),
+  blue: (
+    core: #153eb3,
+    10: #95b0ff,
+    20: #527fff,
+    30: #2c59dc,
+    40: #153eb3
+  ),
+  magenta: (
+    core: #b0084d,
+    10: #f79bc5,
+    20: #ff4f8b,
+    30: #dc2d69,
+    40: #b0084d
+  ),
+  teal: (
+    core: #00604e,
+    10: #67e6be,
+    20: #16bf9f,
+    30: #067f68,
+    40: #00604e
+  ),
+  gray: (
+    core: #545b64,
+    10: #fff,
+    20: #f2f4f4,
+    30: #eaeded,
+    40: #d5dbdb,
+    50: #aab7b8,
+    60: #879196,
+    70: #49525f,
+    80: #3b4550,
+    90: #272d3a,
+    95: #181d2b,
+    100: #000
+  ),
+  black: (
+    core: #000
+  ),
+  white: (
+    core: #fff
+  )
+);
+
+// color
+// @param {string} name  The name of the color palette defined in the map above
+//
+// Usage:
+//   background: color('blue') => #153EB3
+//   background: color('blue', 10) => #95B0FF
+@function color($palette, $tone: 'core') {
+  @return map-get(map-get($palettes, $palette), $tone);
+}
