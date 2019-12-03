@@ -1,6 +1,6 @@
 import { createAction } from "redux-actions";
 import { normalize } from "normalizr";
-import { API } from "aws-amplify";
+import { API, Auth } from "aws-amplify";
 
 import { SEARCH, CLEAR_SEARCH_RESULTS } from "../../../constants/action-types";
 import { searchResultsSchema } from "./data";
