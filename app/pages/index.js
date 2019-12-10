@@ -20,8 +20,7 @@ export default function Login() {
     password: "",
     passwordChangeRequired: false,
     newPassword: "",
-    userInit: undefined,
-    user: undefined
+    userInit: undefined
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
