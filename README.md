@@ -12,6 +12,7 @@
 ### Getting Started with Full Deploy
 
 Prerequisites:
+
 - Set your deployment region in the stack->region property of package.json.
 - If you have never used CDK before, then the deployment command below may fail with a message saying that you first need to run `cdk bootstrap {accountId}/{region}`. This will deploy a small stack with resources for running CDK. Afterwards, run the below yarn command again.
 
@@ -63,9 +64,13 @@ This project also uses ESLint and sass-lint to help find bugs and enforce code q
 Run `yarn license-report` to generate a license report for all npm packages. See output in `license-report.txt`.
 
 ## Cost
+
 - As you deploy this sample application, it creates different resources (Amazon S3 bucket, Amazon DynamoDB table, and AWS Lambda functions etc.). When you analyze documents, it calls different APIs (Amazon Textract) in your AWS account. You will get charged for all the API calls made as part of the analysis as well as any AWS resources created as part of the deployment. To avoid any recurring charges, delete stack using "cdk destroy".
 
+- There are 3 SQS queues created as part of this solution, and every one of them has a Lambda that is polling them once every 4 seconds. This means that, after about 15 days, the solution will use up the 1,000,000 requests associated with the AWS free tier, and you will start receiving charges for every SQS request. Please follow this link for more information: https://aws.amazon.com/sqs/pricing/
+
 ## Delete demo application
+
 - Run: yarn destroy
 
 ## License

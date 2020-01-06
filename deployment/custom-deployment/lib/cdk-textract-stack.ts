@@ -521,7 +521,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["es:ESHttpGet", "es:ESHttpPost", "es:ESHttpPut"],
+        actions: ["es:*"],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );

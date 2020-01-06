@@ -3,21 +3,24 @@ from requests_aws4auth import AWS4Auth
 import boto3
 import re
 
-def context (term, phrase):
-  regex = r"(.*)"+term+"(.*)"
 
-  matches = re.finditer(regex, phrase)
+def context(term, phrase):
+    regex = r"(.*)"+term+"(.*)"
 
-  matchList = []
+    matches = re.finditer(regex, phrase)
 
-  for matchNum, match in enumerate(matches, start=1):
-      matchList.append(match.group())
+    matchList = []
 
-  return matchList
+    for matchNum, match in enumerate(matches, start=1):
+        matchList.append(match.group())
 
-def contextCounts (term, phrase):
+    return matchList
 
-  return len(re.findall(term, phrase))
+
+def contextCounts(term, phrase):
+
+    return len(re.findall(term, phrase))
+
 
 def deleteESItem(elasticsearchDomain, documentId):
     host = elasticsearchDomain
@@ -28,14 +31,15 @@ def deleteESItem(elasticsearchDomain, documentId):
         credentials = ss.get_credentials()
         region = ss.region_name
 
-        awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
+        awsauth = AWS4Auth(credentials.access_key, credentials.secret_key,
+                           region, service, session_token=credentials.token)
 
         es = Elasticsearch(
-            hosts = [{'host': host, 'port': 443}],
-            http_auth = awsauth,
-            use_ssl = True,
-            verify_certs = True,
-            connection_class = RequestsHttpConnection
+            hosts=[{'host': host, 'port': 443}],
+            http_auth=awsauth,
+            use_ssl=True,
+            verify_certs=True,
+            connection_class=RequestsHttpConnection
         )
 
         es.delete(index="textract", doc_type="document", id=documentId)
@@ -49,7 +53,6 @@ def search(request):
     keyword = request["keyword"] if "keyword" in request else None
     documentId = request["documentId"] if "documentId" in request else None
 
-
     output = request
 
     if(keyword is not None):
@@ -62,7 +65,6 @@ def search(request):
                 }
             ]
         }
-
 
         if(documentId is not None):
             searchBody["must"].append(
@@ -79,27 +81,29 @@ def search(request):
         credentials = ss.get_credentials()
         region = ss.region_name
 
-        awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
+        awsauth = AWS4Auth(credentials.access_key, credentials.secret_key,
+                           region, service, session_token=credentials.token)
 
         print(searchBody)
 
         es = Elasticsearch(
-            hosts = [{'host': host, 'port': 443}],
-            http_auth = awsauth,
-            use_ssl = True,
-            verify_certs = True,
-            connection_class = RequestsHttpConnection
+            hosts=[{'host': host, 'port': 443}],
+            http_auth=awsauth,
+            use_ssl=True,
+            verify_certs=True,
+            connection_class=RequestsHttpConnection
         )
         output = es.search(
-          index='textract',
-          doc_type="document",
-          body = {
-            "query": {
-              "bool": searchBody
-            }
-          }
+            index='textract',
+            doc_type="document",
+            body={
+                "query": {
+                  "bool": searchBody
+                }
+            },
+            filter_path=['hits.hits._id', 'hits.hits._source.content',
+                         'hits.hits._source.name', 'hits.hits._source.bucket']
         )
-
 
         if("hits" in output):
             output = output["hits"]
@@ -127,7 +131,6 @@ def search(request):
                     if(request['documentId'] == id):
                         results = obj
                         i = len(hits)
-
 
             output = results
 

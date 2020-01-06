@@ -1,16 +1,18 @@
 import boto3
 from botocore.exceptions import ClientError
 from helper import AwsHelper
-import  datetime
+import datetime
 import re
 
-def getDataFromPath (str):
-  response = {
-    "type": "user"
-  }
-  nodes = list(filter(lambda x: x != '',re.findall(r"\w*?(?=/)", str)))
 
-  return response
+def getDataFromPath(str):
+    response = {
+        "type": "user"
+    }
+    nodes = list(filter(lambda x: x != '', re.findall(r"\w*?(?=/)", str)))
+
+    return response
+
 
 class DocumentStore:
 
@@ -28,10 +30,10 @@ class DocumentStore:
         dataFromPath = getDataFromPath(objectName)
         try:
             table.update_item(
-                Key = { "documentId": documentId },
-                UpdateExpression = 'SET bucketName = :bucketNameValue, objectName = :objectNameValue, documentStatus = :documentstatusValue, documentCreatedOn = :documentCreatedOnValue',
-                ConditionExpression = 'attribute_not_exists(documentId)',
-                ExpressionAttributeValues = {
+                Key={"documentId": documentId},
+                UpdateExpression='SET bucketName = :bucketNameValue, objectName = :objectNameValue, documentStatus = :documentstatusValue, documentCreatedOn = :documentCreatedOnValue',
+                ConditionExpression='attribute_not_exists(documentId)',
+                ExpressionAttributeValues={
                     ':bucketNameValue': bucketName,
                     ':objectNameValue': objectName,
                     ':documentstatusValue': 'IN_PROGRESS',
@@ -42,7 +44,7 @@ class DocumentStore:
             print(e)
             if e.response['Error']['Code'] == "ConditionalCheckFailedException":
                 print(e.response['Error']['Message'])
-                err  = {'Error' : 'Document already exist.'}
+                err = {'Error': 'Document already exist.'}
             else:
                 raise
 
@@ -57,17 +59,17 @@ class DocumentStore:
 
         try:
             table.update_item(
-                Key = { 'documentId': documentId },
-                UpdateExpression = 'SET documentStatus= :documentstatusValue',
-                ConditionExpression = 'attribute_exists(documentId)',
-                ExpressionAttributeValues = {
+                Key={'documentId': documentId},
+                UpdateExpression='SET documentStatus= :documentstatusValue',
+                ConditionExpression='attribute_exists(documentId)',
+                ExpressionAttributeValues={
                     ':documentstatusValue': documentStatus
                 }
             )
         except ClientError as e:
             if e.response['Error']['Code'] == "ConditionalCheckFailedException":
                 print(e.response['Error']['Message'])
-                err  = {'Error' : 'Document does not exist.'}
+                err = {'Error': 'Document does not exist.'}
             else:
                 raise
 
@@ -82,10 +84,10 @@ class DocumentStore:
 
         try:
             table.update_item(
-                Key = { 'documentId': documentId },
-                UpdateExpression = 'SET documentStatus= :documentstatusValue, documentCompletedOn = :documentCompletedOnValue',
-                ConditionExpression = 'attribute_exists(documentId)',
-                ExpressionAttributeValues = {
+                Key={'documentId': documentId},
+                UpdateExpression='SET documentStatus= :documentstatusValue, documentCompletedOn = :documentCompletedOnValue',
+                ConditionExpression='attribute_exists(documentId)',
+                ExpressionAttributeValues={
                     ':documentstatusValue': "SUCCEEDED",
                     ':documentCompletedOnValue': str(datetime.datetime.utcnow())
                 }
@@ -93,7 +95,7 @@ class DocumentStore:
         except ClientError as e:
             if e.response['Error']['Code'] == "ConditionalCheckFailedException":
                 print(e.response['Error']['Message'])
-                err  = {'Error' : 'Document does not exist.'}
+                err = {'Error': 'Document does not exist.'}
             else:
                 raise
 
@@ -104,7 +106,7 @@ class DocumentStore:
         dynamodb = AwsHelper().getClient("dynamodb")
 
         ddbGetItemResponse = dynamodb.get_item(
-            Key={'documentId': {'S': documentId} },
+            Key={'documentId': {'S': documentId}},
             TableName=self._documentsTableName
         )
 
@@ -112,10 +114,10 @@ class DocumentStore:
 
         if('Item' in ddbGetItemResponse):
             itemToReturn = {
-              'documentId' : ddbGetItemResponse['Item']['documentId']['S'],
-              'bucketName' : ddbGetItemResponse['Item']['bucketName']['S'],
-              'objectName' : ddbGetItemResponse['Item']['objectName']['S'],
-              'documentStatus' : ddbGetItemResponse['Item']['documentStatus']['S'],
+                'documentId': ddbGetItemResponse['Item']['documentId']['S'],
+                'bucketName': ddbGetItemResponse['Item']['bucketName']['S'],
+                'objectName': ddbGetItemResponse['Item']['objectName']['S'],
+                'documentStatus': ddbGetItemResponse['Item']['documentStatus']['S'],
             }
 
         return itemToReturn
@@ -148,7 +150,8 @@ class DocumentStore:
         pageSize = 25
 
         if(nextToken):
-            response = table.scan(ExclusiveStartKey={ "documentId" : nextToken}, Limit=pageSize)
+            response = table.scan(
+                ExclusiveStartKey={"documentId": nextToken}, Limit=pageSize)
         else:
             response = table.scan(Limit=pageSize)
 
@@ -160,7 +163,7 @@ class DocumentStore:
             data = response['Items']
 
         documents = {
-            "documents" : data
+            "documents": data
         }
 
         if 'LastEvaluatedKey' in response:

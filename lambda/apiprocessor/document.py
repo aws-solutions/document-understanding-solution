@@ -3,6 +3,7 @@ from helper import S3Helper
 import json
 import uuid
 
+
 def createDocument(request):
     print("CreateDocument request: {}".format(request))
 
@@ -15,12 +16,13 @@ def createDocument(request):
     ds.createDocument(documentId, bucketName, objectName)
 
     output = {
-        "documentId" : documentId
+        "documentId": documentId
     }
 
     print("{}".format(output))
 
     return output
+
 
 def getDocument(request):
     print("GetDocument request: {}".format(request))
@@ -40,6 +42,7 @@ def getDocument(request):
         output = doc
 
     return output
+
 
 def deleteDocument(request):
     print("DeleteDocument request: {}".format(request))

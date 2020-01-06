@@ -1,15 +1,20 @@
 import json
 from helper import FileHelper, S3Helper
 from trp import *
-from elasticsearch import Elasticsearch, RequestsHttpConnection
+from elasticsearch import Elasticsearch, RequestsHttpConnection, client
 from requests_aws4auth import AWS4Auth
 import boto3
 
+
 def round_floats(o):
-    if isinstance(o, float): return round(o, 4)
-    if isinstance(o, dict): return {k: round_floats(v) for k, v in o.items()}
-    if isinstance(o, (list, tuple)): return [round_floats(x) for x in o]
+    if isinstance(o, float):
+        return round(o, 4)
+    if isinstance(o, dict):
+        return {k: round_floats(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [round_floats(x) for x in o]
     return o
+
 
 def prune_blocks(o):
     if(not isinstance(o, list)):
@@ -58,12 +63,13 @@ class OutputGenerator:
         textInReadingOrder = page.getTextInReadingOrder()
         opath = "{}page-{}-text-inreadingorder.txt".format(self.outputPath, p)
         S3Helper.writeToS3(textInReadingOrder, self.bucketName, opath)
-        self.saveItem(self.documentId, "page-{}-TextInReadingOrder".format(p), opath)
+        self.saveItem(self.documentId,
+                      "page-{}-TextInReadingOrder".format(p), opath)
 
     def _outputForm(self, page, p):
         csvData = []
         for field in page.form.fields:
-            csvItem  = []
+            csvItem = []
             if(field.key):
                 csvItem.append(field.key.text)
             else:
@@ -86,7 +92,7 @@ class OutputGenerator:
             csvRow.append("Table")
             csvData.append(csvRow)
             for row in table.rows:
-                csvRow  = []
+                csvRow = []
                 for cell in row.cells:
                     csvRow.append(cell.text)
                 csvData.append(csvRow)
@@ -107,24 +113,41 @@ class OutputGenerator:
             credentials = ss.get_credentials()
             region = ss.region_name
 
-            awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
+            awsauth = AWS4Auth(credentials.access_key, credentials.secret_key,
+                               region, service, session_token=credentials.token)
 
             es = Elasticsearch(
-                hosts = [{'host': host, 'port': 443}],
-                http_auth = awsauth,
-                use_ssl = True,
-                verify_certs = True,
-                connection_class = RequestsHttpConnection
+                hosts=[{'host': host, 'port': 443}],
+                http_auth=awsauth,
+                use_ssl=True,
+                verify_certs=True,
+                connection_class=RequestsHttpConnection
             )
 
+            es_index_client = client.IndicesClient(es)
+
             document = {
-                "documentId" : "{}".format(self.documentId),
+                "documentId": "{}".format(self.documentId),
                 "name": "{}".format(self.objectName),
-                "bucket" : "{}".format(self.bucketName),
-                "content" : text
+                "bucket": "{}".format(self.bucketName),
+                "content": text
             }
 
-            es.index(index="textract", doc_type="document", id=self.documentId, body=document)
+            if not es_index_client.exists(index='textract'):
+                print("Index 'textract' does not exist, creating...")
+                es_index_client.create(
+                    index='textract',
+                    body={
+                        'settings': {
+                            'index': {
+                                "number_of_shards": 2
+                            }
+                        }
+                    }
+                )
+
+            es.index(index="textract", doc_type="document",
+                     id=self.documentId, body=document)
 
             print("Indexed document: {}".format(self.objectName))
 
@@ -134,7 +157,8 @@ class OutputGenerator:
             return
 
         opath = "{}response.json".format(self.outputPath)
-        S3Helper.writeToS3(json.dumps(round_floats(prune_blocks(self.response)), separators=(',',':')), self.bucketName, opath)
+        S3Helper.writeToS3(json.dumps(round_floats(prune_blocks(
+            self.response)), separators=(',', ':')), self.bucketName, opath)
         self.saveItem(self.documentId, 'Response', opath)
 
         print("Total Pages in Document: {}".format(len(self.document.pages)))
