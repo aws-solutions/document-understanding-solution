@@ -2,11 +2,11 @@ const { exec } = require("child_process");
 const fs = require("fs");
 const aws = require("aws-sdk");
 
-// TODO: Pull stackname and region from config
-// const stackName = process.env.npm_package_stack_name
-const stackName = "DUSStack";
-aws.config.region = "us-east-1";
-const cloudformationDescribe = `aws cloudformation describe-stack-resources --region us-east-1 --stack-name ${stackName}`;
+const stackName = process.env.STACKNAME;
+const region = process.env.AWS_REGION;
+aws.config.region = region;
+
+const cloudformationDescribe = `aws cloudformation describe-stack-resources --region ${region} --stack-name ${stackName}`;
 
 const GetResources = new Promise((resolve, reject) => {
   const cf = new aws.CloudFormation();

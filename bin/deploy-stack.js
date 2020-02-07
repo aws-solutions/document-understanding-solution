@@ -3,8 +3,7 @@ const CdkTextractStack = require("../deployment/custom-deployment/lib/cdk-textra
 const readlineSync = require("readline-sync");
 
 const app = new cdk.App();
-// const stackName = process.env.npm_package_stack_name;
-const stackName = "DUSStack";
+const stackName = `${process.env.STACKNAME}Stack`;
 
 // const userEmail = readlineSync.question('Please enter your email address: ')
 
