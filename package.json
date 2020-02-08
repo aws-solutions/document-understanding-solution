@@ -1,5 +1,5 @@
 {
-  "name": "amazon-textract-demo",
+  "name": "document-understanding-solution",
   "version": "0.6.0",
   "description": "A web app and Cloud Formation template that demonstrates the capabilities of the AWS Textract API.",
   "main": "handler.js",
@@ -14,7 +14,7 @@
     "Firefox ESR"
   ],
   "stack": {
-    "name": "DocumentUnderstandingSolution",
+    "name": "DUS",
     "region": "us-east-1"
   },
   "scripts": {
