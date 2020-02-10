@@ -1,20 +1,20 @@
-import React, { Fragment, useEffect, useState, useCallback } from 'react'
-import App, { Container } from 'next/app'
-import getConfig from 'next/config'
-import Head from 'next/head'
-import Router from 'next/router'
-import Amplify, { Auth } from 'aws-amplify'
-import { times } from 'ramda'
-import { Provider } from 'react-redux'
-import withRedux from 'next-redux-wrapper'
+import React, { Fragment, useEffect, useState, useCallback } from "react";
+import App, { Container } from "next/app";
+import getConfig from "next/config";
+import Head from "next/head";
+import Router from "next/router";
+import Amplify, { Auth } from "aws-amplify";
+import { times } from "ramda";
+import { Provider } from "react-redux";
+import withRedux from "next-redux-wrapper";
 
-import initStore from '../store/store'
-import Header from '../components/Header/Header'
+import initStore from "../store/store";
+import Header from "../components/Header/Header";
 
-import { setSelectedTrack } from '../store/ui/actions'
+import { setSelectedTrack } from "../store/ui/actions";
 
-import '../styles/global.scss'
-import css from './app.scss'
+import "../styles/global.scss";
+import css from "./app.scss";
 
 const {
   publicRuntimeConfig: {
@@ -23,71 +23,71 @@ const {
     identityPoolId,
     region,
     userPoolWebClientId,
-    userPoolId,
-  },
-} = getConfig()
+    userPoolId
+  }
+} = getConfig();
 
 Amplify.configure({
   Auth: {
     identityPoolId,
     region,
     userPoolId,
-    userPoolWebClientId,
+    userPoolWebClientId
   },
   Storage: {
     AWSS3: {
       bucket,
-      level: 'public',
-      region,
-    },
+      level: "public",
+      region
+    }
   },
   API: {
     endpoints: [
       {
-        name: 'TextractDemoTextractAPI',
-        endpoint: `https://${APIGateway}.execute-api.${region}.amazonaws.com/prod/`,
-      },
-    ],
-  },
-})
+        name: "TextractDemoTextractAPI",
+        endpoint: `https://${APIGateway}.execute-api.${region}.amazonaws.com/prod/`
+      }
+    ]
+  }
+});
 
 // This is a bit of a hack to ensure styles reload on client side route changes.
 // See: https://github.com/zeit/next-plugins/issues/282#issuecomment-480740246
-if (process.env.NODE_ENV !== 'production') {
-  Router.events.on('routeChangeComplete', () => {
-    const path = '/_next/static/css/styles.chunk.css'
-    const chunksSelector = `link[href*="${path}"]`
-    const chunksNodes = document.querySelectorAll(chunksSelector)
-    const timestamp = new Date().valueOf()
-    chunksNodes[0].href = `${path}?${timestamp}`
-  })
+if (process.env.NODE_ENV !== "production") {
+  Router.events.on("routeChangeComplete", () => {
+    const path = "/_next/static/css/styles.chunk.css";
+    const chunksSelector = `link[href*="${path}"]`;
+    const chunksNodes = document.querySelectorAll(chunksSelector);
+    const timestamp = new Date().valueOf();
+    chunksNodes[0].href = `${path}?${timestamp}`;
+  });
 }
 
 class AppLayout extends App {
   static async getInitialProps({ Component, ctx }) {
-    let pageProps = {}
-    const { pathname } = ctx
+    let pageProps = {};
+    const { pathname } = ctx;
 
     if (Component.getInitialProps) {
-      pageProps = await Component.getInitialProps(ctx)
+      pageProps = await Component.getInitialProps(ctx);
     }
 
-    return { pageProps, pathname }
+    return { pageProps, pathname };
   }
 
   componentDidMount() {
     // Set selected track from localStorage
     // This allows you to hard refresh a page and maintain some state
     if (localStorage) {
-      const { store } = this.props
-      const cachedTrack = localStorage.getItem('track')
-      if (cachedTrack) store.dispatch(setSelectedTrack(cachedTrack))
+      const { store } = this.props;
+      const cachedTrack = localStorage.getItem("track");
+      if (cachedTrack) store.dispatch(setSelectedTrack(cachedTrack));
     }
   }
 
   render() {
-    const { Component, pageProps, pathname, store } = this.props
-    const { pageTitle } = pageProps
+    const { Component, pageProps, pathname, store } = this.props;
+    const { pageTitle } = pageProps;
 
     // Don't render the app unless the user is logged in or this is a public route.
     return (
@@ -95,8 +95,16 @@ class AppLayout extends App {
         <Provider store={store}>
           <Head>
             <title>{pageTitle && `${pageTitle} | `}Textract Demo</title>
-            <link rel="icon" type="image/ico" href="/static/images/favicon.ico" />
-            <link rel="shortcut icon" type="image/ico" href="/static/images/favicon.ico" />
+            <link
+              rel="icon"
+              type="image/ico"
+              href="/static/images/favicon.ico"
+            />
+            <link
+              rel="shortcut icon"
+              type="image/ico"
+              href="/static/images/favicon.ico"
+            />
             <link
               rel="apple-touch-icon"
               sizes="57x57"
@@ -123,26 +131,27 @@ class AppLayout extends App {
           </Page>
         </Provider>
       </Container>
-    )
+    );
   }
 }
 
 function Page({ children, pageProps, pathname }) {
-  const { backHref, backTitle, pageTitle: heading } = pageProps
-  const showGrid = useGridOverlay()
+  const { backHref, backTitle, pageTitle: heading } = pageProps;
+  const showGrid = useGridOverlay();
 
   // All routes are protected by default. We whitelist public routes.
   // Authorization does not occur on public routes.
-  const isPublicRoute = ['/styleguide'].indexOf(pathname) >= 0
+  const isPublicRoute = ["/styleguide"].indexOf(pathname) >= 0;
 
   // The Login page is technically a public route, but we handle it separately because
   // we do an auth check on it in order to redirect if the user is already logged in.
-  const isLoginRoute = pathname === '/'
-  const [isLoggedIn, setLoggedIn] = useState('pending')
+  const isLoginRoute = pathname === "/";
+  const [isLoggedIn, setLoggedIn] = useState("pending");
 
   // Don't render the app unless the user is logged in, or this is a public route,
   // or this is the login route and the user is not logged in.
-  const shouldRenderApp = isLoggedIn === true || isPublicRoute || (isLoginRoute && !isLoggedIn)
+  const shouldRenderApp =
+    isLoggedIn === true || isPublicRoute || (isLoginRoute && !isLoggedIn);
 
   // Authorize user
   // NOTE: This method of authorization is not sufficient to protect static content.
@@ -152,21 +161,21 @@ function Page({ children, pageProps, pathname }) {
   // in this app is delivered by API calls that have their own authorization checks.
   useEffect(() => {
     // If this is a public route, we don't need to authorize.
-    if (isPublicRoute) return
+    if (isPublicRoute) return;
 
     // Try to get the user's session info
     Auth.currentSession()
       .then(async () => {
         // User has a session
-        isLoginRoute && (await Router.push('/home'))
-        setLoggedIn(true)
+        isLoginRoute && (await Router.push("/home"));
+        setLoggedIn(true);
       })
       .catch(() => {
         // No user session, redirect to login if not already there
-        setLoggedIn(false)
-        !isLoginRoute && Router.push('/')
-      })
-  }, [isLoginRoute, isPublicRoute])
+        setLoggedIn(false);
+        !isLoginRoute && Router.push("/");
+      });
+  }, [isLoginRoute, isPublicRoute]);
 
   return (
     shouldRenderApp && (
@@ -187,7 +196,7 @@ function Page({ children, pageProps, pathname }) {
         )}
       </div>
     )
-  )
+  );
 }
 
 /**
@@ -196,28 +205,28 @@ function Page({ children, pageProps, pathname }) {
  * (Press control + L to toggle the grid)
  */
 function useGridOverlay() {
-  const [showGrid, setShowGrid] = useState(false)
+  const [showGrid, setShowGrid] = useState(false);
 
   // Toggle grid handler
   const handleKeyUp = useCallback(e => {
-    const L = 76
-    const { ctrlKey, keyCode } = e
+    const L = 76;
+    const { ctrlKey, keyCode } = e;
 
     if (ctrlKey && keyCode === L) {
-      e.preventDefault()
-      setShowGrid(showGrid => !showGrid)
+      e.preventDefault();
+      setShowGrid(showGrid => !showGrid);
     }
-  }, [])
+  }, []);
 
   // Add/remove event listener
   useEffect(() => {
-    document.addEventListener('keyup', handleKeyUp)
+    document.addEventListener("keyup", handleKeyUp);
     return () => {
-      document.removeEventListener('keyup', handleKeyUp)
-    }
-  }, [handleKeyUp])
+      document.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [handleKeyUp]);
 
-  return showGrid
+  return showGrid;
 }
 
-export default withRedux(initStore)(AppLayout)
+export default withRedux(initStore)(AppLayout);

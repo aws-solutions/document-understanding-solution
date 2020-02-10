@@ -18,7 +18,7 @@ Parameters:
     Description: Enter the repository name that will be created
     Type: String
     AllowedPattern: "[a-zA-Z0-9-]+"
-    Default: document-understanding-solution-reference-architecture
+    Default: document-understanding-reference-architecture
   API:
     Description: Solution API deployment
     Type: String
@@ -101,8 +101,9 @@ Mappings:
       SendAnonymousUsage: "true"
   SourceCode:
     Source:
-      S3Bucket: "du-solutions-example"
-      KeyPrefix: "document-understanding-solution/v1.0.0"
+      S3Bucket: "%%BUCKET_NAME%%"
+      Version: "%%VERSION%%"
+      KeyPrefix: "document-understanding-solution/%%VERSION%%"
 
 Resources:
   # CICD resources [start]
@@ -222,10 +223,8 @@ Resources:
               runtime-versions:
                 nodejs: 12
               commands:
-                - echo "This buildspec is based on image - aws/codebuild/standard:2.0"
+                - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:2.0"
                 - node -v
-                - apt-get update
-                - apt-get install jq
             pre_build:
               commands:
                 - echo "Installing dependencies `pwd`"
@@ -266,13 +265,13 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: |
           version: 0.2
-            phases:
+          phases:
             install:
-                runtime-versions:
+              runtime-versions:
                 nodejs: 12
                 ruby: 2.6
-                commands:
-                - echo "This buildspec is based on image - aws/codebuild/standard:2.0"
+              commands:
+                - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:2.0"
                 - node --version
                 - npm install -g cdk@1.18.0
                 - cdk --version
@@ -283,30 +282,20 @@ Resources:
                 - cfn_nag --version
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
+                - sed -i -e "s/%%REGION%%/$AWS_REGION/g" ./package.json
+                - echo "Injecting values for S3 location for boto and pdf lambda code"
+                - sed -i -e "s/%%SOURCE_BUCKET%%/$SOURCE_BUCKET-$AWS_REGION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
+                - sed -i -e "s/%%CODE_VERSION%%/$VERSION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
                 - yarn
             build:
-                commands:
+              commands:
                 - echo "bootstrap CDK environment `date`"
                 - ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f5 -d:)
-                - tsc deployment/custom-deployment/lib/cdk-textract-stack.ts --target es2018 --module commonjs --allowjs true
-                - tsc deployment/custom-deployment/lib/cdk-textract-client-stack.ts --target es2018 --module commonjs --allowjs true
-                - echo "Deploying backend stack `date`"
-                - echo "Deploying client stack"
-                - yarn export
-                - sleep 30
-                - cat .env
-                - ls -al
-                - pwd
-                - ls -latrh app
-                - ls -latrh app/.next
-                - yarn update-client-stack-variables 
-                - AWS_REGION=$npm_package_stack_region cdk deploy --require-approval never -v true -a "node bin/deploy-client-stack.js" 
-                - echo "Uploading samples"
-                - AWS_REGION=$npm_package_stack_region ./bin/upload-samples.sh
-            artifacts:
+                - cdk bootstrap aws://$ACCOUNT_ID/$AWS_REGION --toolkit-stack-name DocumentUnderstandingCDKToolkit
+                - yarn deploy
+          artifacts:
             files:
-                - '**/*'
-
+              - '**/*'
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: !FindInMap [BuildEnv, Images, Standard3]
@@ -316,6 +305,12 @@ Resources:
             Value: !Ref DevOutputBucket
           - Name: MAIN_STACK_NAME
             Value: !FindInMap [BuildEnv, CDK, StackName]
+          - Name: SOURCE_BUCKET
+            Value: !FindInMap [SourceCode, Source, S3Bucket]
+          - Name: VERSION
+            Value: !FindInMap [SourceCode, Source, Version]
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
       Artifacts:
         Name: CodeBuild-CDK-output
         Type: CODEPIPELINE

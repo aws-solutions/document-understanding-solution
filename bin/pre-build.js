@@ -2,7 +2,7 @@ const { exec } = require("child_process");
 const fs = require("fs");
 const aws = require("aws-sdk");
 
-const stackName = process.env.STACKNAME;
+const stackName = `${process.env.STACKNAME}Stack`;
 const region = process.env.AWS_REGION;
 aws.config.region = region;
 

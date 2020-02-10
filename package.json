@@ -15,7 +15,7 @@
   ],
   "stack": {
     "name": "DUS",
-    "region": "us-east-1"
+    "region": "%%REGION%%"
   },
   "scripts": {
     "compile-ts-stack": "tsc deployment/custom-deployment/lib/cdk-textract-stack.ts --target es2018 --module commonjs --allowjs true",
