@@ -1,26 +1,8 @@
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
 import boto3
-import re
 
-
-def context(term, phrase):
-    regex = r"(.*)"+term+"(.*)"
-
-    matches = re.finditer(regex, phrase)
-
-    matchList = []
-
-    for matchNum, match in enumerate(matches, start=1):
-        matchList.append(match.group())
-
-    return matchList
-
-
-def contextCounts(term, phrase):
-
-    return len(re.findall(term, phrase))
-
+ES_HIGHLIGHT_FRAGMENT_SIZE = 50
 
 def deleteESItem(elasticsearchDomain, documentId):
     host = elasticsearchDomain
@@ -57,24 +39,16 @@ def search(request):
 
     if(keyword is not None):
         searchBody = {
-            "must": [
-                {
-                    "match": {
-                        "content": keyword
-                    }
-                }
-            ]
-        }
-
-        if(documentId is not None):
-            searchBody["must"].append(
-                {
-                    "match_phrase":
-                    {
-                        "documentId": documentId
-                    }
-                }
-            )
+                 "query" : {
+                   "match": { "content": keyword }
+                  },
+                  "highlight" : {
+                    "fields" : {
+                      "content" : { "pre_tags" : [""], "post_tags" : [""] }
+                      },
+                      "fragment_size" : ES_HIGHLIGHT_FRAGMENT_SIZE
+                 }
+            }
 
         service = 'es'
         ss = boto3.Session()
@@ -84,8 +58,6 @@ def search(request):
         awsauth = AWS4Auth(credentials.access_key, credentials.secret_key,
                            region, service, session_token=credentials.token)
 
-        print(searchBody)
-
         es = Elasticsearch(
             hosts=[{'host': host, 'port': 443}],
             http_auth=awsauth,
@@ -93,45 +65,32 @@ def search(request):
             verify_certs=True,
             connection_class=RequestsHttpConnection
         )
+        
         output = es.search(
             index='textract',
             doc_type="document",
-            body={
-                "query": {
-                  "bool": searchBody
-                }
-            },
-            filter_path=['hits.hits._id', 'hits.hits._source.content',
-                         'hits.hits._source.name', 'hits.hits._source.bucket']
+            body=searchBody,
+            _source = ["name","bucket"],
+            filter_path=['hits.hits._id', 'hits.hits._source','hits.hits.highlight' ]
         )
-
+        
         if("hits" in output):
             output = output["hits"]
             # subnested hits
             hits = output["hits"]
             results = []
 
-            i = 0
-            while i < len(hits):
-                id = hits[i]["_id"]
-                source = hits[i]["_source"]
-                linesContext = context(keyword, source["content"])
-                joined = ' ...'.join(linesContext)
+            for hit in hits:
+                id = hit["_id"]
+                source = hit["_source"]
                 obj = {
                     "documentId": id,
                     "name": source["name"],
                     "bucket": source["bucket"],
-                    "count": contextCounts(keyword, source["content"]),
-                    "brief": joined[:400],
-                    "lines": linesContext
+                    "count": len(hit["highlight"]["content"]),
+                    "lines":hit["highlight"]["content"]
                 }
                 results.append(obj)
-                i += 1
-                if('documentId' in request):
-                    if(request['documentId'] == id):
-                        results = obj
-                        i = len(hits)
-
             output = results
 
         return output
