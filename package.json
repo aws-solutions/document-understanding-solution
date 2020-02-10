@@ -23,7 +23,7 @@
     "deploy:stack": "yarn compile-ts-stack && AWS_REGION=$npm_package_stack_region cdk deploy --require-approval never -v true",
     "deploy:client": "yarn compile-ts-client-stack && yarn export && yarn update-client-stack-variables && AWS_REGION=$npm_package_stack_region STACKNAME=$npm_package_stack_name cdk deploy --require-approval never -v true -a \"node bin/deploy-client-stack.js\"",
     "deploy:setup-user": "AWS_REGION=$npm_package_stack_region node bin/user-setup.js",
-    "deploy:setup-samples": "AWS_REGION=$npm_package_stack_region ./bin/upload-samples.sh",
+    "deploy:setup-samples": "AWS_REGION=$npm_package_stack_region bash ./bin/upload-samples.sh",
     "deploy:show": "AWS_REGION=$npm_package_stack_region node ./bin/client-stack-url.js",
     "deploy": "STACKNAME=$npm_package_stack_name AWS_REGION=$npm_package_stack_region yarn deploy:stack && yarn deploy:client && yarn deploy:setup-samples && yarn deploy:show",
     "deploy:frontend": "yarn deploy:client && yarn deploy:setup-samples && yarn deploy:show",
