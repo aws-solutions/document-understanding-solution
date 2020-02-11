@@ -458,14 +458,22 @@ Resources:
               - "cognito-idp:DeleteUser"
               - "cognito-idp:DeleteUserPool"
               - "cognito-idp:DeleteUserPoolClient"
+          - Effect: "Allow"
+            Action:
+              - "cognito-identity:DeleteIdentityPool"
             Resource:
-              - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:aws:cognito-identity:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "dynamodb:DeleteTable"
               - "dynamodb:Describe*"
             Resource:
               - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "es:DeleteElasticsearchDomain"
+            Resource:
+              - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*"
           - Effect: "Allow"
             Action:
               - "iam:Delete*"
@@ -489,14 +497,23 @@ Resources:
               - "lambda:DeleteFunction"
               - "lambda:InvokeFunction"
               - "lambda:RemovePermission"
+              - "lambda:DeleteLayerVersion"
+              - "lambda:DeleteEventSourceMapping"
             Resource:
               - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "sns:DeleteTopic"
               - "sns:GetTopicAttributes"
+              - "sns:Unsubscribe"
             Resource:
               - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "sqs:SetQueueAttributes"
+              - "sqs:DeleteQueue"
+            Resource:
+              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*"
 
           - Effect: "Allow"
             Action:
