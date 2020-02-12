@@ -19,3 +19,7 @@ app/out/
 
 # CDK
 cdk.out/
+
+#deployment
+deployment/build-dist/
+deployment/build-dist/*

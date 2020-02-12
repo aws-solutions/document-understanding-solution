@@ -12,6 +12,7 @@ import {
   SET_SEARCH_QUERY,
   SET_SEARCH_STATUS,
   CLEAR_SEARCH_QUERY,
+  HIGHLIGHT_DOCUMENT
 } from '../../constants/action-types'
 
 import documents from './documents/data'
@@ -28,6 +29,7 @@ export default handleActions(
     [FETCH_DOCUMENT]: receiveEntities,
     [FETCH_DOCUMENTS]: receiveEntities,
     [REDACT_DOCUMENT]: receiveEntities,
+    [HIGHLIGHT_DOCUMENT]: receiveEntities,
     [SEARCH]: receiveEntities,
     [SEARCH]: receiveEntities,
     [CLEAR_SEARCH_RESULTS]: receiveEntities,
