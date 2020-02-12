@@ -35,7 +35,7 @@ However, when you feed the bucket as an argument to the above script, omit the r
 
 ### Development Deploy Commands
 
-- `yarn deploy:stack` : deploys or updates the backend stack
+- `yarn deploy:backend` : deploys or updates the backend stack
 - `yarn deploy:client` : deploys or updates the client app
 - `yarn deploy:setup-samples` : push sample docs to s3
 - `yarn deploy:setup-user` : initiated prompts to set up a user
