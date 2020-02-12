@@ -11,9 +11,9 @@
 
 ### Getting Started with Full Deploy
 
-Prerequisites:
+1. Direct Deploy:
 
-- Set your deployment region in the stack->region property of package.json.
+- Set your deployment region in the stack->region property of package.json, replacing "%%REGION%%".
 - If you have never used CDK before, then the deployment command below may fail with a message saying that you first need to run `cdk bootstrap {accountId}/{region}`. This will deploy a small stack with resources for running CDK. Afterwards, run the below yarn command again.
 
 ```
@@ -21,6 +21,17 @@ yarn && yarn deploy
 ```
 
 The cli will prompt for approval on IAM Roles and Permissions twice in the full deploy. Once for the backend stack and then again for the client stack. The cli will prompt for an email. After the deploy is complete, an email will be sent to address provided with credentials for logging in.
+
+2. CICD Deploy:
+
+There is also a way to deploy the solution that invokes the same CICD pipeline that is used by Solutions Builder team. This will create a separate stack that loads all resource onto CodePipeline, and then uses CodePipeline to invoke CDK. Make sure stack->region inside package.json contains its original value, "%%REGION%%".
+
+```
+./deployment/build_and_deploy_project.sh [bucket-name-minus-region] [version] [email address]
+```
+
+Note: To deploy this solution, you must create an S3 bucket that will house the project resources. The bucket name must end with the region in which you wish to deploy the solution, e.g `dus-bucket-us-east-1`.
+However, when you feed the bucket as an argument to the above script, omit the region at the end, e.g `dus-bucket`. This is designed to replicate how the solutions builder website will deploy this solution.
 
 ### Development Deploy Commands
 

@@ -23,8 +23,8 @@ fi
 
 echo "Region is $region"
 
-if [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Please provide the base source bucket name and version where the lambda code will eventually reside."
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo "Please provide the base source bucket name, version where the lambda code will eventually reside, and an email address."
     echo "For example: ./upload-s3-deployment-items.sh my-solutions-us-east-1 v1.0.0"
     exit 1
 fi
@@ -60,6 +60,9 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     replace="s/%%VERSION%%/$2/g"
     echo "sed -i '' -e $replace $build_dist_dir/document-understanding-solution.template"
     sed -i '' -e $replace $build_dist_dir/document-understanding-solution.template
+    replace="s/%%EMAIL%%/$3/g"
+    echo "sed -i '' -e $replace $build_dist_dir/document-understanding-solution.template"
+    sed -i '' -e $replace $build_dist_dir/document-understanding-solution.template
 else
     # Other linux
     echo "Updating code source bucket in template with $1"
@@ -69,10 +72,13 @@ else
     replace="s/%%VERSION%%/$2/g"
     echo "sed -i -e $replace $build_dist_dir/document-understanding-solution.template"
     sed -i -e $replace $build_dist_dir/document-understanding-solution.template
+    replace="s/%%EMAIL%%/$3/g"
+    echo "sed -i -e $replace $build_dist_dir/document-understanding-solution.template"
+    sed -i -e $replace $build_dist_dir/document-understanding-solution.template
 fi
 
 echo "Creating zip file of project source..."
-zip -r document-understanding-solution.zip ./* -x "*pdfgenerator*" \
+zip -r $build_dist_dir/document-understanding-solution.zip ./* -x "*pdfgenerator*" \
 -x "*boto3*" \
 -x "*.git*" \
 -x "*node_modules*" \
@@ -91,7 +97,7 @@ aws s3 cp $build_dist_dir/document-understanding-solution.template s3://$s3bucke
 aws s3 cp ./deployment/document-understanding-cicd.zip s3://$s3bucket/document-understanding-solution/$2/document-understanding-cicd.zip
 
 echo "Uploading solution code"
-aws s3 cp ./document-understanding-solution.zip s3://$s3bucket/document-understanding-solution/$2/document-understanding-solution.zip
+aws s3 cp $build_dist_dir/document-understanding-solution.zip s3://$s3bucket/document-understanding-solution/$2/document-understanding-solution.zip
 
 echo "Creating Cloudformation stack..."
 aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://$s3bucket.s3.amazonaws.com/document-understanding-solution/$2/document-understanding-solution.template --capabilities CAPABILITY_NAMED_IAM --disable-rollback

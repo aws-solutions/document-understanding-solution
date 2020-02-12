@@ -26,6 +26,10 @@ Parameters:
       - "true"
       - "false"
     Default: "true"
+  Email:
+    Description: User email address
+    Type: String
+    Default: "%%EMAIL%%"
   Defender:
     Description: Solution IoT Defender deployment
     Type: String
@@ -83,6 +87,7 @@ Metadata:
           - WebApp
           - Telemetry
           - Version
+          - Email
     ParameterLabels:
       CodeCommitRepository:
         default: CodeCommit Repository Name
@@ -283,6 +288,7 @@ Resources:
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
                 - sed -i -e "s/%%REGION%%/$AWS_REGION/g" ./package.json
+                - sed -i -e "s/%%USER_EMAIL%%/$USER_EMAIL/g" ./package.json
                 - echo "Injecting values for S3 location for boto and pdf lambda code"
                 - sed -i -e "s/%%SOURCE_BUCKET%%/$SOURCE_BUCKET-$AWS_REGION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
                 - sed -i -e "s/%%CODE_VERSION%%/$VERSION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
@@ -311,6 +317,8 @@ Resources:
             Value: !FindInMap [SourceCode, Source, Version]
           - Name: AWS_REGION
             Value: !Ref AWS::Region
+          - Name: USER_EMAIL
+            Value: !Ref Email
       Artifacts:
         Name: CodeBuild-CDK-output
         Type: CODEPIPELINE
@@ -458,6 +466,8 @@ Resources:
               - "cognito-idp:DeleteUser"
               - "cognito-idp:DeleteUserPool"
               - "cognito-idp:DeleteUserPoolClient"
+            Resource:
+              - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "cognito-identity:DeleteIdentityPool"
@@ -514,7 +524,6 @@ Resources:
               - "sqs:DeleteQueue"
             Resource:
               - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*"
-
           - Effect: "Allow"
             Action:
               - "s3:DeleteBucketPolicy"
