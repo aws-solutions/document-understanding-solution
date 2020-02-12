@@ -10,7 +10,8 @@ import sqs = require("@aws-cdk/aws-sqs");
 import apigateway = require("@aws-cdk/aws-apigateway");
 import {
   DynamoEventSource,
-  SqsEventSource
+  SqsEventSource,
+  S3EventSource
 } from "@aws-cdk/aws-lambda-event-sources";
 import {
   CfnUserPoolUser,
@@ -642,6 +643,38 @@ export class CdkTextractStack extends cdk.Stack {
     pdfGenerator.grantInvoke(syncProcessor);
     pdfGenerator.grantInvoke(jobResultProcessor);
 
+    //------------------------------------------------------------
+
+      // PostProcessor : Handles events from Textract & Comprehend results stored in s3
+
+      const postProcesser = new lambda.Function(this, this.resourceName('postProcesser'), {
+        runtime: lambda.Runtime.PYTHON_3_7,
+        code: lambda.Code.asset('lambda/postProcesser'),
+        handler: 'lambda_function.lambda_handler',
+        memorySize: 128,
+        reservedConcurrentExecutions: 50,
+        timeout: cdk.Duration.seconds(300),
+        environment: {
+          OUTPUT_TABLE: outputTable.tableName,
+          DOCUMENTS_TABLE: documentsTable.tableName
+        },
+      })
+
+      postProcesser.addLayers(boto3Layer)
+
+      // Triggers
+
+      postProcesser.addEventSource(new S3EventSource(documentsS3Bucket, {
+        events: [ s3.EventType.OBJECT_CREATED ]
+        // ,filters: [ { prefix: '/' } , {suffix: ''} ]  TODO Trigger only when we add comprehend and textract exact result responses
+      }));
+    
+      // Permissions
+
+      outputTable.grantReadWriteData(postProcesser)
+      documentsTable.grantReadWriteData(postProcesser)
+      documentsS3Bucket.grantReadWrite(postProcesser)
+    
     //------------------------------------------------------------
 
     // API Processor
