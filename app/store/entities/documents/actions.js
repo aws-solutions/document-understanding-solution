@@ -9,7 +9,8 @@ import {
   SUBMIT_DOCUMENT,
   FETCH_DOCUMENTS,
   FETCH_DOCUMENT,
-  REDACT_DOCUMENT
+  REDACT_DOCUMENT,
+  HIGHLIGHT_DOCUMENT
 } from "../../../constants/action-types";
 import { documentsSchema, documentSchema } from "./data";
 
@@ -136,7 +137,10 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const documentPublicSubPath = objectName.replace("public/", "");
   const resultDirectory = `${documentPublicSubPath}-analysis/${documentId}/`;
   const textractResponsePath = `${resultDirectory}response.json`;
-
+  const comprehendMedicalResponsePath = `${resultDirectory}comprehendMedicalEntities.json` 
+  const comprehendResponsePath = `${resultDirectory}comprehendEntities.json` 
+  
+  
   // Get a pre-signed URL for the original document upload
   const [documentData, searchablePdfData] = await Promise.all([
     Storage.get(documentPublicSubPath, {
@@ -163,6 +167,21 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
     s3Response.Body ? s3Response.Body.toString() : null
   );
 
+// Get the raw comprehend medical response data from a json file on S3
+ const s3ComprehendMedicalResponse = await Storage.get(comprehendMedicalResponsePath, {
+  download: true
+});
+const comprehendMedicalRespone = JSON.parse(
+  s3ComprehendMedicalResponse.Body ? s3ComprehendMedicalResponse.Body.toString() : null
+);
+// Get the raw comprehend response data from a json file on S3
+const s3ComprehendResponse = await Storage.get(comprehendResponsePath, {
+  download: true
+});
+const comprehendRespone = JSON.parse(
+  s3ComprehendResponse.Body ? s3ComprehendResponse.Body.toString() : null
+);
+
   return normalize(
     {
       ...document,
@@ -171,10 +190,13 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
       documentName,
       textractResponse,
       textractFetchedAt: Date.now(),
+      comprehendMedicalRespone,
+      comprehendRespone,
       resultDirectory
     },
     documentSchema
   ).entities;
+
 });
 
 export const deleteDocument = createAction(FETCH_DOCUMENT, async documentid => {
@@ -207,6 +229,7 @@ export const addRedactions = createAction(
       return acc;
     }, {});
 
+
     return normalize(
       {
         documentId,
@@ -216,6 +239,22 @@ export const addRedactions = createAction(
     ).entities;
   }
 );
+
+export const addHighlights = createAction(
+  HIGHLIGHT_DOCUMENT,
+  
+  (documentId, pageNumber, highlights) => {
+    const response = normalize(
+      {
+        documentId,
+        highlights:  highlights
+      },
+      documentSchema
+    ).entities
+
+    return response;
+  });
+
 
 export const clearRedactions = createAction(REDACT_DOCUMENT, documentId => {
   return normalize(
