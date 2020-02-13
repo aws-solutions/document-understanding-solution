@@ -19,56 +19,14 @@ Parameters:
     Type: String
     AllowedPattern: "[a-zA-Z0-9-]+"
     Default: document-understanding-reference-architecture
-  API:
-    Description: Solution API deployment
-    Type: String
-    AllowedValues:
-      - "true"
-      - "false"
-    Default: "true"
   Email:
     Description: User email address
     Type: String
     Default: "%%EMAIL%%"
-  Defender:
-    Description: Solution IoT Defender deployment
-    Type: String
-    AllowedValues:
-      - "true"
-      - "false"
-    Default: "true"
-  Event:
-    Description: Solution Event deployment
-    Type: String
-    AllowedValues:
-      - "true"
-      - "false"
-    Default: "true"
-  JITR:
-    Description: Solution Just-In-Time-Registration deployment
-    Type: String
-    AllowedValues:
-      - "true"
-      - "false"
-    Default: "true"
-  WebApp:
-    Description: Solution Web Console deploymemt
-    Type: String
-    AllowedValues:
-      - "true"
-      - "false"
-    Default: "true"
-  Telemetry:
-    Description: Solution Telemetry deployment
-    Type: String
-    AllowedValues:
-      - "true"
-      - "false"
-    Default: "true"
   Version:
     Description: Solution Version
     Type: String
-    Default: v1.0.0
+    Default: "%%VERSION%%"
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -80,12 +38,6 @@ Metadata:
       - Label:
           default: Solution Feature Configuration
         Parameters:
-          - API
-          - Defender
-          - Event
-          - JITR
-          - WebApp
-          - Telemetry
           - Version
           - Email
     ParameterLabels:
@@ -183,25 +135,11 @@ Resources:
                 RepositoryName: !Ref CodeCommitRepository
                 BranchName: master
                 PollForSourceChanges: false
-        - Name: Build
-          Actions:
-            - Name: AssetBuild
-              InputArtifacts:
-                - Name: SourceApp
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: "1"
-                Provider: CodeBuild
-              OutputArtifacts:
-                - Name: BuiltApp
-              Configuration:
-                ProjectName: !Ref CodeBuild
         - Name: Deploy
           Actions:
             - Name: CDKDeploy
               InputArtifacts:
-                - Name: BuiltApp
+                - Name: SourceApp
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -210,54 +148,6 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildCDK
   # CICD resources [end]
-
-  # CodeBuild projects [start]
-  CodeBuild:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Name: !Sub ${CodeCommitRepository}
-      Description: "build project for document understanding"
-      ServiceRole: !Sub ${CodeBuildRole.Arn}
-      EncryptionKey: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3
-      Source:
-        Type: CODEPIPELINE
-        BuildSpec: |
-          version: 0.2
-          phases:
-            install:
-              runtime-versions:
-                nodejs: 12
-              commands:
-                - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:2.0"
-                - node -v
-            pre_build:
-              commands:
-                - echo "Installing dependencies `pwd`"
-                - echo "Installing dependencies completed `date`"
-            build:
-              commands:
-                - echo "Starting build `date` in `pwd`"
-                - VERSION=1.0.0
-                - echo "Deployment version $VERSION"
-                - echo "Build completed `date`"
-            post_build:
-              commands:
-                - echo "Copying assets to output bucket complete `date`"
-          artifacts:
-            files:
-              - '**/*'
-      Environment:
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: !FindInMap [BuildEnv, Images, Standard3]
-        Type: LINUX_CONTAINER
-        EnvironmentVariables:
-          - Name: BUILD_OUTPUT_BUCKET
-            Value: !Ref DevOutputBucket
-          - Name: SOLUTION_NAME
-            Value: "document-understanding-solution"
-      Artifacts:
-        Name: !Sub ${CodeCommitRepository}
-        Type: CODEPIPELINE
 
   CodeBuildCDK:
     Type: AWS::CodeBuild::Project
@@ -287,17 +177,19 @@ Resources:
                 - cfn_nag --version
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
+                - echo "Injecting values for Region, Email, Version, and boto/pdf lambda code S3 location to the project"
                 - sed -i -e "s/%%REGION%%/$AWS_REGION/g" ./package.json
                 - sed -i -e "s/%%USER_EMAIL%%/$USER_EMAIL/g" ./package.json
-                - echo "Injecting values for S3 location for boto and pdf lambda code"
                 - sed -i -e "s/%%SOURCE_BUCKET%%/$SOURCE_BUCKET-$AWS_REGION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
                 - sed -i -e "s/%%CODE_VERSION%%/$VERSION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
+                - echo "Installing all dependencies"
                 - yarn
             build:
               commands:
                 - echo "bootstrap CDK environment `date`"
                 - ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f5 -d:)
                 - cdk bootstrap aws://$ACCOUNT_ID/$AWS_REGION --toolkit-stack-name DocumentUnderstandingCDKToolkit
+                - echo "----- Deploying complete solution -----"
                 - yarn deploy
           artifacts:
             files:
@@ -378,12 +270,7 @@ Resources:
     DependsOn: CICDCustomResource
     Properties:
       ServiceToken: !GetAtt CICDHelper.Arn
-      API: !Ref API
-      DEFENDER: !Ref Defender
-      EVENT: !Ref Event
-      JITR: !Ref JITR
-      WEB_APP: !Ref WebApp
-      TELEMETRY: !Ref Telemetry
+      Email: !Ref Email
       VERSION: !Ref Version
       ANONYMOUS_METRICS: !FindInMap [BuildEnv, Metrics, SendAnonymousUsage]
 
@@ -482,6 +369,7 @@ Resources:
           - Effect: "Allow"
             Action:
               - "es:DeleteElasticsearchDomain"
+              - "es:DescribeElasticsearchDomain"
             Resource:
               - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*"
           - Effect: "Allow"
@@ -491,17 +379,6 @@ Resources:
               - "iam:DetachRolePolicy"
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:*"
-          - Effect: "Allow"
-            Action:
-              - "iot:DeleteTopicRule"
-              - "iotanalytics:DeleteChannel"
-              - "iotanalytics:DeleteDataset"
-              - "iotanalytics:DeleteDatastore"
-              - "iotanalytics:DeletePipeline"
-              - "iotanalytics:Describe*"
-            Resource:
-              - !Sub "arn:aws:iot:${AWS::Region}:${AWS::AccountId}:*"
-              - !Sub "arn:aws:iotanalytics:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "lambda:DeleteFunction"
@@ -608,7 +485,6 @@ Resources:
                             "codebuild:StartBuild"
                         ],
                         "Resource": [
-                            "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuild}",
                             "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuildCDK}"
                         ],
                         "Effect": "Allow"
