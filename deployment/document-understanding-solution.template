@@ -350,6 +350,7 @@ Resources:
               - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
+              - "cognito-idp:AdminDeleteUser"
               - "cognito-idp:DeleteUser"
               - "cognito-idp:DeleteUserPool"
               - "cognito-idp:DeleteUserPoolClient"
@@ -358,6 +359,7 @@ Resources:
           - Effect: "Allow"
             Action:
               - "cognito-identity:DeleteIdentityPool"
+              - "cognito-identity:SetIdentityPoolRoles"
             Resource:
               - !Sub "arn:aws:cognito-identity:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
@@ -381,6 +383,7 @@ Resources:
               - !Sub "arn:aws:iam::${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
+              - "lambda:GetEventSourceMapping"
               - "lambda:DeleteFunction"
               - "lambda:InvokeFunction"
               - "lambda:RemovePermission"
@@ -388,6 +391,11 @@ Resources:
               - "lambda:DeleteEventSourceMapping"
             Resource:
               - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "lambda:GetEventSourceMapping"
+              - "lambda:DeleteEventSourceMapping"
+            Resource: "*"
           - Effect: "Allow"
             Action:
               - "sns:DeleteTopic"
