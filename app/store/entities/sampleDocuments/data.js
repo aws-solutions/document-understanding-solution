@@ -39,7 +39,6 @@ export default {
       title: "Finance",
       previewImage: "/static/images/sample-previews/Lacey city bonds.png",
       objects: [
-        "public/samples/Finance/Credit Unions.png",
         "public/samples/Finance/Lacey city bonds.png",
         "public/samples/Finance/Spokane accounting.png",
         "public/samples/Finance/USDC balance sheet.png",
