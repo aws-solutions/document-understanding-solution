@@ -313,6 +313,26 @@ exports.handler = async (event, context) => {
             StackName: event.ResourceProperties.STACK_NAME
           })
           .promise();
+        await cloudformation
+          .deleteStack({
+            StackName: event.ResourceProperties.CLIENT_STACK_NAME
+          })
+          .promise();
+        await cloudformation
+          .waitFor("stackDeleteComplete", {
+            StackName: event.ResourceProperties.CLIENT_STACK_NAME
+          })
+          .promise();
+        await cloudformation
+          .deleteStack({
+            StackName: event.ResourceProperties.CDK_TOOLKIT_STACK_NAME
+          })
+          .promise();
+        await cloudformation
+          .waitFor("stackDeleteComplete", {
+            StackName: event.ResourceProperties.CDK_TOOLKIT_STACK_NAME
+          })
+          .promise();
       } catch (err) {
         const _responseData = {
           Error: err
