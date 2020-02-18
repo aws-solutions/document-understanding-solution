@@ -54,6 +54,7 @@ Mappings:
       Standard3: "aws/codebuild/amazonlinux2-x86_64-standard:2.0"
     CDK:
       StackName: "DUSStack"
+      ClientStackName: "DUSClientStack"
     Metrics:
       SendAnonymousUsage: "true"
   SourceCode:
@@ -184,6 +185,8 @@ Resources:
                 - sed -i -e "s/%%CODE_VERSION%%/$VERSION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
                 - echo "Installing all dependencies"
                 - yarn
+                - tsc deployment/custom-deployment/lib/cdk-textract-stack.ts --target es2018 --module commonjs --allowjs true
+                - tsc deployment/custom-deployment/lib/cdk-textract-client-stack.ts --target es2018 --module commonjs --allowjs true
             build:
               commands:
                 - echo "bootstrap CDK environment `date`"
@@ -280,6 +283,8 @@ Resources:
     Properties:
       ServiceToken: !GetAtt CICDHelper.Arn
       STACK_NAME: !FindInMap [BuildEnv, CDK, StackName]
+      CLIENT_STACK_NAME: !FindInMap [BuildEnv, CDK, ClientStackName]
+      CDK_TOOLKIT_STACK_NAME: DocumentUnderstandingCDKToolkit
   # Custom resource [end]
 
   # IAM resources [start]
@@ -412,6 +417,7 @@ Resources:
           - Effect: "Allow"
             Action:
               - "s3:DeleteBucketPolicy"
+              - "s3:DeleteBucket"
             Resource:
               - !Sub "arn:aws:s3:::*"
           - Effect: "Allow"

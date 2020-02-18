@@ -409,7 +409,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("Boto3"),
       {
-        // code: lambda.Code.fromAsset("lambda/boto3/boto3-layer.zip"),
         code: lambda.Code.fromBucket(
           s3.Bucket.fromBucketName(
             this,
@@ -470,7 +469,6 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("PdfGenerator"),
       {
         runtime: lambda.Runtime.JAVA_8,
-        // code: lambda.Code.fromAsset("lambda/pdfgenerator"),
         code: lambda.Code.fromBucket(
           s3.Bucket.fromBucketName(
             this,
