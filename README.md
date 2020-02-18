@@ -22,6 +22,14 @@ yarn && yarn deploy
 
 The cli will prompt for approval on IAM Roles and Permissions twice in the full deploy. Once for the backend stack and then again for the client stack. The cli will prompt for an email. After the deploy is complete, an email will be sent to address provided with credentials for logging in.
 
+Note:
+
+This will create 3 or 4 S3 buckets that will have to be manually deleted when the stack is destroyed (Cloudformation does not delete them, in order to avoid data loss).
+
+- 2 for documents (sample and general documents)
+- 1 for the client bucket
+- 1 for CDK toolkit (if this is your first time using CDK)
+
 2. CICD Deploy:
 
 There is also a way to deploy the solution that invokes the same CICD pipeline that is used by Solutions Builder team. This will create a separate stack that loads all resource onto CodePipeline, and then uses CodePipeline to invoke CDK. Make sure stack->region inside package.json contains its original value, "%%REGION%%".
@@ -32,6 +40,14 @@ There is also a way to deploy the solution that invokes the same CICD pipeline t
 
 Note: To deploy this solution, you must create an S3 bucket that will house the project resources. The bucket name must end with the region in which you wish to deploy the solution, e.g `dus-bucket-us-east-1`.
 However, when you feed the bucket as an argument to the above script, omit the region at the end, e.g `dus-bucket`. This is designed to replicate how the solutions builder website will deploy this solution.
+
+This solutions will create 6 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
+
+- 2 for CICD
+- 1 for solution specific CDK Toolkit
+- 2 for documents (sample and general documents)
+- 1 for the client bucket
+- 1 for CDK toolkit (if this is the customer's first try with CDK)
 
 ### Development Deploy Commands
 
