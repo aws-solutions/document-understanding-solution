@@ -76,10 +76,13 @@ export default function Login() {
     [userInit, newPassword]
   );
 
-  const handleFormChange = useCallback(e => {
-    const { name, value } = e.target;
-    setCredentials(credentials => ({ ...credentials, [name]: value }));
-  }, []);
+  const handleFormChange = useCallback(
+    e => {
+      const { name, value } = e.target;
+      setCredentials(credentials => ({ ...credentials, [name]: value }));
+    },
+    [username, password, passwordChangeRequired, newPassword, userInit]
+  );
 
   const loginForm = () => {
     return (
@@ -115,7 +118,7 @@ export default function Login() {
       <form onSubmit={handlePasswordResetSubmit}>
         <p>
           <FormInput
-            autoComplete=""
+            autoComplete="new-password"
             type="password"
             name="newPassword"
             label="New Password"

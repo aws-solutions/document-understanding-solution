@@ -409,7 +409,14 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("Boto3"),
       {
-        code: lambda.Code.fromAsset("lambda/boto3/boto3-layer.zip"),
+        code: lambda.Code.fromBucket(
+          s3.Bucket.fromBucketName(
+            this,
+            "solutionBucketBoto",
+            "%%SOURCE_BUCKET%%"
+          ),
+          "document-understanding-solution/%%CODE_VERSION%%/boto3-layer.zip"
+        ),
         compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
         license: "Apache-2.0"
       }
@@ -462,7 +469,14 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("PdfGenerator"),
       {
         runtime: lambda.Runtime.JAVA_8,
-        code: lambda.Code.fromAsset("lambda/pdfgenerator"),
+        code: lambda.Code.fromBucket(
+          s3.Bucket.fromBucketName(
+            this,
+            "solutionBucketPDF",
+            "%%SOURCE_BUCKET%%"
+          ),
+          "document-understanding-solution/%%CODE_VERSION%%/searchable-pdf-1.0.jar"
+        ),
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
         timeout: cdk.Duration.seconds(900)

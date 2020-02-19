@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target":"ES2018",
+    "target": "ES2018",
     "module": "commonjs",
     "lib": ["es2016", "es2017.object", "es2017.string"],
     "declaration": true,
@@ -16,8 +16,9 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization":false,
-    "typeRoots": ["./node_modules/@types"]
+    "strictPropertyInitialization": false,
+    "typeRoots": ["./node_modules/@types"],
+    "moduleResolution": "classic"
   },
   "exclude": ["cdk.out"]
 }
