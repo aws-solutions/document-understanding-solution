@@ -1,1 +1,21 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
 .DS_Store
+.env
+
+# Web app
+app/.next/
+app/out/
+
+# CDK
+cdk.out/

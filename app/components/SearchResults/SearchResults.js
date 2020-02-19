@@ -53,7 +53,7 @@ export default function SearchResults({
 
       {!!searchTotalDocuments && searchStatus !== 'pending' && (
         <div className={css.searchSummary}>
-          {`Found ${searchTotalMatches} ${
+          {`Found about ${searchTotalMatches} ${
             searchTotalMatches === 1 ? 'result' : 'results'
           } across ${searchTotalDocuments} ${
             searchTotalDocuments === 1 ? 'document' : 'documents'
@@ -85,7 +85,7 @@ export default function SearchResults({
                       </svg>
                       <h3>{name}</h3>
                       <p className={css.count}>
-                        {count} {count === 1 ? 'match' : 'matches'}
+                        {`About  ${count} `} {count === 1 ? 'match' : 'matches'}
                       </p>
                     </header>
                     <ul className={css.lines}>
