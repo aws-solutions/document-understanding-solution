@@ -56,7 +56,7 @@ This solutions will create 6 S3 buckets that need to be manually deleted when th
 - `yarn deploy:setup-samples` : push sample docs to s3
 - `yarn deploy:setup-user` : initiated prompts to set up a user
 - `yarn deploy:show` : displays the url of the client app
-- `yarn destroy` : tears down the CloudFormation backend stack
+- `yarn destroy` : tears down the CloudFormation backend and client stacks
 
 ### Development Deploy Workflow and stacknaming
 
@@ -98,7 +98,13 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 ## Delete demo application
 
-- Run: yarn destroy
+1. Direct Deploy:
+
+Run `yarn destroy`.
+
+2. CICD Deploy:
+
+Either run `aws cloudformation delete-stack --stack-name {CICD stack}`, or go to Cloudformation in the AWS Console and delete the stack that ends with "CICD". You will also have to go to CodeCommit in the console and manually delete the Repository that was created during the deploy.
 
 ## License
 
