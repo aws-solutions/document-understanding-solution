@@ -14,6 +14,7 @@ import {
   COMPREHEND_SERVICE
 } from '../../utils/dus-constants'
 
+
 import css from './EntitiesCheckbox.scss'
 
 export default function EntitiesCheckbox({
@@ -38,7 +39,7 @@ export default function EntitiesCheckbox({
       if (firstOnThisPage) firstOnThisPage.scrollIntoView()
       onHighlight(getMultiPageWordsBySearch(document, currentPageNumber, ['']))
       resetFormsonPage()
-      container.current.scrollIntoView()
+
     }
   }, [currentPageNumber, visible])
   let is_comprehend_medical = false

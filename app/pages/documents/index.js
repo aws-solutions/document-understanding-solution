@@ -4,6 +4,7 @@ import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { useInView } from 'react-intersection-observer'
 import { distanceInWordsToNow, distanceInWords } from 'date-fns'
+import Router from "next/router";
 
 import DocumentList from '../../components/DocumentList/DocumentList'
 import Loading from '../../components/Loading/Loading'
@@ -71,7 +72,7 @@ function Documents({
     isSentinelVisible,
   })
 
-  const files = documents.map(
+  let files = documents.map(
     ({ documentId, documentName, documentStatus, documentCreatedOn, documentCompletedOn }) => {
       const uploadedTime = distanceInWordsToNow(`${documentCreatedOn}Z`, { addSuffix: true })
       const processedTime =
@@ -86,6 +87,7 @@ function Documents({
       }
     }
   )
+
   const listDetailsClassNames = classNames(css.listDetails)
   const introClassNames = classNames(css.intro)
 

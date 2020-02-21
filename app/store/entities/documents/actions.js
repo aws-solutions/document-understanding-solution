@@ -265,3 +265,13 @@ export const clearRedactions = createAction(REDACT_DOCUMENT, documentId => {
     documentSchema
   ).entities;
 });
+
+export const clearHighlights = createAction(HIGHLIGHT_DOCUMENT, documentId => {
+  return normalize(
+    {
+      documentId,
+      highlights: []
+    },
+    documentSchema
+  ).entities;
+});
