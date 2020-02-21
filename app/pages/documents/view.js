@@ -16,6 +16,7 @@ import {
   addRedactions,
   clearRedactions,
   addHighlights,
+  clearHighlights
   
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
@@ -32,7 +33,7 @@ import {
   getDocumentKeyValuePairs,
   getPageTables,
   getPageWordsBySearch,
-  countDocumentTables,
+  getDocumentTables,
 } from '../../utils/document'
 
 import {
@@ -48,6 +49,7 @@ import KeyValueList from '../../components/KeyValueList/KeyValueList'
 import RawTextLines from '../../components/RawTextLines/RawTextLines'
 import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox'
 import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
+import TableResults from '../../components/TableResults/TableResults'
 
 Document.propTypes = {
   currentPageNumber: PropTypes.number,
@@ -107,11 +109,10 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const docData = useMemo(() => {
     const pairs = getDocumentKeyValuePairs(document)
-    const tables = countDocumentTables(document)
+    const tables = getDocumentTables(document)
     const lines = getDocumentLines(document)
     const entities = getDocumentEntityPairs(document, COMPREHEND_SERVICE)
     const medicalEntities = getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE)
-    
     return { pairs, tables, lines, entities , medicalEntities }
     // eslint-disable-next-line
     
@@ -121,12 +122,12 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   const pageData = useMemo(() => {
     const lines = getPageLines(document, currentPageNumber)
     const pairs = docData.pairs.filter(d => d.pageNumber === currentPageNumber)
-    const tables = getPageTables(document, currentPageNumber)
+    const tables = docData.tables.filter(d => d.pageNumber === currentPageNumber)
     const entities = docData.entities.filter(d => d.pageNumber === currentPageNumber)
     const medicalEntities = docData.medicalEntities.filter(d => d.pageNumber === currentPageNumber)
     return { lines, pairs, tables , entities , medicalEntities }
     // eslint-disable-next-line
-  }, [document, document.textractResponse,document.comprehendMedicalResponse, currentPageNumber, docData.pairs, docData.entities , docData.medicalEntities])
+  }, [document, document.textractResponse,document.comprehendMedicalResponse, currentPageNumber, docData.pairs, docData.entities , docData.medicalEntities , docData.tables])
 
   const [tab, selectTab] = useState('search')
 
@@ -359,7 +360,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text') && css.visible 
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible 
               )}
             >
               <KeyValueList
@@ -418,6 +419,15 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                  onDownload={downloadKV}
                  visible={tab === 'medical_entities'}
                  comprehendService={COMPREHEND_MEDICAL_SERVICE}
+                 document = {document}
+              />
+
+              <TableResults
+                 tables={docData.tables}
+                 pageCount={pageCount}
+                 currentPageNumber={currentPageNumber}
+                 onSwitchPage={switchPage}
+                 visible={tab === 'tables'}
                  document = {document}
               />
             </div>

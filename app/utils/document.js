@@ -351,10 +351,19 @@ export function getPageKeyValuePairs(document, pageNumber) {
   )
 }
 
-export function countDocumentTables(document) {
-  const tableBlocks = getDocumentBlocksByType(document, 'TABLE')
+export function getDocumentTables(document) {
+  const totalPages = getDocumentPageCount(document)
 
-  return tableBlocks.length
+  const blocksByPage = range(1, totalPages + 1).map(pageNumber => {
+    const blocks = getPageTables(document, pageNumber)
+    return blocks.map(b => {
+      return {
+        ...b,
+        pageNumber,
+      }
+    })
+  })
+  return (isEmpty(blocksByPage) ? [] : [].concat.apply([], blocksByPage))
 }
 
 /**
