@@ -94,17 +94,9 @@ class AppLayout extends App {
       <Container>
         <Provider store={store}>
           <Head>
-            <title>{pageTitle && `${pageTitle} | `}Textract Demo</title>
-            <link
-              rel="icon"
-              type="image/ico"
-              href="/static/images/favicon.ico"
-            />
-            <link
-              rel="shortcut icon"
-              type="image/ico"
-              href="/static/images/favicon.ico"
-            />
+            <title>{pageTitle?(`${pageTitle} | DUS `):`DUS`}</title>
+            <link rel="icon" type="image/ico" href="/static/images/favicon.ico" />
+            <link rel="shortcut icon" type="image/ico" href="/static/images/favicon.ico" />
             <link
               rel="apple-touch-icon"
               sizes="57x57"

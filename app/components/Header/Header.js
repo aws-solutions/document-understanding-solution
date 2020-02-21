@@ -29,30 +29,18 @@ function Header({ backHref, backTitle, heading }) {
         {backHref && (
           <Link href={backHref}>
             <a className={css.backButton}>
-              <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                <g
-                  fill="none"
-                  fillRule="evenodd"
-                  stroke="#f2f4f4"
-                  strokeLinecap="round"
-                  strokeWidth="2"
-                >
-                  <path d="m5 12 6 6" />
-                  <path d="m5 6 6 6" transform="matrix(-1 0 0 1 16 0)" />
-                  <path d="m5 12h14" transform="matrix(-1 0 0 1 24 0)" />
-                </g>
-              </svg>
-
               {backTitle}
             </a>
           </Link>
         )}
       </div>
 
-      <h1>{heading || '...'}</h1>
+      <h1>{heading}</h1>
+       
+      
 
-      <div className={css.button}>
-        <Button onClick={handleLogoutClick}>Log Out</Button>
+      <div className={css.logoutlink}>
+        <Button className={css.borderlessButton} inverted onClick={handleLogoutClick}>Log Out</Button>
       </div>
     </header>
   )

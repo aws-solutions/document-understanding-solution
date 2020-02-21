@@ -15,7 +15,8 @@ import {
   fetchDocument,
   addRedactions,
   clearRedactions,
-  addHighlights
+  addHighlights,
+  
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
 import { setHeaderProps } from '../../store/ui/actions'
@@ -47,7 +48,7 @@ import Button from '../../components/Button/Button'
 import KeyValueList from '../../components/KeyValueList/KeyValueList'
 import RawTextLines from '../../components/RawTextLines/RawTextLines'
 import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox'
-
+import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
 
 Document.propTypes = {
   currentPageNumber: PropTypes.number,
@@ -70,8 +71,7 @@ Document.getInitialProps = function({ query, store }) {
 
   const props = {
     backHref: '/documents',
-    backTitle: 'Collection',
-    pageTitle: documentName,
+    backTitle: 'Change Document',
   }
 
   return props
@@ -131,9 +131,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   useEffect(() => {
     dispatch(
       setHeaderProps(
-        reject(either(isNil, isEmpty), {
-          heading: documentName,
-        })
+        reject(either(isNil, isEmpty))
       )
     )
 
@@ -276,7 +274,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               selected={tab}
               onSelectTab={selectTab}
               items={[
-                { id: 'search', title: 'Overview' },
+                { id: 'search', title: 'Preview' },
                 { id: 'text', title: 'Raw Text' },
                 { id: 'kv', title: `${docData.pairs.length} Key-Value Pairs` },
                 { id: 'tables', title: `${docData.tables} Tables` },
@@ -288,7 +286,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             {track === 'redaction' &&
             document.redactions &&
             Object.keys(document.redactions).length ? (
-              <div>
+              <div className={css.downloadButtons}>
                 <Button inverted onClick={clearReds}>
                   Clear Redaction
                 </Button>
@@ -306,8 +304,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               >
                 Download Original
               </Button>
-
-              {track === 'search' ? (
+            {track === 'search' ? (
                 <Button link={{ download: 'searchable-pdf.pdf' }} href={searchablePdfURL}>
                   Download Searchable PDF
                 </Button>
@@ -350,7 +347,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities') && css.visible,
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search') && css.visible,
                 tab === 'text' && css.wide
               )}
             >
@@ -365,6 +362,12 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 onRedactAll={redactAllValues}
                 onDownload={downloadKV}
                 visible={tab === 'kv'}
+              />
+
+              <DocumentPreview
+                document={document}
+                pageCount={pageCount}
+                visible={tab === 'search'}
               />
 
               <RawTextLines

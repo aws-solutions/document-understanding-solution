@@ -40,10 +40,11 @@ $header-bg-color: color(gray, 90);
   }
 
   .backButton {
-    @include type-heading-h1(color(white));
     z-index: 3;
     text-decoration: none;
-    margin-left: 1em;
+    margin-left: 2em;
+    color: color(orange, 20);
+    font-weight: bold;
   }
 
   // Back button
@@ -67,9 +68,10 @@ $header-bg-color: color(gray, 90);
   }
 }
 
-.button {
+.logoutlink {
   font-size: 0;
   z-index: 3;
+  float: right;
 
   @include media('<=tabletPortrait') {
     margin-bottom: 0;
@@ -77,5 +79,14 @@ $header-bg-color: color(gray, 90);
 
   @include media('<=tabletPortraitSmall') {
     margin-top: 0.5rem;
+  }
+}
+.borderlessButton {
+  border-style: none;
+}
+.backButtons {
+  > * + * {
+    margin-left: rem(10);
+    margin-left: 10;
   }
 }
