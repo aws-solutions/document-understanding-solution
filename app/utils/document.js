@@ -282,6 +282,7 @@ export function resetFormsonPage() {
   }
 }
 
+
 /**
  * Get forms found in a page.
  * @param {Object} document A Comprehend/Comprehend Medical document object

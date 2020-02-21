@@ -144,7 +144,7 @@ function FileUpload({ dispatch }) {
           </p>
           {isReadyToUpload && (
             <p className={css.limits}>
-              Accepts JPG/PNG (max 5MB) and PDF (max 500 MB, max 3000 pages)
+              Accepts JPG/PNG (max 5MB) and PDF (max 150 MB, max 200 pages)
             </p>
           )}
 

@@ -19,7 +19,7 @@ import {
   
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
-import { setHeaderProps } from '../../store/ui/actions'
+import { setHeaderProps , setSelectedTrack} from '../../store/ui/actions'
 import { getSelectedTrackId } from '../../store/ui/selectors'
 import { setCurrentPageNumber, setSearchQuery } from '../../store/entities/meta/actions'
 import { getCleanSearchQuery, getCurrentPageNumber } from '../../store/entities/meta/selectors'
@@ -32,7 +32,6 @@ import {
   getDocumentKeyValuePairs,
   getPageTables,
   getPageWordsBySearch,
-  countDocumentKeyValuePairs,
   countDocumentTables,
 } from '../../utils/document'
 
@@ -97,6 +96,10 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     }
   }, [dispatch, id])
 
+  
+
+  
+  
   // Set search results data
   const wordsMatchingSearch = useMemo(() => {
     return getPageWordsBySearch(document, currentPageNumber, searchQuery)
@@ -127,6 +130,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const [tab, selectTab] = useState('search')
 
+  const [trackTab, selectTrack] = useState('search')
   // Update header props when we get a document response
   useEffect(() => {
     dispatch(
@@ -164,6 +168,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     },
     [currentPageNumber, dispatch, id]
   )
+
+
 
   const clearReds = useCallback(() => {
     dispatch(clearRedactions(id))
@@ -271,17 +277,20 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
         <>
           <div className={css.tabWrapper}>
             <Tabs
+              isTrackTab={false}
               selected={tab}
+              track={track}
               onSelectTab={selectTab}
               items={[
                 { id: 'search', title: 'Preview' },
                 { id: 'text', title: 'Raw Text' },
-                { id: 'kv', title: `${docData.pairs.length} Key-Value Pairs` },
-                { id: 'tables', title: `${docData.tables} Tables` },
+                { id: 'kv', title: `Key-Value Pairs` },
+                { id: 'tables', title: `Tables` },
                 { id: 'entities', title: `Entities` },
                 { id: 'medical_entities', title: `Medical Entities` },
               ]}
             />
+
 
             {track === 'redaction' &&
             document.redactions &&
@@ -291,24 +300,27 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                   Clear Redaction
                 </Button>
                 <Button className={css.downloadRedacted} onClick={downloadRedacted}>
-                  Download Redacted Version
+                ⬇ Redacted Doc
                 </Button>
               </div>
             ) : null}
 
-            <div className={css.downloadButtons}>
-              <Button
-                inverted
-                link={{ download: documentName.split('/').pop() }}
-                href={documentURL}
-              >
-                Download Original
-              </Button>
-            {track === 'search' ? (
-                <Button link={{ download: 'searchable-pdf.pdf' }} href={searchablePdfURL}>
-                  Download Searchable PDF
-                </Button>
-              ) : null}
+            
+              
+               
+              <div>
+               
+              <Tabs
+              isTrackTab={true}
+              selected={trackTab}
+              track={track}
+              onSelectTab={selectTrack}
+              items={[
+                { id: 'searchTrack', title: 'Search'},
+                { id: 'complianceTrack', title: 'Compliance'},
+                { id: 'workflowTrack', title: 'Workflow Automation'}
+              ]}
+            />
             </div>
           </div>
           <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
@@ -347,8 +359,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search') && css.visible,
-                tab === 'text' && css.wide
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text') && css.visible 
               )}
             >
               <KeyValueList
@@ -368,6 +379,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 document={document}
                 pageCount={pageCount}
                 visible={tab === 'search'}
+                track = {track}
               />
 
               <RawTextLines

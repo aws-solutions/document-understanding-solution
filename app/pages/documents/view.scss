@@ -87,6 +87,9 @@
   }
 }
 
+.trackBorder{
+  border-style: dotted;
+}
 .sidebar {
   transition: flex-basis 300ms ease, opacity 300ms ease;
   flex: 0 0 0px;
