@@ -34,7 +34,7 @@ export default function KeyValueList({
   return (
     <div className={cs(css.kvList, visible && css.visible)} ref={container}>
       <ul>
-        <h4>Key-Value Pairs</h4>
+    <h4>Key-Value Pairs : {kvPairs.length || 0} Found</h4>
         {groupWith((a, b) => a.pageNumber === b.pageNumber)(kvPairs).map((pairs, i) => (
           <Fragment key={pairs[0].pageNumber}>
             {pageCount > 1 ? (

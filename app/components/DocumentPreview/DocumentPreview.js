@@ -2,12 +2,14 @@ import React, { Fragment, useRef, useEffect , useMemo, useCallback } from 'react
 import { groupWith } from 'ramda'
 import cs from 'classnames'
 
-import css from '../EntitiesCheckbox/EntitiesCheckbox.scss'
+import Button from '../Button/Button'
+import css from './DocumentPreview.scss'
 
 
 export default function DocumentPreview({
   pageCount,
   visible,
+  track,
   document
 }) {
   const container = useRef()
@@ -21,17 +23,37 @@ export default function DocumentPreview({
   
   
   return (
-    <div className={cs(css.entityList, visible && css.visible,)} ref={container}>
+     <div className={cs(css.entityList, visible && css.visible)} ref={container}>
       <ul>
-        <h4>Document Details</h4>
-          <Fragment >
-            <p> File Name : {document.documentName}</p>
-            <p> Total pages : {pageCount}</p>
+        <h4>File Details</h4>
+          <Fragment key={document.documentName}>
+           <h5>Name : {document.documentName}</h5>
+           <h5>Total Page: {pageCount}</h5>
           </Fragment>
+      
+    
       </ul>
+    
+        <footer className={css.actions}>
 
-      <footer className={css.actions}>
-      </footer>
+            {track === 'search' ? (
+                  <div className={css.downloadButtons}>
+                  <Button link={{ download: 'searchable-pdf.pdf' }} href={document.searchablePdfURL}>
+                    ⬇ Searchable PDF
+                  </Button>
+                </div>) : null}
+
+                <div className={css.downloadButtons}>
+              <Button
+                inverted
+                link={{ download: document.documentName.split('/').pop() }}
+                href={document.documentURL}
+              >
+                ⬇ Original Doc
+              </Button>
+            </div>
+
+        </footer>
     </div>
   )
 }

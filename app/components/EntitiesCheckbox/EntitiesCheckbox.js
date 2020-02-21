@@ -38,19 +38,23 @@ export default function EntitiesCheckbox({
       if (firstOnThisPage) firstOnThisPage.scrollIntoView()
       onHighlight(getMultiPageWordsBySearch(document, currentPageNumber, ['']))
       resetFormsonPage()
+      container.current.scrollIntoView()
     }
   }, [currentPageNumber, visible])
   let is_comprehend_medical = false
+  
 
   if (comprehendService == COMPREHEND_MEDICAL_SERVICE)is_comprehend_medical=true
 
+  
   if (!entities.length) {
     return <p className={css.noEntity}>No {is_comprehend_medical? (`Medical `):null}Entities detected</p>
   }
   return (
+
     <div className={cs(css.entityList, visible && css.visible,)} ref={container}>
       <ul>
-        <h4>{is_comprehend_medical? (`Medical `):null}Entities</h4>
+        <h4>{is_comprehend_medical? (`Medical `):null}Entities: {entities.length || 0} Found</h4>
         {groupWith((a, b) => a.pageNumber === b.pageNumber)(entities).map((pairs, i) => (
           <Fragment key={pairs[0].pageNumber}>
             {pageCount > 1 ? (
