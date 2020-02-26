@@ -2,6 +2,8 @@ import json
 import os
 from helper import FileHelper, AwsHelper
 
+ASYNC_JOB_TIMEOUT_SECONDS = 1800
+SYNC_JOB_TIMEOUT_SECONDS = 300
 def postMessage(client, qUrl, jsonMessage,delaySeconds=0):
 
     message = json.dumps(jsonMessage)
@@ -32,10 +34,10 @@ def processRequest(request):
 
     if(ext and ext in ["jpg", "jpeg", "png"]):
         qUrl = request['syncQueueUrl']
-        errorHandlerTimeoutSeconds = 300
+        errorHandlerTimeoutSeconds = SYNC_JOB_TIMEOUT_SECONDS
     elif (ext in ["pdf"]):
         qUrl = request['asyncQueueUrl']
-        errorHandlerTimeoutSeconds = 1200
+        errorHandlerTimeoutSeconds = ASYNC_JOB_TIMEOUT_SECONDS
 
     if(qUrl):
         features = ["Text", "Forms", "Tables"]
