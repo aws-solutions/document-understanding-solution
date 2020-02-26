@@ -14,7 +14,7 @@
     "Firefox ESR"
   ],
   "stack": {
-    "name": "DUS",
+    "name": "V081TextractDemo",
     "region": "us-west-2"
   },
   "scripts": {
