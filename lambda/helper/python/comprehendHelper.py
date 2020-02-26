@@ -97,11 +97,11 @@ class ComprehendHelper:
                 comprehendEntities[pageStartIndex + i] = response['ResultList'][i]
         
         except ClientError as e:
-            print( "comprehendMedicalDetectEntitiesSync ClientError: %s" % e )
+            print( "batchComprehendDetectEntitiesSync ClientError: %s" % e )
         except Exception as e:
-            print( "comprehendMedicalDetectEntitiesSync Exception: %s" % e )
+            print( "batchComprehendDetectEntitiesSync Exception: %s" % e )
         except:
-            print( "comprehendMedicalDetectEntitiesSync exception")
+            print( "batchComprehendDetectEntitiesSync exception")
 
 
     #
@@ -163,11 +163,11 @@ class ComprehendHelper:
             mutex.release()
         
         except ClientError as e:
-            print( "comprehendMedicalDetectEntitiesSync ClientError: %s" % e )
+            print( "comprehendMedicalDetectICD10Sync ClientError: %s" % e )
         except Exception as e:
-            print( "comprehendMedicalDetectEntitiesSync Exception: %s" % e )
+            print( "comprehendMedicalDetectICD10Sync Exception: %s" % e )
         except:
-            print( "comprehendMedicalDetectEntitiesSync exception")
+            print( "comprehendMedicalDetectICD10Sync exception")
     
     
     #
@@ -314,8 +314,8 @@ class ComprehendHelper:
     #
     #  Call this function from the sync processor or the job result processor to
     #  feed Textract results to Comprehend and ComprehendMedical.  This function will
-    #  create comprehenEntities.json and comprehendMedicalntities.json in S3 in the
-    #  document folder
+    #  create comprehenEntities.json, comprehendMedicalntities.json and comprehendMedicalICD10.json
+    #  in S3 in the document folder
     #
     #   bucket:                     bucket name i.e. "v081textractdemo-document-s3-bucket-v4glarbidueb1lggzu2k3f"
     #   textractResultsFilename:    currently this is "response.json" in the document folder
@@ -330,10 +330,8 @@ class ComprehendHelper:
                           maxPages=200):
 
         
-        # this is a limit of the Comprehend batch API call
+        # Comprehend batch API call has a limit of 25
         PAGES_PER_BATCH = 15
-        
-        # create dummy results files?
         
         # get textract results from S3
         textractFile = S3Helper.readFromS3(bucket, documentPath + textractResultsFilename)
@@ -360,14 +358,14 @@ class ComprehendHelper:
         if numOfPages % PAGES_PER_BATCH != 0:
             numOfBatches += 1
 
-        # to store comprehend and medical API calls results
+        # to store comprehend and medical API calls results.
         comprehendEntities = [None] * numOfPages
         comprehendMedicalEntities = [None] * numOfPages
         comprehendMedicalICD10 = [None] * numOfPages
 
         pagesProcessed = 0
 
-        # process pages by batches of 25
+        # process pages by batch
         for batch in range(0, numOfBatches):
 
             pageStartIndex = batch * PAGES_PER_BATCH
@@ -433,19 +431,19 @@ class ComprehendHelper:
             # increment the number of pages processed for the next batch
             pagesProcessed += pagesToProcess
 
-        # process comprehend data, create the results file in S3
+        # process comprehend data, create the entities result file in S3
         self.processComprehendEntities(comprehendEntities,
                                        numOfPages,
                                        bucket,
                                        documentPath)
                                   
-        # process comprehend medical data, create the results file in S3
+        # process comprehend medical data, create the entities result file in S3
         self.processComprehendMedicalEntities(comprehendMedicalEntities,
                                               numOfPages,
                                               bucket,
                                               documentPath)
 
-         
+        # process comprehend medical data, create the ICD10 result file in S3
         self.processComprehendMedicalICD10(comprehendMedicalICD10,
                                            numOfPages,
                                            bucket,
