@@ -2,13 +2,14 @@ import json
 import os
 from helper import FileHelper, AwsHelper
 
-def postMessage(client, qUrl, jsonMessage):
+def postMessage(client, qUrl, jsonMessage,delaySeconds=0):
 
     message = json.dumps(jsonMessage)
 
     client.send_message(
         QueueUrl=qUrl,
-        MessageBody=message
+        MessageBody=message,
+        DelaySeconds = delaySeconds
     )
 
     print("Submitted message to queue: {}".format(message))
@@ -22,6 +23,7 @@ def processRequest(request):
     documentId = request["documentId"]
     bucketName = request["bucketName"]
     objectName = request["objectName"]
+    jobErrorHandlerQueueUrl = request['errorHandlerQueueUrl']
 
     print("Input Object: {}/{}".format(bucketName, objectName))
 
@@ -30,8 +32,10 @@ def processRequest(request):
 
     if(ext and ext in ["jpg", "jpeg", "png"]):
         qUrl = request['syncQueueUrl']
+        errorHandlerTimeoutSeconds = 300
     elif (ext in ["pdf"]):
         qUrl = request['asyncQueueUrl']
+        errorHandlerTimeoutSeconds = 1200
 
     if(qUrl):
         features = ["Text", "Forms", "Tables"]
@@ -44,11 +48,16 @@ def processRequest(request):
         client = AwsHelper().getClient('sqs')
         postMessage(client, qUrl, jsonMessage)
 
+        jsonMessage = {
+            'documentId' : documentId
+        }
+        postMessage(client, jobErrorHandlerQueueUrl, jsonMessage , errorHandlerTimeoutSeconds)
+
     output = "Completed routing for documentId: {}, object: {}/{}".format(documentId, bucketName, objectName)
 
     print(output)
 
-def processRecord(record, syncQueueUrl, asyncQueueUrl):
+def processRecord(record, syncQueueUrl, asyncQueueUrl,errorHandlerQueueUrl):
     
     newImage = record["dynamodb"]["NewImage"]
     
@@ -75,7 +84,7 @@ def processRecord(record, syncQueueUrl, asyncQueueUrl):
         request["objectName"] = objectName
         request['syncQueueUrl'] = syncQueueUrl
         request['asyncQueueUrl'] = asyncQueueUrl
-
+        request['errorHandlerQueueUrl']= errorHandlerQueueUrl
         processRequest(request)
 
 def lambda_handler(event, context):
@@ -86,7 +95,7 @@ def lambda_handler(event, context):
 
         syncQueueUrl = os.environ['SYNC_QUEUE_URL']
         asyncQueueUrl = os.environ['ASYNC_QUEUE_URL']
-
+        errorHandlerQueueUrl = os.environ['ERROR_HANDLER_QUEUE_URL']
         if("Records" in event and event["Records"]):
             for record in event["Records"]:
                 try:
@@ -94,7 +103,7 @@ def lambda_handler(event, context):
 
                     if("eventName" in record and record["eventName"] == "INSERT"):
                         if("dynamodb" in record and record["dynamodb"] and "NewImage" in record["dynamodb"]):
-                            processRecord(record, syncQueueUrl, asyncQueueUrl)
+                            processRecord(record, syncQueueUrl, asyncQueueUrl,errorHandlerQueueUrl)
 
                 except Exception as e:
                     print("Faild to process record. Exception: {}".format(e))
