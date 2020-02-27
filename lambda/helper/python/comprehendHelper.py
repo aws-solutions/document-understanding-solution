@@ -186,7 +186,7 @@ class ComprehendHelper:
         for p in range(0, numOfPages):
             page = {}
             # page number start at 1 but list of page data starts at 0
-            page['Page'] = comprehendEntities[p]['Index'] + 1
+            page['Page'] = p + 1
             page['Entities'] = []
             
             # to detect and skip duplicates
