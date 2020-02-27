@@ -3,7 +3,7 @@ import os
 from helper import FileHelper, AwsHelper
 
 ASYNC_JOB_TIMEOUT_SECONDS = 1800
-SYNC_JOB_TIMEOUT_SECONDS = 300
+SYNC_JOB_TIMEOUT_SECONDS = 90
 def postMessage(client, qUrl, jsonMessage,delaySeconds=0):
 
     message = json.dumps(jsonMessage)
