@@ -28,7 +28,7 @@ export default function TableResults({
   }, [currentPageNumber, visible])
 
 
-  if (!tables.length) {
+  if (!tables.length&& visible) {
     return <p className={css.noTable}>No Tables detected</p>
   }
   console.log(pageCount)

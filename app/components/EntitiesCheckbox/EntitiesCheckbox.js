@@ -48,7 +48,7 @@ export default function EntitiesCheckbox({
   if (comprehendService == COMPREHEND_MEDICAL_SERVICE)is_comprehend_medical=true
 
   
-  if (!entities.length) {
+  if (!entities.length&& visible) {
     return <p className={css.noEntity}>No {is_comprehend_medical? (`Medical `):null}Entities detected</p>
   }
   return (

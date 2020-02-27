@@ -27,8 +27,8 @@ export default function KeyValueList({
     }
   }, [currentPageNumber, visible])
 
-  if (!kvPairs.length) {
-    return <p className={css.noKv}>No Key-Value Pairs detected</p>
+  if (!kvPairs.length && visible ) {
+    return <p className={cs(css.noKv)}>No Key-Value Pairs detected</p>
   }
 
   return (
