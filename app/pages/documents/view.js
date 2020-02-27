@@ -317,7 +317,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               track={track}
               onSelectTab={selectTrack}
               items={[
-                { id: 'searchTrack', title: 'Search'},
+                { id: 'searchTrack', title: 'Discovery'},
                 { id: 'complianceTrack', title: 'Compliance'},
                 { id: 'workflowTrack', title: 'Workflow Automation'}
               ]}
