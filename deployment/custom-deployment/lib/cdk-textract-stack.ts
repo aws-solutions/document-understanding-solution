@@ -169,9 +169,12 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("ElasticSearchCluster"),
       {
         elasticsearchVersion: "6.5",
-        ebsOptions: {
+        elasticsearchClusterConfig: {
+          instanceType: "t2.medium.elasticsearch"
+        },
+          ebsOptions: {
           ebsEnabled: true,
-          volumeSize: 30,
+          volumeSize: 20,
           volumeType: "gp2"
         }
       }
