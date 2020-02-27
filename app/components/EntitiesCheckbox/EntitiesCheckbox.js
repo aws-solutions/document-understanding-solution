@@ -27,7 +27,8 @@ export default function EntitiesCheckbox({
   onHighlight,
   showRedaction,
   onRedactAll,
-  onDownload,
+  onDownloadPrimary,
+  onDownloadSecondary,
   comprehendService,
   document
 }) {
@@ -114,6 +115,15 @@ export default function EntitiesCheckbox({
       </ul>
 
       <footer className={css.actions}>
+      <div className={css.downloadButtons}>
+      <Button  onClick={onDownloadPrimary}>
+      ⬇ {is_comprehend_medical? (`Medical `):null} Entities
+      </Button></div>
+      {is_comprehend_medical?
+      ( <div className={css.downloadButtons}><Button className={css.downloadButton} onClick={onDownloadSecondary}>
+            ⬇ ICD-10 Ontologies
+        </Button></div>
+      ):null}
       </footer>
     </div>
   )

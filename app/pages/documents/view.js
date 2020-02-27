@@ -151,6 +151,30 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     window.open(url)
   }, [currentPageNumber, document])
 
+  const downloadEntities = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}comprehendEntities.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
+  const downloadMedicalEntities = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}comprehendMedicalEntities.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
+  const downloadMedicalICD10Ontologies = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}comprehendMedicalICD10.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
   const redactMatches = useCallback(async () => {
     dispatch(addRedactions(id, currentPageNumber, wordsMatchingSearch))
     dispatch(setSearchQuery(''))
@@ -404,6 +428,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                  onDownload={downloadKV}
                  visible={tab === 'entities'}
                  comprehendService={COMPREHEND_SERVICE}
+                 onDownloadPrimary = {downloadEntities}
+                 onDownloadSecondary = {null}
                  document = {document}
               />
 
@@ -416,7 +442,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                  onSwitchPage={switchPage}
                  onRedact={redactEntityMatches}
                  onRedactAll={redactAllValues}
-                 onDownload={downloadKV}
+                 onDownloadPrimary={downloadEntities}
+                 onDownloadSecondary = {downloadMedicalICD10Ontologies}
                  visible={tab === 'medical_entities'}
                  comprehendService={COMPREHEND_MEDICAL_SERVICE}
                  document = {document}
