@@ -19,6 +19,11 @@ import {
   memoizeWith,
 } from 'ramda'
 
+import {
+  COMPREHEND_MEDICAL_SERVICE,
+  COMPREHEND_SERVICE
+} from './dus-constants'
+
 // Location of Blocks within a document object
 const lensDocumentBlocks = lensPath(['textractResponse', 'Blocks'])
 
@@ -42,6 +47,7 @@ function getPage(document, pageNumber) {
   return isEmpty(pageBlocks) ? {} : pageBlocks[0]
 }
 
+
 /**
  * Get all Blocks for a given document.
  * @param {Object} document A Textract document object
@@ -53,7 +59,7 @@ function getDocumentBlocks(document) {
   const combinedChunks =
     isChunkedResponse &&
     document.textractResponse.reduce((accumulator, { Blocks }) => accumulator.concat(Blocks), [])
-  return isChunkedResponse ? combinedChunks : view(lensDocumentBlocks, document) || []
+    return isChunkedResponse ? combinedChunks : view(lensDocumentBlocks, document) || []
 }
 
 /**
@@ -84,7 +90,6 @@ const memoizedGetIndexedBlocks = memoizeWith(
  */
 function getDocumentBlocksByIds(document, ids) {
   const indexedBlocks = memoizedGetIndexedBlocks(document)
-
   return ids.reduce((accumulator, current) => {
     return indexedBlocks[current] ? [...accumulator, indexedBlocks[current]] : accumulator
   }, [])
@@ -126,6 +131,8 @@ function getPageChildrenByType(document, pageNumber, type) {
 
   return filteredChildren
 }
+
+
 
 /**
  * Get test from a list of LINE Blocks
@@ -210,7 +217,6 @@ export function getDocumentKeyValuePairs(document) {
 
   const blocksByPage = range(1, totalPages + 1).map(pageNumber => {
     const blocks = getPageKeyValuePairs(document, pageNumber)
-
     return blocks.map(b => {
       return {
         ...b,
@@ -218,8 +224,86 @@ export function getDocumentKeyValuePairs(document) {
       }
     })
   })
-
   return flatten(blocksByPage)
+}
+
+/**
+ * Get entities found in a page.
+ * @param {Object} document A Comprehend document object
+ * @param {String} comprehendService The comprehend Service being used : Comprehend/ComprehendMedical
+ * @return {Array}
+ */
+export function getDocumentEntityPairs(document,comprehendService) {
+  const totalPages = getDocumentPageCount(document)
+  let MERGE_KEY = null
+  if (comprehendService == COMPREHEND_MEDICAL_SERVICE){
+    MERGE_KEY = 'Category'
+  }else{
+    MERGE_KEY = 'Type'
+  }
+  const blocksByPage = range(1, totalPages + 1).map(pageNumber => {
+    const blocks = getPageEntityPairs(document, pageNumber,comprehendService)
+    const entity_array = consolidateDictionaryList(blocks["Entities"],MERGE_KEY,"Text")
+    return entity_array.map(b => {
+      return{
+      ...b,
+      pageNumber,
+    }})
+  
+  })
+  return (isEmpty(blocksByPage) ? [] : [].concat.apply([], blocksByPage))
+}
+
+export function consolidateDictionaryList(dictionaryList, mergeKey , mergeValue){
+  let output = []
+  let entity_object = {}
+  let processing_dict = {}
+  dictionaryList.forEach(function(item) {
+    if (!(item[mergeKey] in processing_dict)){
+      processing_dict[item[mergeKey]] = new Set()
+    }
+    processing_dict[item[mergeKey]].add(item[mergeValue])
+});
+  const entityDictKeys = Object.keys(processing_dict)
+  for (const key of entityDictKeys) {
+    entity_object["entity"] = key
+    entity_object["value"] =  [...processing_dict[key]]
+    output.push(entity_object)
+    entity_object = {}
+  }
+  
+  return output
+}
+
+export function resetFormsonPage() {
+  let formsCollection=document.forms
+  for(let i=0;i<formsCollection.length;i++){
+  formsCollection[i].reset();
+  }
+}
+
+
+/**
+ * Get forms found in a page.
+ * @param {Object} document A Comprehend/Comprehend Medical document object
+ * @param {Number} pageNumber The page number to get results for
+ * @param {String} comprehendService The comprehend service used : Comprehend/ComprehendMedical
+ * @return {Array}
+ */
+export function getPageEntityPairs(document, pageNumber,comprehendService) {
+  // Get all blocks of Entities for a PAGE
+  let blocks = []
+  if (comprehendService == COMPREHEND_MEDICAL_SERVICE){
+   blocks = document.comprehendMedicalRespone["results"]
+  }else{
+   blocks = document.comprehendRespone["results"]  
+  }
+  const pageBlocks= blocks.filter(
+    ({ Entities, Page }) =>
+      // Single page docs only have one PAGE, and it doesn't include a Page prop
+    Page === pageNumber 
+  )
+  return (isEmpty(pageBlocks) ? {} : pageBlocks[0])
 }
 
 /**
@@ -267,10 +351,19 @@ export function getPageKeyValuePairs(document, pageNumber) {
   )
 }
 
-export function countDocumentTables(document) {
-  const tableBlocks = getDocumentBlocksByType(document, 'TABLE')
+export function getDocumentTables(document) {
+  const totalPages = getDocumentPageCount(document)
 
-  return tableBlocks.length
+  const blocksByPage = range(1, totalPages + 1).map(pageNumber => {
+    const blocks = getPageTables(document, pageNumber)
+    return blocks.map(b => {
+      return {
+        ...b,
+        pageNumber,
+      }
+    })
+  })
+  return (isEmpty(blocksByPage) ? [] : [].concat.apply([], blocksByPage))
 }
 
 /**
@@ -313,6 +406,15 @@ export function getPageTables(document, pageNumber) {
   return tables
 }
 
+
+export function getMultiPageWordsBySearch(document,pageNumber,wordList){
+  let output = []
+  wordList.forEach(function(item) {
+    output.push(...getPageWordsBySearch(document, pageNumber, item))
+  })
+  return output
+}
+
 /**
  * Get WORD blocks that match a search query on a page.
  * @param {Object} document A Textract document object
@@ -330,6 +432,8 @@ export function getPageWordsBySearch(document, pageNumber, searchQuery) {
 
   const searchQueryRegex = RegExp(escapeRegex(searchQuery), 'i')
 
+ 
+  
   // Get all the LINE Blocks for a PAGE that match the searchQuery
   const lines = getPageChildrenByType(document, pageNumber, 'LINE')
   const matchingLines = lines.filter(({ Text }) => searchQueryRegex.test(Text))
@@ -342,7 +446,7 @@ export function getPageWordsBySearch(document, pageNumber, searchQuery) {
     const wordBlocks = sortWith([ascend(path(['Geometry', 'BoundingBox', 'Left']))])(
       getDocumentBlocksByIds(document, wordIds)
     )
-
+    
     const wordText = wordBlocks.map(word => word.Text).join(' ')
 
     const matchRegexp = RegExp(escapeRegex(searchQueryWords.join(' ')), 'ig')
@@ -445,6 +549,5 @@ export function getPageWordsBySearch(document, pageNumber, searchQuery) {
 
     return accumulator.concat(matchingWordBoundsCombined)
   }, [])
-
   return matchingWords
 }

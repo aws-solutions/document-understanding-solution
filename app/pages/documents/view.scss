@@ -46,7 +46,7 @@
 }
 
 .downloadRedacted {
-  margin-left: rem(10);
+  margin-left: rem(5);
 }
 
 .content {
@@ -87,6 +87,9 @@
   }
 }
 
+.trackBorder{
+  border-style: dotted;
+}
 .sidebar {
   transition: flex-basis 300ms ease, opacity 300ms ease;
   flex: 0 0 0px;

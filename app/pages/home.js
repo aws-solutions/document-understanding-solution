@@ -19,7 +19,7 @@ function Home({ dispatch, tracks }) {
   const handleCardClick = useCallback(
     id => {
       dispatch(setSelectedTrack(id))
-      Router.push('/select')
+      Router.push('/documents')
     },
     [dispatch]
   )

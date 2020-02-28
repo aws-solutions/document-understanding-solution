@@ -169,9 +169,12 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("ElasticSearchCluster"),
       {
         elasticsearchVersion: "6.5",
-        ebsOptions: {
+        elasticsearchClusterConfig: {
+          instanceType: "t2.medium.elasticsearch"
+        },
+          ebsOptions: {
           ebsEnabled: true,
-          volumeSize: 30,
+          volumeSize: 20,
           volumeType: "gp2"
         }
       }
@@ -225,6 +228,11 @@ export class CdkTextractStack extends cdk.Stack {
     });
 
     const asyncJobsQueue = new sqs.Queue(this, this.resourceName("AsyncJobs"), {
+      visibilityTimeout: cdk.Duration.seconds(30),
+      retentionPeriod: cdk.Duration.seconds(1209600)
+    });
+
+    const jobErrorHandlerQueue = new sqs.Queue(this, this.resourceName("jobErrorHandler"), {
       visibilityTimeout: cdk.Duration.seconds(30),
       retentionPeriod: cdk.Duration.seconds(1209600)
     });
@@ -436,7 +444,8 @@ export class CdkTextractStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(300),
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
-          ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl
+          ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
+          ERROR_HANDLER_QUEUE_URL : jobErrorHandlerQueue.queueUrl
         }
       }
     );
@@ -454,6 +463,35 @@ export class CdkTextractStack extends cdk.Stack {
     documentsTable.grantReadWriteData(documentProcessor);
     syncJobsQueue.grantSendMessages(documentProcessor);
     asyncJobsQueue.grantSendMessages(documentProcessor);
+    jobErrorHandlerQueue.grantSendMessages(documentProcessor);
+    //------------------------------------------------------------
+    
+    const jobErrorHandler = new lambda.Function(
+      this,
+      this.resourceName("JobErrorHandler"),
+      {
+        runtime: lambda.Runtime.PYTHON_3_7,
+        code: lambda.Code.fromAsset("lambda/joberrorhandler"),
+        handler: "lambda_function.lambda_handler",
+        timeout: cdk.Duration.seconds(300),
+        environment: {
+          DOCUMENTS_TABLE: documentsTable.tableName
+        }
+      }
+    );
+    jobErrorHandler.addLayers(helperLayer);
+
+    //Trigger
+    jobErrorHandler.addEventSource(
+      new SqsEventSource(jobErrorHandlerQueue, {
+        batchSize: 1
+      })
+    );
+
+    //Permissions
+    documentsTable.grantReadWriteData(jobErrorHandler);
+
+
 
     //------------------------------------------------------------
     // PDF Generator
