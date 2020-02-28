@@ -7,6 +7,8 @@ from helper import S3Helper
 # current service limit of Comprehend per page
 MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
 
+# Comprehend batch API call has a limit of 25
+PAGES_PER_BATCH = 15
 
 class ComprehendHelper:
 
@@ -329,9 +331,6 @@ class ComprehendHelper:
                           documentPath,
                           maxPages=200):
 
-        
-        # Comprehend batch API call has a limit of 25
-        PAGES_PER_BATCH = 15
         
         # get textract results from S3
         textractFile = S3Helper.readFromS3(bucket, documentPath + textractResultsFilename)
