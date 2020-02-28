@@ -4,6 +4,9 @@ import json
 import threading
 from helper import S3Helper
 
+# current service limit of Comprehend per page
+MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
+
 
 class ComprehendHelper:
 
@@ -21,9 +24,6 @@ class ComprehendHelper:
                            rawPages,
                            numOfPages):
 
-        # current service limit of Comprehend per page
-        MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
-        
         # the textract results json file in S3 has a peculiar structure of
         # top-level list of block lists, each appear to have a size limit of 1000.
         # A new one is creatd and appended when the previous blocklist reaches that limit.
@@ -33,7 +33,7 @@ class ComprehendHelper:
             for block in blocklist['Blocks']:
         
                 # PAGE block type have no text, so skip those
-                if block['BlockType'] != 'PAGE':
+                if block['BlockType'] == 'LINE':
                     
                     # page numbers start at 1 in Textract for png, however
                     # for png there are no page reference since it is a single
