@@ -45,7 +45,7 @@ class ComprehendHelper:
                     else:
                         pageNumber = block['Page']
                     
-                    # skip pags above limit
+                    # skip pages above limit
                     if pageNumber > numOfPages:
                         continue
                     
