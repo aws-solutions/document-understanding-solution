@@ -1,0 +1,66 @@
+@import '../../styles/shared/index';
+
+
+.tableList {
+  @include absolute(0, 0, 0, 0);
+  padding: rem(10) rem(20);
+  margin: 0;
+  overflow: auto;
+  transition: opacity 200ms ease;
+  opacity: 0;
+  pointer-events: none;
+
+  > ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.ev {
+  padding: rem(10) 0;
+  margin-bottom: rem(10);
+  opacity: 0.4;
+  position: relative;
+
+  &.onThisPage {
+    opacity: 1;
+  }
+
+  h5 {
+    @include type-body-primary;
+    margin: 0;
+  }
+
+  p {
+    @include type-body-secondary;
+    margin: 0;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  > * {
+    margin: rem(10) 0;
+  }
+}
+
+.noTable {
+  margin: rem(10);
+}
+
+.pageSeparator {
+  font-size: .8em;
+  text-transform: uppercase;
+  padding-top: 1em;
+}
+
+

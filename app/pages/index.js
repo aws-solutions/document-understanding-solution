@@ -10,7 +10,7 @@ import css from "./login.scss";
 
 Login.getInitialProps = function() {
   return {
-    pageTitle: "Amazon Textract"
+    pageTitle: "Document Understanding Solution"
   };
 };
 

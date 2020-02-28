@@ -27,14 +27,14 @@ export default function KeyValueList({
     }
   }, [currentPageNumber, visible])
 
-  if (!kvPairs.length) {
-    return <p className={css.noKv}>No Key-Value Pairs detected</p>
+  if (!kvPairs.length && visible ) {
+    return <p className={cs(css.noKv)}>No Key-Value Pairs detected</p>
   }
 
   return (
     <div className={cs(css.kvList, visible && css.visible)} ref={container}>
       <ul>
-        <h4>Key-Value Pairs</h4>
+    <h4>Key-Value Pairs : {kvPairs.length || 0} Found</h4>
         {groupWith((a, b) => a.pageNumber === b.pageNumber)(kvPairs).map((pairs, i) => (
           <Fragment key={pairs[0].pageNumber}>
             {pageCount > 1 ? (

@@ -15,9 +15,12 @@ import {
   fetchDocument,
   addRedactions,
   clearRedactions,
+  addHighlights,
+  clearHighlights
+  
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
-import { setHeaderProps } from '../../store/ui/actions'
+import { setHeaderProps , setSelectedTrack} from '../../store/ui/actions'
 import { getSelectedTrackId } from '../../store/ui/selectors'
 import { setCurrentPageNumber, setSearchQuery } from '../../store/entities/meta/actions'
 import { getCleanSearchQuery, getCurrentPageNumber } from '../../store/entities/meta/selectors'
@@ -26,17 +29,27 @@ import {
   getDocumentPageCount,
   getPageLines,
   getDocumentLines,
+  getDocumentEntityPairs,
   getDocumentKeyValuePairs,
   getPageTables,
   getPageWordsBySearch,
-  countDocumentKeyValuePairs,
-  countDocumentTables,
+  getDocumentTables,
 } from '../../utils/document'
+
+import {
+  COMPREHEND_MEDICAL_SERVICE,
+  COMPREHEND_SERVICE
+} from '../../utils/dus-constants'
+
+
 
 import css from './view.scss'
 import Button from '../../components/Button/Button'
 import KeyValueList from '../../components/KeyValueList/KeyValueList'
 import RawTextLines from '../../components/RawTextLines/RawTextLines'
+import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox'
+import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
+import TableResults from '../../components/TableResults/TableResults'
 
 Document.propTypes = {
   currentPageNumber: PropTypes.number,
@@ -59,8 +72,7 @@ Document.getInitialProps = function({ query, store }) {
 
   const props = {
     backHref: '/documents',
-    backTitle: 'Collection',
-    pageTitle: documentName,
+    backTitle: 'Change Document',
   }
 
   return props
@@ -69,10 +81,11 @@ Document.getInitialProps = function({ query, store }) {
 function Document({ currentPageNumber, dispatch, id, document, pageTitle, searchQuery, track }) {
   // TODO: Ensure id corresponds to a valid resource, otherwise 404
   // e.g. /documents/export and /documents/view should fail
-  const isDocumentFetched = !!document.textractResponse
+  const isDocumentFetched = !!document.textractResponse && !!document.comprehendMedicalResponse && !!document.comprehendResponse
   const { status } = useFetchDocument(dispatch, id, isDocumentFetched)
   const pageCount = getDocumentPageCount(document)
   const { documentName, documentURL, searchablePdfURL } = document
+
 
   // Reset currentPageNumber on mount
   useEffect(() => {
@@ -85,6 +98,10 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     }
   }, [dispatch, id])
 
+  
+
+  
+  
   // Set search results data
   const wordsMatchingSearch = useMemo(() => {
     return getPageWordsBySearch(document, currentPageNumber, searchQuery)
@@ -92,31 +109,34 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const docData = useMemo(() => {
     const pairs = getDocumentKeyValuePairs(document)
-    const tables = countDocumentTables(document)
+    const tables = getDocumentTables(document)
     const lines = getDocumentLines(document)
-
-    return { pairs, tables, lines }
+    const entities = getDocumentEntityPairs(document, COMPREHEND_SERVICE)
+    const medicalEntities = getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE)
+    return { pairs, tables, lines, entities , medicalEntities }
     // eslint-disable-next-line
-  }, [document, document.textractResponse])
+    
+  }, [document, document.textractResponse ,document.medicalComprehendResponse, document.comprehendResponse])
 
   // Set the paged content for each tab
   const pageData = useMemo(() => {
     const lines = getPageLines(document, currentPageNumber)
     const pairs = docData.pairs.filter(d => d.pageNumber === currentPageNumber)
-    const tables = getPageTables(document, currentPageNumber)
-    return { lines, pairs, tables }
+    const tables = docData.tables.filter(d => d.pageNumber === currentPageNumber)
+    const entities = docData.entities.filter(d => d.pageNumber === currentPageNumber)
+    const medicalEntities = docData.medicalEntities.filter(d => d.pageNumber === currentPageNumber)
+    return { lines, pairs, tables , entities , medicalEntities }
     // eslint-disable-next-line
-  }, [document, document.textractResponse, currentPageNumber, docData.pairs])
+  }, [document, document.textractResponse,document.comprehendMedicalResponse, currentPageNumber, docData.pairs, docData.entities , docData.medicalEntities , docData.tables])
 
   const [tab, selectTab] = useState('search')
 
+  const [trackTab, selectTrack] = useState('search')
   // Update header props when we get a document response
   useEffect(() => {
     dispatch(
       setHeaderProps(
-        reject(either(isNil, isEmpty), {
-          heading: documentName,
-        })
+        reject(either(isNil, isEmpty))
       )
     )
 
@@ -131,6 +151,30 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     window.open(url)
   }, [currentPageNumber, document])
 
+  const downloadEntities = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}comprehendEntities.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
+  const downloadMedicalEntities = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}comprehendMedicalEntities.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
+  const downloadMedicalICD10Ontologies = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}comprehendMedicalICD10.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
   const redactMatches = useCallback(async () => {
     dispatch(addRedactions(id, currentPageNumber, wordsMatchingSearch))
     dispatch(setSearchQuery(''))
@@ -143,13 +187,28 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     [currentPageNumber, dispatch, id]
   )
 
+  const highlightEntities = useCallback(
+    async (bbox, pageNumber = currentPageNumber) => {
+      dispatch(addHighlights(id, pageNumber, bbox))
+    },
+    [currentPageNumber, dispatch, id]
+  )
+
+
+
   const clearReds = useCallback(() => {
     dispatch(clearRedactions(id))
   }, [dispatch, id])
 
-  const redactAllValues = useCallback(() => {
-    dispatch(addRedactions(id, currentPageNumber, pageData.pairs.map(p => p.valueBoundingBox)))
+  const redactAllValues = useCallback(
+    async (bbox, pageNumber = currentPageNumber) => {
+       dispatch(addRedactions(id, currentPageNumber, pageData.pairs.map(p => p.valueBoundingBox)))
   }, [currentPageNumber, dispatch, id, pageData.pairs])
+
+
+  const redactEntityMatches = useCallback(async (pageNumber ,bboxlist) => {
+    dispatch(addRedactions(id, pageNumber,bboxlist.map(p => p)))
+  }, [currentPageNumber, dispatch, id])
 
   const contentRef = useRef()
 
@@ -202,7 +261,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
       ]
     }, [])
   }, [pageData.pairs])
-
+    
   const pageLinesAsMarks = useMemo(() => {
     return pageData.lines.map(({ id, boundingBox }) => {
       return {
@@ -222,6 +281,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     }
   }, [highlightedKv])
 
+  
+
   const switchPage = useCallback(
     pageNumber => {
       dispatch(setCurrentPageNumber(pageNumber))
@@ -231,6 +292,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const setHighlightedLine = useCallback(() => {}, [])
 
+
+
   return (
     <div className={css.document}>
       {status === 'pending' && <Loading />}
@@ -239,43 +302,50 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
         <>
           <div className={css.tabWrapper}>
             <Tabs
+              isTrackTab={false}
               selected={tab}
+              track={track}
               onSelectTab={selectTab}
               items={[
-                { id: 'search', title: 'Overview' },
+                { id: 'search', title: 'Preview' },
                 { id: 'text', title: 'Raw Text' },
-                { id: 'kv', title: `${docData.pairs.length} Key-Value Pairs` },
-                { id: 'tables', title: `${docData.tables} Tables` },
+                { id: 'kv', title: `Key-Value Pairs` },
+                { id: 'tables', title: `Tables` },
+                { id: 'entities', title: `Entities` },
+                { id: 'medical_entities', title: `Medical Entities` },
               ]}
             />
+
 
             {track === 'redaction' &&
             document.redactions &&
             Object.keys(document.redactions).length ? (
-              <div>
+              <div className={css.downloadButtons}>
                 <Button inverted onClick={clearReds}>
                   Clear Redaction
                 </Button>
                 <Button className={css.downloadRedacted} onClick={downloadRedacted}>
-                  Download Redacted Version
+                ⬇ Redacted Doc
                 </Button>
               </div>
             ) : null}
 
-            <div className={css.downloadButtons}>
-              <Button
-                inverted
-                link={{ download: documentName.split('/').pop() }}
-                href={documentURL}
-              >
-                Download Original
-              </Button>
-
-              {track === 'search' ? (
-                <Button link={{ download: 'searchable-pdf.pdf' }} href={searchablePdfURL}>
-                  Download Searchable PDF
-                </Button>
-              ) : null}
+            
+              
+               
+              <div>
+               
+              <Tabs
+              isTrackTab={true}
+              selected={trackTab}
+              track={track}
+              onSelectTab={selectTrack}
+              items={[
+                { id: 'searchTrack', title: 'Discovery'},
+                { id: 'complianceTrack', title: 'Compliance'},
+                { id: 'workflowTrack', title: 'Workflow Automation'}
+              ]}
+            />
             </div>
           </div>
           <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
@@ -287,6 +357,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               className={cs(
                 css.tabSourceViewer,
                 tab === 'kv' && css.withKv,
+                tab === 'entities' && css.withEv,
+                tab === 'medical_entities' && css.withEv,
                 tab === 'text' && css.withText
               )}
               document={document}
@@ -299,6 +371,10 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                   ? pageLinesAsMarks
                   : tab === 'kv'
                   ? pagePairsAsMarks
+                  : tab === 'entities'
+                  ? (document.highlights || [])
+                  : tab === 'medical_entities'
+                  ? (document.highlights || [])
                   : []
               }
               tables={tab === 'tables' && pageData.tables}
@@ -308,8 +384,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text') && css.visible,
-                tab === 'text' && css.wide
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible 
               )}
             >
               <KeyValueList
@@ -325,6 +400,13 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 visible={tab === 'kv'}
               />
 
+              <DocumentPreview
+                document={document}
+                pageCount={pageCount}
+                visible={tab === 'search'}
+                track = {track}
+              />
+
               <RawTextLines
                 lines={docData.lines}
                 pageCount={pageCount}
@@ -332,6 +414,48 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 onHighlight={setHighlightedLine}
                 onSwitchPage={switchPage}
                 visible={tab === 'text'}
+              />
+
+              <EntitiesCheckbox
+                 entities={docData.entities}
+                 pageCount={pageCount}
+                 currentPageNumber={currentPageNumber}
+                 showRedaction={track === 'redaction'}
+                 onHighlight={highlightEntities}
+                 onSwitchPage={switchPage}
+                 onRedact={redactEntityMatches}
+                 onRedactAll={redactAllValues}
+                 onDownload={downloadKV}
+                 visible={tab === 'entities'}
+                 comprehendService={COMPREHEND_SERVICE}
+                 onDownloadPrimary = {downloadEntities}
+                 onDownloadSecondary = {null}
+                 document = {document}
+              />
+
+              <EntitiesCheckbox
+                 entities={docData.medicalEntities}
+                 pageCount={pageCount}
+                 currentPageNumber={currentPageNumber}
+                 showRedaction={track === 'redaction'}
+                 onHighlight={highlightEntities}
+                 onSwitchPage={switchPage}
+                 onRedact={redactEntityMatches}
+                 onRedactAll={redactAllValues}
+                 onDownloadPrimary={downloadEntities}
+                 onDownloadSecondary = {downloadMedicalICD10Ontologies}
+                 visible={tab === 'medical_entities'}
+                 comprehendService={COMPREHEND_MEDICAL_SERVICE}
+                 document = {document}
+              />
+
+              <TableResults
+                 tables={docData.tables}
+                 pageCount={pageCount}
+                 currentPageNumber={currentPageNumber}
+                 onSwitchPage={switchPage}
+                 visible={tab === 'tables'}
+                 document = {document}
               />
             </div>
           </div>

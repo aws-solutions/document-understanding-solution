@@ -119,9 +119,10 @@ function useDocumentResizer(isPDF, resizeDeps) {
 }
 
 const DocumentMarks = forwardRef(function DocumentMarks(
-  { children, marks, tables, redactions, highlightedMark },
+  { children, marks , tables, redactions, highlightedMark },
   ref
 ) {
+
   return (
     <div className={css.canvasWrapper}>
       <div className={css.canvas} ref={ref}>
