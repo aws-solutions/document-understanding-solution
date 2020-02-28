@@ -557,6 +557,21 @@ export class CdkTextractStack extends cdk.Stack {
         resources: ["*"]
       })
     );
+
+   syncProcessor.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["comprehend:*"],
+        resources: ["*"]
+      })
+    );
+
+   syncProcessor.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["comprehendmedical:*"],
+        resources: ["*"]
+      })
+    );
+
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ["es:*"],
@@ -674,6 +689,21 @@ export class CdkTextractStack extends cdk.Stack {
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
+
+    jobResultProcessor.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["comprehend:*"],
+        resources: ["*"]
+      })
+    );
+
+    jobResultProcessor.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["comprehendmedical:*"],
+        resources: ["*"]
+      })
+    );
+
 
     //------------------------------------------------------------
 

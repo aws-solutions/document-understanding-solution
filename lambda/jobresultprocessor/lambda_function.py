@@ -5,6 +5,8 @@ import time
 from helper import AwsHelper
 from og import OutputGenerator
 import datastore
+from comprehendHelper import ComprehendHelper
+
 
 def generatePdf(documentId, bucketName, objectName, responseBucketName):
     
@@ -108,6 +110,13 @@ def processRequest(request):
     opg.run()
 
     generatePdf(jobTag, bucketName, objectName, outputBucketName)
+
+    # generate Comprehend and ComprehendMedical entities
+    path = objectName + "-analysis" + "/"+ jobTag + "/"
+    print("path: " +  path)
+    maxPages = 100
+    comprehendClient = ComprehendHelper()
+    comprehendClient.processComprehend(bucketName, 'response.json', path, maxPages)
 
     print("DocumentId: {}".format(jobTag))
 

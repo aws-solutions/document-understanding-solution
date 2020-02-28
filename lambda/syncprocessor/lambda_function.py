@@ -5,6 +5,7 @@ import os
 from helper import AwsHelper, S3Helper, DynamoDBHelper
 from og import OutputGenerator
 import datastore
+from comprehendHelper import ComprehendHelper
 
 def generatePdf(documentId, bucketName, objectName, responseBucketName):
     
@@ -80,7 +81,14 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     opg.run()
 
     generatePdf(documentId, bucketName, objectName, outputBucketName)
-    
+   
+    # generate Comprehend and ComprehendMedical entities in S3
+    path = objectName + "-analysis" + "/"+ documentId + "/"
+    print("path: " +  path)
+    maxPages = 100
+    comprehendClient = ComprehendHelper()
+    comprehendClient.processComprehend(bucketName, 'response.json', path, maxPages)
+
     print("DocumentId: {}".format(documentId))
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
