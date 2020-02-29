@@ -36,7 +36,7 @@ export default function DocumentListItem({ id, title, link, basename, extension,
           </span>
           <span className={css.filename}>{basename}</span>
           <span className={css.extension}>{extension}</span>
-          <span className={css.processing}>{(<span>Processing&hellip;</span>)}</span>
+          <span className={css.processing}>Processing&hellip;</span>
           <span className={css.deleteSpacer} />
         </a>
       ) : fileProcessFailed?(
