@@ -87,7 +87,7 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     print("path: " +  path)
     maxPages = 100
     comprehendClient = ComprehendHelper()
-    comprehendClient.processComprehend(bucketName, 'response.json', path, maxPages)
+    comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
 
     print("DocumentId: {}".format(documentId))
 
