@@ -24,8 +24,7 @@ export default function DocumentListItem({ id, title, link, basename, extension,
     [dispatch, id]
   )
   const fileProcessFailed =  documentStatus == 'FAILED'
-  console.log(title)
-  console.log(documentStatus)
+
   const { target, ...linkProps } = link || {}
     
   return (
