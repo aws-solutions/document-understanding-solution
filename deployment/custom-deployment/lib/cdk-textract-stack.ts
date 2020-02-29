@@ -468,12 +468,12 @@ export class CdkTextractStack extends cdk.Stack {
     
     const jobErrorHandler = new lambda.Function(
       this,
-      this.resourceName("JobErrorHandler"),
+      this.resourceName("JobErrorHandlerLambda"),
       {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.fromAsset("lambda/joberrorhandler"),
         handler: "lambda_function.lambda_handler",
-        timeout: cdk.Duration.seconds(300),
+        timeout: cdk.Duration.seconds(30),
         environment: {
           DOCUMENTS_TABLE: documentsTable.tableName
         }
