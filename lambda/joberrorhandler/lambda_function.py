@@ -22,7 +22,9 @@ def update_document_status_to_failed(document_id):
     
 def lambda_handler(event, context):
     for record in event['Records']:
-        document_id = record['body']['documentId']
+        document_id = json.loads(record['body'])['documentId']
+        print("Processing doc : {}".format(document_id))
         if get_document_status(document_id) != 'SUCCEEDED':
+            print("Updating status for doc : {}".format(document_id))
             update_document_status_to_failed(document_id)
     
