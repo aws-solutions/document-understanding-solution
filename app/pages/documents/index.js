@@ -81,7 +81,7 @@ function Documents({
         id: documentId,
         title: documentName,
         link: makeDocumentLink(documentId),
-        pending: documentStatus !== 'SUCCEEDED',
+        documentStatus : documentStatus,
         uploadedTime,
         processedTime,
       }
