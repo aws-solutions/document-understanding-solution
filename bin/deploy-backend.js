@@ -10,7 +10,10 @@ const userEmail =
     ? readlineSync.question("Please enter your email address: ")
     : process.env.USER_EMAIL;
 
+const isCICDDeploy = process.env.ISCICD == "false" ? false : true;
+
 // // eslint-disable-next-line no-new
 new CdkTextractStack.CdkTextractStack(app, stackName, {
-  email: userEmail
+  email: userEmail,
+  isCICDDeploy: isCICDDeploy
 });

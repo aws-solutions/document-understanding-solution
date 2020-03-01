@@ -178,7 +178,8 @@ Resources:
                 - cfn_nag --version
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
-                - echo "Injecting values for Region, Email, Version, and boto/pdf lambda code S3 location to the project"
+                - echo "Injecting values for Deploy Type, Region, Email, Version, and boto/pdf lambda code S3 location to the project"
+                - sed -i -e "s/ISCICD=false/ISCICD=true/g" ./package.json
                 - sed -i -e "s/%%REGION%%/$AWS_REGION/g" ./package.json
                 - sed -i -e "s/%%USER_EMAIL%%/$USER_EMAIL/g" ./package.json
                 - sed -i -e "s/%%SOURCE_BUCKET%%/$SOURCE_BUCKET-$AWS_REGION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
@@ -189,9 +190,9 @@ Resources:
                 - tsc deployment/custom-deployment/lib/cdk-textract-client-stack.ts --target es2018 --module commonjs --allowjs true
             build:
               commands:
-                - echo "bootstrap CDK environment `date`"
-                - ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f5 -d:)
-                - cdk bootstrap aws://$ACCOUNT_ID/$AWS_REGION --toolkit-stack-name DocumentUnderstandingCDKToolkit
+                # - echo "bootstrap CDK environment `date`"
+                # - ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f5 -d:)
+                # - cdk bootstrap aws://$ACCOUNT_ID/$AWS_REGION --toolkit-stack-name DocumentUnderstandingCDKToolkit
                 - echo "----- Deploying complete solution -----"
                 - yarn deploy
           artifacts:
