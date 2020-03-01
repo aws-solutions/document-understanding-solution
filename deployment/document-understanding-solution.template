@@ -14,19 +14,18 @@
 Description: "(SO0046) - The AWS CloudFormation template for deployment of the document-understanding-solution. Version v1.0.0"
 
 Parameters:
+  Email:
+    Description: User email address
+    Type: String
   CodeCommitRepository:
     Description: Enter the repository name that will be created
     Type: String
     AllowedPattern: "[a-zA-Z0-9-]+"
     Default: document-understanding-reference-architecture
-  Email:
-    Description: User email address
-    Type: String
-    Default: "%%EMAIL%%"
   Version:
     Description: Solution Version
     Type: String
-    Default: "%%VERSION%%"
+    Default: "v0.0.1"
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -179,22 +178,18 @@ Resources:
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
                 - echo "Injecting values for Deploy Type, Region, Email, Version, and boto/pdf lambda code S3 location to the project"
-                - sed -i -e "s/ISCICD=false/ISCICD=true/g" ./package.json
-                - sed -i -e "s/%%REGION%%/$AWS_REGION/g" ./package.json
-                - sed -i -e "s/%%USER_EMAIL%%/$USER_EMAIL/g" ./package.json
                 - sed -i -e "s/SOURCE_BUCKET/$SOURCE_BUCKET-$AWS_REGION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
                 - sed -i -e "s/CODE_VERSION/$VERSION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
-                - echo "Installing all dependencies"
-                - yarn
-                - tsc deployment/custom-deployment/lib/cdk-textract-stack.ts --target es2018 --module commonjs --allowjs true
-                - tsc deployment/custom-deployment/lib/cdk-textract-client-stack.ts --target es2018 --module commonjs --allowjs true
+                - sed -i 's/\"email\":.*/\"email\": \"$USER_EMAIL\",/g' "package.json"
+                - sed -i 's/\"region\":.*/\"region\": \"$AWS_REGION\"/g' "package.json"
+                - sed -i 's/\"stackname\":.*/\"stackname\": \"$MAIN_STACK_NAME\",/g' "package.json"
+                - sed -i 's/\"cicd\":.*/\"cicd\": \"true\",/g' "package.json"
             build:
               commands:
-                # - echo "bootstrap CDK environment `date`"
-                # - ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f5 -d:)
-                # - cdk bootstrap aws://$ACCOUNT_ID/$AWS_REGION --toolkit-stack-name DocumentUnderstandingCDKToolkit
+                - echo "Installing all dependencies"
+                - yarn
                 - echo "----- Deploying complete solution -----"
-                - yarn deploy
+                - yarn deploy-all
           artifacts:
             files:
               - '**/*'
