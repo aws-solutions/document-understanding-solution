@@ -6,8 +6,9 @@ from helper import AwsHelper, S3Helper, DynamoDBHelper
 from og import OutputGenerator
 import datastore
 
+
 def generatePdf(documentId, bucketName, objectName, responseBucketName):
-    
+
     outputPath = "{}-analysis/{}/".format(objectName, documentId)
     responseDocumentName = "{}response.json".format(outputPath)
     outputDocumentName = "{}searchable-pdf.pdf".format(outputPath)
@@ -23,12 +24,12 @@ def generatePdf(documentId, bucketName, objectName, responseBucketName):
     client = boto3.client('lambda')
 
     response = client.invoke(
-    FunctionName=os.environ['PDF_LAMBDA'],
-    InvocationType='RequestResponse',
-    LogType='Tail',
-    Payload=json.dumps(data)
+        FunctionName=os.environ['PDF_LAMBDA'],
+        InvocationType='RequestResponse',
+        LogType='Tail',
+        Payload=json.dumps(data)
     )
-    
+
     print(response["Payload"].read())
 
 
@@ -44,7 +45,7 @@ def callTextract(bucketName, objectName, detectText, detectForms, detectTables):
             }
         )
     else:
-        features  = []
+        features = []
         if(detectTables):
             features.append("TABLES")
         if(detectForms):
@@ -69,24 +70,27 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     detectForms = "Forms" in features
     detectTables = "Tables" in features
 
-    response = callTextract(bucketName, objectName, detectText, detectForms, detectTables)
+    response = callTextract(bucketName, objectName,
+                            detectText, detectForms, detectTables)
 
     dynamodb = AwsHelper().getResource("dynamodb")
     ddb = dynamodb.Table(outputTableName)
 
     print("Generating output for DocumentId: {}".format(documentId))
 
-    opg = OutputGenerator(documentId, response, outputBucketName, objectName, detectForms, detectTables, ddb, elasticsearchDomain)
+    opg = OutputGenerator(documentId, response, outputBucketName,
+                          objectName, detectForms, detectTables, ddb, elasticsearchDomain)
     opg.run()
 
     generatePdf(documentId, bucketName, objectName, outputBucketName)
-    
+
     print("DocumentId: {}".format(documentId))
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
     ds.markDocumentComplete(documentId)
 
 # --------------- Main handler ------------------
+
 
 def processRequest(request):
 
@@ -105,17 +109,21 @@ def processRequest(request):
     elasticsearchDomain = request["elasticsearchDomain"]
 
     if(documentId and bucketName and objectName and features):
-        print("DocumentId: {}, features: {}, Object: {}/{}".format(documentId, features, bucketName, objectName))
+        print("DocumentId: {}, features: {}, Object: {}/{}".format(documentId,
+                                                                   features, bucketName, objectName))
 
-        processImage(documentId, features, bucketName, outputBucketName, objectName, outputTable, documentsTable, elasticsearchDomain)
+        processImage(documentId, features, bucketName, outputBucketName,
+                     objectName, outputTable, documentsTable, elasticsearchDomain)
 
-        output = "Document: {}, features: {}, Object: {}/{} processed.".format(documentId, features, bucketName, objectName)
+        output = "Document: {}, features: {}, Object: {}/{} processed.".format(
+            documentId, features, bucketName, objectName)
         print(output)
 
     return {
         'statusCode': 200,
         'body': output
     }
+
 
 def lambda_handler(event, context):
 
