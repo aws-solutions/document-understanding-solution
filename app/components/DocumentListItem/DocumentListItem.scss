@@ -27,6 +27,11 @@
   color: color(teal, 10)
 }
 
+.failed {
+  flex: 0 0 rem(100);
+  color: color(red, 10)
+}
+
 .deleteSpacer {
   flex: 0 0 24px;
 }
@@ -44,5 +49,17 @@
 
   &:hover, &:focus {
     opacity: 1;
+  }
+}
+
+.failedFileRow{
+
+  background-color: #7c7f83;
+  opacity: 0.5;
+
+  &:hover, &:focus {
+    background-color: #595f68;
+    opacity: 0.5;
+
   }
 }

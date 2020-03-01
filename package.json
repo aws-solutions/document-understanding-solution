@@ -1,7 +1,7 @@
 {
-  "name": "document-understanding-solution",
+  "name": "document-understanding-solution-demo",
   "version": "0.6.0",
-  "description": "A web app and Cloud Formation template that demonstrates the capabilities of the AWS Textract API.",
+  "description": "A web app and Cloud Formation template that demonstrates the capabilities of the Amazon Textract, Comprehend and Comprehend Medical.",
   "main": "handler.js",
   "repository": {
     "type": "git"

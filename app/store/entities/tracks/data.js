@@ -13,14 +13,14 @@ export const lensTrack = id => lensPath(['entities', 'tracks', id])
 export default {
   search: {
     id: 'search',
-    title: 'Search & discovery',
+    title: 'Discovery',
     subtitle: 'Search across many documents, or within a single document',
     icon: '/static/images/icon_cloud-search.svg',
     palette: 'blue',
   },
   redaction: {
     id: 'redaction',
-    title: 'Control & compliance',
+    title: 'Compliance',
     subtitle: 'Redact information from a document',
     icon: '/static/images/icon_redact.svg',
     palette: 'teal',

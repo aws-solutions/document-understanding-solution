@@ -31,7 +31,7 @@ export default function DocumentList({ className, items }) {
           <span className={css.rightSpace} />
         </header>
         <ul>
-          {items.map(({ id, title, link, pending }, index) => {
+          {items.map(({ id, title, link, documentStatus }, index) => {
             const { target, ...linkProps } = link || {}
 
             const filenameParts = title.split('.')
@@ -46,7 +46,8 @@ export default function DocumentList({ className, items }) {
                   title,
                   basename,
                   extension,
-                  pending,
+                  
+                  documentStatus,
                   link,
                 }}
               />

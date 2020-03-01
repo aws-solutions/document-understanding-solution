@@ -6,6 +6,7 @@ export const SUBMIT_DOCUMENTS = 'api/SUBMIT_DOCUMENTS'
 export const FETCH_DOCUMENTS = 'api/FETCH_DOCUMENTS'
 export const FETCH_DOCUMENT = 'api/FETCH_DOCUMENT'
 export const REDACT_DOCUMENT = 'api/REDACT_DOCUMENT'
+export const HIGHLIGHT_DOCUMENT = 'api/HIGHLIGHT_DOCUMENT'
 export const SEARCH = 'api/SEARCH'
 export const CLEAR_SEARCH_RESULTS = 'searchResults/CLEAR'
 

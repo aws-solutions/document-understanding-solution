@@ -27,7 +27,8 @@ $button-palettes: (
   // @include all-caps();
   display: inline-block;
   min-width: rem(145);
-  padding: rem(5) rem(24);
+  padding: rem(5) rem(15);
+  margin: rem(5);
   overflow: hidden;
   text-align: center;
   text-decoration: none;
@@ -90,14 +91,13 @@ $button-palettes: (
 
 
     &.inverted {
-      padding: rem(7) rem(24);
+      padding: rem(5) rem(15);
       color: map-get($colors, 'background');
       background-color: transparent;
       border-color: map-get($colors, 'background');
       border-width: rem(1);
 
       &:focus {
-        padding: rem(6) rem(23);
         color: map-get($colors, 'background-alternate');
         background-color: transparent;
         border-color: map-get($colors, 'highlight');
