@@ -390,13 +390,13 @@ export class CdkTextractStack extends cdk.Stack {
     // If CICD deploy is used, the two largest lambdas draw their code from an S3 bucket.
 
     const cicdBotoLoc = lambda.Code.fromBucket(
-      s3.Bucket.fromBucketName(this, "solutionBucketBoto", "%%SOURCE_BUCKET%%"),
-      "document-understanding-solution/%%CODE_VERSION%%/boto3-layer.zip"
+      s3.Bucket.fromBucketName(this, "solutionBucketBoto", "SOURCE_BUCKET"),
+      "document-understanding-solution/CODE_VERSION/boto3-layer.zip"
     );
 
     const cicdPDFLoc = lambda.Code.fromBucket(
-      s3.Bucket.fromBucketName(this, "solutionBucketPDF", "%%SOURCE_BUCKET%%"),
-      "document-understanding-solution/%%CODE_VERSION%%/searchable-pdf-1.0.jar"
+      s3.Bucket.fromBucketName(this, "solutionBucketPDF", "SOURCE_BUCKET"),
+      "document-understanding-solution/CODE_VERSION/searchable-pdf-1.0.jar"
     );
 
     // If a local yarn deploy is used, the two lambdas draw their code from a local directory.
