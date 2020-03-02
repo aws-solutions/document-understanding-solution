@@ -13,7 +13,7 @@
 
 Prerequisites:
 
-- Set your deployment region in the stack->region property of package.json.
+- Set your deployment region in the stack->region property of package.json. Make sure this also matches the region you have set via aws configure
 - If you have never used CDK before, then the deployment command below may fail with a message saying that you first need to run `cdk bootstrap {accountId}/{region}`. This will deploy a small stack with resources for running CDK. Afterwards, run the below yarn command again.
 
 ```
