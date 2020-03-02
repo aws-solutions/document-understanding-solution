@@ -1,0 +1,100 @@
+@import '../../styles/shared/index';
+
+.tabs {
+  display: block;
+
+  nav {
+    @include full-bleed;
+    @include site-gutters;
+  }
+
+  ul {
+    display: flex;
+    padding: em(8) 0;
+  }
+
+  li {
+    display: inline-block;
+  }
+
+  a {
+    display: inline-block;
+    padding: em(10) em(20);
+    margin-right: em(10);
+    font-weight: 500;
+    color: $type-color-default;
+    text-decoration: none;
+    border-radius: 40px;
+
+    &:hover,
+    &:focus {
+      background-color: color(gray, 90);
+      outline: 0;
+    }
+
+    @include media('<mobileLarge') {
+      padding: em(12) em(14) em(10);
+    }
+  }
+  .active a {
+    background-color: color(orange, 20);
+    color: color(gray, 80);
+  
+    &:hover,
+    &:focus {
+      background-color: color(orange, 20);
+    }
+  }
+}
+
+.trackTabs {
+  display: block;
+
+  nav {
+    @include full-bleed;
+    @include site-gutters;
+  }
+
+  ul {
+    display: flex;
+    padding: em(8) 0;
+  }
+
+  li {
+    display: inline-block;
+    border-style: solid;
+    border-width: thin;
+  }
+
+  a {
+    display: inline-block;
+    padding: em(5) em(10);
+    font-weight: 300;
+    color: $type-color-default;
+    text-decoration: none;
+    font-size: smaller;
+
+    &:hover,
+    &:focus {
+      background-color: color(gray, 90);
+      outline: 0;
+    }
+
+    @include media('<mobileLarge') {
+      padding: em(12) em(14) em(10);
+    }
+  }
+  .active a {
+    background-color: color(orange, 20);
+    color: color(gray, 80);
+    border-style: inset;
+    border-width: thin;
+  
+    &:hover,
+    &:focus {
+      background-color: color(orange, 20);
+    }
+  }
+}
+
+

@@ -1,0 +1,110 @@
+@import '../../styles/shared/index';
+
+.documents {
+  position: relative;
+  min-height: rem(320);
+  padding-top: rem(32);
+  padding-bottom: rem(32);
+}
+
+.list {
+  @include media-grid(8) {
+    width: 100%;
+  }
+
+  @include media-grid(4) {
+    @include full-bleed;
+    width: auto;
+  }
+}
+
+.intro {
+  width: span(8);
+  padding-bottom: 2em;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  > * + * {
+    margin-left: rem(20);
+  }
+
+  @include media-grid(8) {
+    width: span(6, $grid-8col);
+  }
+
+  @include media-grid(4) {
+    width: 100%;
+  }
+}
+
+.searchBar {
+  flex: 1;
+}
+
+.loadingItems {
+  display: flex;
+  height: 10em;
+  align-items: center;
+  justify-content: center;
+}
+
+.sentinel {
+  height: 6em;
+  margin-top: 4em;
+}
+
+.listDetails {
+  @include type-body-supplemental(color(gray, 20));
+  @include full-bleed();
+  @include site-gutters();
+  @include all-caps();
+  padding-top: 1em;
+  padding-bottom: 1em;
+  font-weight: 500;
+  background-color: rgba(color(gray, 80), 0.9);
+  transition: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  p {
+    width: span(8);
+    margin: 0 auto;
+  }
+
+  @include media-grid(8) {
+    p {
+      width: 100%;
+    }
+  }
+}
+
+.timeUploaded {
+  margin-bottom: rem(4);
+  color: color(gray, 60);
+
+  a:focus &,
+  a:hover & {
+    color: color(gray, 20);
+  }
+}
+
+.timeProcessed {
+  color: color(gray, 50);
+
+  a:focus &,
+  a:hover & {
+    color: color(gray, 10);
+  }
+}
+
+.processing {
+  color: color(gray, 50);
+
+  a:focus &,
+  a:hover & {
+    color: color(orange, 40);
+  }
+}

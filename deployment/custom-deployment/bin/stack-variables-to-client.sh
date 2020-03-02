@@ -6,4 +6,4 @@ source .env
 
 echo "==update %%CLIENT_APP_BUCKET%% in stack with $2"
 replace="s/%%CLIENT_APP_BUCKET%%/$ClientAppBucketName/g"
-sed -i -e $replace ./deployment/custom-deployment/lib/cdk-textract-client-stack.js
+sed -i -e $replace ./lib/cdk-textract-client-stack.js

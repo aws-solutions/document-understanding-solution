@@ -1,0 +1,29 @@
+@import '../styles/shared/index';
+
+.select {
+  display: block;
+  padding-bottom: 2rem;
+
+  > p {
+    text-align: center;
+    margin-top: 2rem;
+  }
+
+  > h2 {
+    @include type-heading-h4();
+    width: span(6);
+    margin: 5rem auto .5rem;
+  }
+
+  @include media-grid(8) {
+    > h2 {
+      width: span(6, $grid-8col);
+    }
+  }
+
+  @include media-grid(4) {
+    > h2 {
+      width: 100%;
+    }
+  }
+}

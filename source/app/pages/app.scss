@@ -1,0 +1,73 @@
+@import '../styles/shared/index';
+
+$grid-color: rgba(color(magenta, 30), 0.1);
+$grid-color-alternate: rgba(color(magenta, 30), 0.1);
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+
+  > main {
+    flex: 1 1 0px;
+    overflow: auto;
+  }
+}
+
+// Grid overlay styles
+.gridContainer {
+  @include fixed(0, 0, 0, 0);
+  @include site-gutters;
+  z-index: 2;
+  display: flex;
+  pointer-events: none;
+
+  // This background will render 4px horizontal stripes
+  background: linear-gradient(
+    to bottom,
+    $grid-color-alternate,
+    $grid-color-alternate 50%,
+    transparent 50%,
+    transparent
+  );
+  background-size: 100% rem(8);
+}
+
+.gridCol {
+  width: span(1);
+  height: 100%;
+  margin-right: gutter();
+  background-color: $grid-color;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  @include media-grid(8) {
+    width: span(1, $grid-8col);
+    margin-right: gutter($grid-8col);
+
+    &:nth-last-child(-n+4) {
+      display: none;
+    }
+
+    &:nth-child(0n+8) {
+      margin-right: 0;
+    }
+  }
+
+  @include media-grid(4) {
+    width: span(1, $grid-4col);
+    margin-right: gutter($grid-4col);
+
+    &:nth-last-child(-n+8) {
+      display: none;
+    }
+
+    &:nth-child(0n+4) {
+      margin-right: 0;
+    }
+  }
+}

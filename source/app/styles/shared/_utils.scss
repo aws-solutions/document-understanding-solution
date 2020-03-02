@@ -1,0 +1,93 @@
+// Shorthand mixin for offset positioning
+// https://css-tricks.com/snippets/sass/mixin-offset-positioning/
+//
+// @param {String} $position - Either `relative`, `absolute` or `fixed`
+// @param {Length} $top [null] - Top offset
+// @param {Length} $right [null] - Right offset
+// @param {Length} $bottom [null] - Bottom offset
+// @param {Length} $left [null] - Left offset
+@mixin position($position, $top: null, $right: null, $bottom: null, $left: null) {
+  position: $position;
+  top: $top;
+  right: $right;
+  bottom: $bottom;
+  left: $left;
+}
+
+// Shorthand mixin for absolute positioning
+// Serves as an alias for `position(absolute, ...)`
+// @param {Arglist} $args - Offsets
+// @require {mixin} position
+@mixin absolute($args...) {
+  @include position(absolute, $args...);
+}
+
+// Shorthand mixin for relative positioning
+// Serves as an alias for `position(relative, ...)`
+// @param {Arglist} $args - Offsets
+// @require {mixin} position
+@mixin relative($args...) {
+  @include position(relative, $args...);
+}
+
+// Shorthand mixin for fixed positioning
+// Serves as an alias for `position(fixed, ...)`
+// @param {Arglist} $args - Offsets
+// @require {mixin} position
+@mixin fixed($args...) {
+  @include position(fixed, $args...);
+}
+
+// Include clearfix boilerplate
+@mixin clearfix() {
+  &:before,
+  &:after {
+    display: table;
+    content: '';
+  }
+
+  &:after {
+    clear: both;
+  }
+}
+
+
+// Hide element from view. Used to hide radios, checkboxes, and file upload elements.
+@mixin remove-from-view() {
+  position: absolute;
+  clip: rect(0 0 0 0);
+}
+
+
+@mixin tab-content-sizing {
+  position: relative;
+  width: span(8);
+  margin: 0 auto;
+
+  .tooltip {
+    @include absolute(em(48, 28), 100%, null, null);
+    @include type-heading-h3;
+    z-index: 1;
+    display: flex;
+    margin-right: gutter(of 8);
+    transform: translateY(-50%);
+  }
+
+  @include media-grid(8) {
+    width: span(6, $grid-8col);
+
+    .tooltip {
+      margin-right: gutter(of 6, $grid-8col);
+    }
+  }
+
+  @include media-grid(4) {
+    width: 100%;
+
+    .tooltip {
+      right: auto;
+      left: 0;
+      margin-right: 0;
+    }
+  }
+}

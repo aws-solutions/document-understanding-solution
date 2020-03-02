@@ -1,0 +1,144 @@
+@import '../../../node_modules/susy/sass/susy';
+@import '../../../node_modules/susy/sass/plugins/svg-grid';
+
+// Grid configs
+$grid-12col: (
+  'columns': susy-repeat(12),
+  'gutters': 0.243902439,
+  'spread': 'narrow',
+  'container-spread': 'narrow',
+);
+
+$grid-8col: (
+  'columns': susy-repeat(8),
+  'gutters': 0.1941747573,
+  'spread': 'narrow',
+  'container-spread': 'narrow',
+);
+
+$grid-4col: (
+  'columns': susy-repeat(4),
+  'gutters': 0.2666666667,
+  'spread': 'narrow',
+  'container-spread': 'narrow',
+);
+
+$susy: $grid-12col; // Default config for Susy
+
+// The site gutters are on the left and right of the viewport
+$gutter-site-12col: 2.96875vw;  // 38px @ 1280px viewport
+$gutter-site-8col: 2.9296875vw; // 30px @ 1024px viewport
+$gutter-site-4col: 5vw;         // 16px @ 320px viewport
+
+$site-gutters: (
+  default:                $gutter-site-12col,
+  '<=tabletLandscape':    $gutter-site-8col,
+  '<mobileLandscape':     $gutter-site-4col
+);
+
+// The column gutters are between the columns
+$gutter-column-12col: 1.5625vw;  // 20px @ 1280px viewport
+$gutter-column-8col: 1.953125vw; // 20px @ 1024px viewport
+$gutter-column-4col: 5vw;        // 16px @ 320px viewport
+
+// Get one or more 12 column gutter widths in viewport-width units.
+@function gutter-12col($num: 1) {
+  @return $gutter-column-12col * $num;
+}
+
+// This mixin abstracts away which specific breakpoints map to different grid
+// configurations. This mixin should always be used when styling components on
+// a responsive grid, instead of directly using the media mixin.
+//
+// @param {Number} $cols  The number of columns to return the corresponding
+//                        media query breakpoint for.
+@mixin media-grid($cols) {
+  @if $cols == 8 {
+    // 8 columns
+    @include media('<=tabletLandscape') {
+      @content;
+    }
+
+  } @else if $cols == 4 {
+    // 4 columns
+    @include media('<mobileLandscape') {
+      @content;
+    }
+
+  } @else {
+    // 12 columns
+    @include media('>tabletLandscape') {
+      @content;
+    }
+  }
+}
+
+// Apply left and right padding to an element that matches the site gutter configs.
+//
+// NOTE: This also applies a transition to all properties.
+//
+// @param {string} $side  Either left, right, or both
+@mixin site-gutters($side: both) {
+  @each $breakpoint, $gutter in $site-gutters {
+    @if $breakpoint == default {
+      // Default Styles
+      @if $side == both or $side == right {
+        padding-right: $gutter;
+      }
+
+      @if $side == both or $side == left {
+        padding-left: $gutter;
+      }
+
+      transition: all 0.3s ease-in-out;
+
+    } @else {
+      // Media Queries
+      @include media($breakpoint) {
+        @if $side == both or $side == right {
+          padding-right: $gutter;
+        }
+
+        @if $side == both or $side == left {
+          padding-left: $gutter;
+        }
+      }
+    }
+  }
+}
+
+
+// Pull an element outside the site gutters to make it full bleed to the viewport.
+// This uses negative left and right margins.
+//
+// NOTE: This also applies a transition to all properties.
+//
+// @param {string} $side  Either left, right, or both
+@mixin full-bleed($side: both) {
+  @each $breakpoint, $gutter in $site-gutters {
+    @if $breakpoint == default {
+      // Default Styles
+      @if $side == both or $side == right {
+        margin-right: 0 - $gutter;
+      }
+
+      @if $side == both or $side == left {
+        margin-left: 0 - $gutter;
+      }
+
+      transition: all 0.3s ease-in-out;
+
+    } @else {
+      // Media Queries
+      @include media($breakpoint) {
+        @if $side == both or $side == right {
+          margin-right: 0 - $gutter;
+        }
+
+        @if $side == both or $side == left {
+          margin-left: 0 - $gutter;
+        }
+      }
+    }
+  }
+}

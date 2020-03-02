@@ -1,0 +1,24 @@
+@import '../styles/shared/index';
+
+.form {
+  position: relative;
+  width: span(4);
+  margin: 0 auto;
+
+  label {
+    display: block;
+  }
+
+  @include media-grid(8) {
+    width: span(4, $grid-8col);
+  }
+
+  @include media-grid(4) {
+    width: span(4, $grid-4col);
+  }
+}
+
+.error {
+  font-weight: 500;
+  color: color(red);
+}

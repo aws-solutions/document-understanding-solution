@@ -52,15 +52,15 @@ Mappings:
     Images:
       Standard3: "aws/codebuild/amazonlinux2-x86_64-standard:2.0"
     CDK:
-      StackName: "DUSStack"
-      ClientStackName: "DUSClientStack"
+      StackName: "DUS"
+      ClientStackName: "DUSClient"
     Metrics:
       SendAnonymousUsage: "true"
   SourceCode:
     Source:
       S3Bucket: "%%BUCKET_NAME%%"
       Version: "%%VERSION%%"
-      KeyPrefix: "document-understanding-solution/%%VERSION%%"
+      KeyPrefix: "%%SOLUTION_NAME%%/%%VERSION%%"
 
 Resources:
   # CICD resources [start]
@@ -178,14 +178,15 @@ Resources:
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
                 - echo "Injecting values for Deploy Type, Region, Email, Version, and boto/pdf lambda code S3 location to the project"
-                - sed -i -e "s/SOURCE_BUCKET/$SOURCE_BUCKET-$AWS_REGION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
-                - sed -i -e "s/CODE_VERSION/$VERSION/g" ./deployment/custom-deployment/lib/cdk-textract-stack.ts
-                - sed -i 's/\"email\":.*/\"email\": \"$USER_EMAIL\",/g' "package.json"
-                - sed -i 's/\"region\":.*/\"region\": \"$AWS_REGION\"/g' "package.json"
-                - sed -i 's/\"stackname\":.*/\"stackname\": \"$MAIN_STACK_NAME\",/g' "package.json"
-                - sed -i 's/\"cicd\":.*/\"cicd\": \"true\",/g' "package.json"
+                - sed -i -e "s/SOURCE_BUCKET/$SOURCE_BUCKET-$AWS_REGION/g" ./source/lib/cdk-textract-stack.ts
+                - sed -i -e "s/CODE_VERSION/$VERSION/g" ./source/lib/cdk-textract-stack.ts
+                - sed -i -e "s/\"email\":.*/\"email\":\ \"$USER_EMAIL\",/g" "./source/package.json"
+                - sed -i -e "s/\"region\":.*/\"region\":\ \"$AWS_REGION\"/g" "./source/package.json"
+                - sed -i -e "s/\"stackname\":.*/\"stackname\":\ \"$MAIN_STACK_NAME\",/g" "./source/package.json"
+                - sed -i -e "s/\"cicd\":.*/\"cicd\":\ \"true\",/g" "./source/package.json"
             build:
               commands:
+                - cd ./source
                 - echo "Installing all dependencies"
                 - yarn
                 - echo "----- Deploying complete solution -----"
@@ -206,8 +207,6 @@ Resources:
             Value: !FindInMap [SourceCode, Source, S3Bucket]
           - Name: VERSION
             Value: !FindInMap [SourceCode, Source, Version]
-          - Name: AWS_REGION
-            Value: !Ref AWS::Region
           - Name: USER_EMAIL
             Value: !Ref Email
       Artifacts:

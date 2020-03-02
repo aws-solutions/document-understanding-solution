@@ -1,0 +1,152 @@
+@import '../../styles/shared/index';
+
+$input-border-default: color(gray, 90);
+$input-border-hover: color(gray, 70);
+$input-border-focus: color(gray, 60);
+$input-border-disabled: color(gray, 50);
+$input-border-error: color(red, 20);
+
+$input-color-default: color(gray, 20);
+$input-color-focus: color(gray, 10);
+$input-color-disabled: color(gray, 40);
+
+$input-background-default: color(gray, 90);
+$input-background-disabled: color(gray, 30);
+$input-background-error: rgba($input-border-error, 0.05);
+
+// Label
+.label {
+  display: inline-block;
+  font-weight: 500;
+  line-height: (20/16);
+}
+
+// Single line text, textarea, and search inputs
+.input {
+  @include type-body-primary($input-color-default);
+  display: block;
+  width: 100%;
+  padding: rem(6) 1.25em;
+  font-weight: 500;
+  line-height: (20/16);
+  background-color: $input-background-default;
+  border: 1px solid $input-border-default;
+  border-radius: 40px;
+  box-shadow: none;
+
+  + svg {
+    fill: $input-color-default;
+    pointer-events: none;
+  }
+
+  &:hover {
+    border-color: $input-border-hover;
+  }
+
+  &:focus {
+    color: $input-color-focus;
+    border-color: $input-border-focus;
+    outline: 0;
+
+    + svg {
+      fill: $input-color-focus;
+    }
+  }
+
+  &.hasLabel {
+    margin-top: 0.5em;
+  }
+
+  &.error {
+    background-color: $input-background-error;
+    border-color: $input-border-error;
+    box-shadow: none;
+  }
+
+  &.disabled {
+    color: $input-color-disabled;
+    background-color: $input-background-disabled;
+    border-color: $input-border-disabled;
+    box-shadow: none;
+  }
+}
+
+// Search input overrides
+.search {
+  position: relative;
+
+  input {
+    padding-left: em(44);
+  }
+
+  svg {
+    @include absolute(50%, null, null, em(10));
+    transform: translateY(-50%);
+  }
+}
+
+// Checkbox/radio inputs
+.checkbox,
+.radio {
+  input {
+    appearance: none;
+
+    + span {
+      @include relative(-1px);
+      display: inline-block;
+      width: em(20);
+      height: em(20);
+      color: $input-color-default;
+      vertical-align: middle;
+      background-color: $input-background-default;
+      border: 1px solid color(gray, 50);
+      border-radius: 3px;
+    }
+
+    &:checked + span::before {
+      @include absolute(50%, null, null, 50%);
+      display: block;
+      content: '✓';
+      transform: translate(-50%, -50%);
+    }
+
+    &:hover + span {
+      border-color: color(gray, 70);
+    }
+
+    &:focus + span {
+      color: $input-color-focus;
+      border-color: $input-border-focus;
+    }
+
+    &.hasLabel + span {
+      margin-right: 0.5em;
+    }
+
+    &.error + span {
+      background-color: $input-background-error;
+      border-color: $input-border-error;
+    }
+
+    &.disabled + span {
+      color: $input-color-disabled;
+      background-color: $input-background-disabled;
+      border-color: $input-border-disabled;
+    }
+  }
+}
+
+// Radio input overrides
+.radio input {
+  + span {
+    border-radius: 50%;
+  }
+
+  &:checked + span::before {
+    width: em(8);
+    height: em(8);
+    background-color: currentColor;
+    border-radius: 50%;
+    content: '';
+  }
+}

@@ -1,0 +1,176 @@
+@import '../../styles/shared/index';
+
+$button-palettes: (
+  black: (
+    background: color(gray, 60),
+    background-alternate: color(gray, 50),
+    highlight: color(gray, 50),
+    foreground: color(white)
+  ),
+  blue: (
+    background: color(blue, 20),
+    background-alternate: color(blue, 30),
+    highlight: color(blue, 10),
+    foreground: color(white)
+  ),
+  orange: (
+    background: color(orange, 20),
+    background-alternate: color(orange, 30),
+    highlight: color(orange, 10),
+    foreground: color(gray, 70)
+  )
+);
+
+// Button
+.button {
+  @include type-heading-h5(color(white));
+  // @include all-caps();
+  display: inline-block;
+  min-width: rem(145);
+  padding: rem(5) rem(15);
+  margin: rem(5);
+  overflow: hidden;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  background-repeat: no-repeat;
+  border-style: solid;
+  border-width: rem(3);
+  border-radius: rem(3);
+  outline: 0;
+  transition-duration: 0.2s;
+  transition-property: background-color, border-color;
+  transition-timing-function: ease-in-out;
+
+  svg {
+    @include relative(-1px);
+    vertical-align: middle;
+    fill: currentColor;
+
+    &:first-child {
+      margin-right: rem(8);
+    }
+
+    &:last-child {
+      margin-left: rem(8);
+    }
+
+    + span {
+      vertical-align: middle;
+    }
+  }
+
+  @include media('<=tabletPortraitSmall') {
+    font-size: rem(14);
+  }
+}
+
+// Palette specific styles
+@each $palette, $colors in $button-palettes {
+  .#{$palette} {
+    color: map-get($colors, 'foreground');
+    background-color: map-get($colors, 'background');
+    border-color: map-get($colors, 'background');
+
+    &:hover {
+      color: map-get($colors, 'foreground');
+      background-color: map-get($colors, 'background-alternate');
+      border-color: map-get($colors, 'background-alternate');
+    }
+
+    &:focus {
+      color: map-get($colors, 'foreground');
+      background-color: map-get($colors, 'background');
+      border-color: map-get($colors, 'highlight');
+
+      &:hover {
+        color: map-get($colors, 'foreground');
+        background-color: map-get($colors, 'background-alternate');
+      }
+    }
+
+
+    &.inverted {
+      padding: rem(5) rem(15);
+      color: map-get($colors, 'background');
+      background-color: transparent;
+      border-color: map-get($colors, 'background');
+      border-width: rem(1);
+
+      &:focus {
+        color: map-get($colors, 'background-alternate');
+        background-color: transparent;
+        border-color: map-get($colors, 'highlight');
+        border-width: rem(2);
+      }
+
+      &:hover,
+      &:focus:hover {
+        color: map-get($colors, 'background-alternate');
+        background-color: transparent;
+        border-color: map-get($colors, 'background-alternate');
+      }
+    }
+  }
+}
+
+// Simple
+.simple {
+  min-width: 0;
+  padding-right: 0;
+  padding-left: 0;
+  background-color: transparent;
+  border-color: transparent;
+
+  &:hover,
+  &:focus,
+  &:hover:focus {
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  @each $palette, $colors in $button-palettes {
+    &.#{$palette} {
+      color: map-get($colors, 'background');
+    }
+
+    &.#{$palette}:hover,
+    &.#{$palette}:focus,
+    &.#{$palette}:hover:focus {
+      color: map-get($colors, 'background-alternate');
+    }
+  }
+}
+
+// Disabled Styles
+.disabled,
+.disabled:hover,
+.disabled:focus,
+.disabled:focus:hover {
+  color: color(gray, 30);
+  cursor: default;
+  background-color: color(gray, 50);
+  border-color: color(gray, 50);
+}
+
+.inverted.disabled,
+.inverted.disabled:hover,
+.inverted.disabled:focus,
+.inverted.disabled:focus:hover {
+  padding: rem(7) rem(24);
+  color: color(gray, 50);
+  cursor: default;
+  background-color: transparent;
+  border-color: color(gray, 40);
+  border-width: rem(1);
+}
+
+.simple.disabled,
+.simple.disabled:hover,
+.simple.disabled:focus,
+.simple.disabled:focus:hover {
+  color: color(gray, 50);
+  cursor: default;
+  background-color: transparent;
+  border-color: transparent;
+}

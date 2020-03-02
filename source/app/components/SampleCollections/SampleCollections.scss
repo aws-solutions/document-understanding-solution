@@ -1,0 +1,115 @@
+@import '../../styles/shared/index';
+
+.list {
+  display: flex;
+  flex-flow: row wrap;
+  width: span(6);
+  padding: 0;
+  margin: 0 auto;
+  justify-content: center;
+  justify-items: center;
+
+  @include media-grid(8) {
+    width: span(6, $grid-8col);
+  }
+
+  @include media-grid(4) {
+    width: 100%;
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: rem(20);
+  width: rem(150);
+  text-align: center;
+}
+
+.doc {
+  width: em(100);
+  height: em(150);
+  margin-bottom: rem(15);
+  background: #fff;
+  display: flex;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.3);
+
+  img {
+    width: 100%;
+  }
+}
+
+.docPile {
+  width: em(100);
+  height: em(150);
+  position: relative;
+  margin-bottom: rem(15);
+
+  > * {
+    transform-origin: 50% 80%;
+    position: absolute;
+    z-index: 2;
+    margin-bottom: 0;
+  }
+
+  > :first-child {
+    transform: rotate(10deg);
+    z-index: 3;
+  }
+
+  > :last-child {
+    transform: rotate(-10deg);
+    z-index: 1;
+  }
+}
+
+.spinnerButton {
+  position: relative;
+
+  span {
+    left: 0;
+    position: absolute;
+    display: inline-block;
+    width: 2em;
+    height: 2em;
+    vertical-align: middle;
+    margin-top: -4px;
+    opacity: 0;
+  }
+
+  &.pending {
+    transition: padding-left 200ms ease;
+    padding-left: 2em;
+
+    span {
+      transition: opacity 200ms linear;
+      opacity: 1;
+    }
+  }
+}
+
+.previewDoc {
+  @include fixed(0, 0, 0, 0);
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.8);
+
+  @supports (backdrop-filter: blur(5px)) {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+  }
+
+  display: flex;
+  flex-direction: row;
+  padding: 5vh;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    height: 100%;
+  }
+}
+
+.details {
+  margin-left: rem(30);
+}

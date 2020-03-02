@@ -1,0 +1,92 @@
+@import '../../styles/shared/index';
+
+$header-bg-color: color(gray, 90);
+
+// Header
+.header {
+  @include site-gutters();
+  @include relative();
+  display: flex;
+  min-height: rem(80);
+  padding-top: rem(16);
+  padding-bottom: rem(16);
+  background: $header-bg-color;
+  background-position: right top;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+
+  > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  // Logo
+  .logoLink {
+    line-height: 0;
+    z-index: 3;
+  }
+
+  // Primary Heading
+  h1 {
+    @include absolute(0, 0, 0, 0);
+    @include type-heading-h1(color(white));
+    line-height: rem(80) !important;
+    margin: 0 3em;
+    text-align: center;
+  }
+
+  .backButton {
+    z-index: 3;
+    text-decoration: none;
+    margin-left: 2em;
+    color: color(orange, 20);
+    font-weight: bold;
+  }
+
+  // Back button
+  svg {
+    @include relative(-5px);
+    width: 1em;
+    height: 1em;
+    margin-right: 0.25em;
+    vertical-align: middle;
+    cursor: pointer;
+
+    &:hover g {
+      stroke: color(orange, 20);
+    }
+  }
+
+  @include media('<=tabletPortraitSmall') {
+    > .logo {
+      width: rem(48);
+    }
+  }
+}
+
+.logoutlink {
+  font-size: 0;
+  z-index: 3;
+  float: right;
+
+  @include media('<=tabletPortrait') {
+    margin-bottom: 0;
+  }
+
+  @include media('<=tabletPortraitSmall') {
+    margin-top: 0.5rem;
+  }
+}
+.borderlessButton {
+  border-style: none;
+}
+.backButtons {
+  > * + * {
+    margin-left: rem(10);
+    margin-left: 10;
+  }
+}

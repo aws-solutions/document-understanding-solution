@@ -1,0 +1,20 @@
+// MEDIA QUERIES
+// =============================================================================
+$breakpoints: (
+  mobileSmall: em(320),
+  mobileMedium: em(375),
+  mobileLarge: em(480),
+  mobileLandscape: em(568),
+  tabletPortraitSmall: em(600),
+  tabletPortrait: em(768),
+  mobileLandscapeLarge: em(812),
+  tabletLandscapeSmall: em(960),
+  tabletLandscape: em(1024),
+  desktopSmall: em(1280),
+  desktopMedium: em(1440),
+  desktopLarge: em(1920),
+  desktopHD: em(2560)
+);
+
+// More info: http://include-media.com
+@import '../vendor/include-media';

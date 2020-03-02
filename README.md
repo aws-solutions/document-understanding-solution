@@ -1,6 +1,62 @@
 # Amazon Textract Document Understanding Solution
 
+## CICD Deploy
+
+### Requirements
+
+- aws cli
+
+### Getting Started with Full Deploy
+
+- Create a bucket to act as the target Amazon S3 distribution bucket
+
+_Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. Also, the assets in this bucket should be publicly accessible.
+
+For example, you create a bucket called `document-understanding-bucket-us-east-1`,
+
+- Now build the distributable:
+
+```
+chmod +x ./deployment/build-s3-dist.sh
+./deployment/build-s3-dist.sh <bucket-name-minus-region> <solution-name> <version>
+```
+
+For example,
+
+```
+./deployment/build-s3-dist.sh document-understanding-bucket document-understanding-solution v1.0.0
+```
+
+- Deploy the distributable to an Amazon S3 bucket in your account. _Note:_ you must have the AWS Command Line Interface installed.
+
+```
+aws s3 cp ./deployment/global-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
+aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
+```
+
+- Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
+- Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
+
+```
+aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+```
+
+This solutions will create 6 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
+
+- 2 for CICD
+- 1 for solution specific CDK Toolkit
+- 2 for documents (sample and general documents)
+- 1 for the client bucket
+- 1 for CDK toolkit (if this is the customer's first try with CDK)
+
+### Notes
+
+- Do NOT change the `cicd` in package.json. This field is for the deployment system to use in CodePipeline
+- Dude to limitations of CodeCommit, you cannot use this deploy approach if you add a file to the solution that is above 6MB (for good measure, stay below 5MB)
+
 ## Development Deploy
+
+There is also a deploy option for developers, and those wishing to modify the source code. This deploy does not involve creating any buckets, and allows for running the client-side code on a local server.
 
 ### Requirements
 
@@ -9,12 +65,16 @@
 - aws cli
 - tsc
 
-### Getting Started with Full Deploy
+To deploy using this approach, you must first set several values inside the `package.json` file in the `source` folder.
 
-1. Direct Deploy:
+- Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. Unlike the regular CICD deploy, this approach will not pull the AWS region from your current AWS profile.
+- Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
 
-- Set your deployment region in the stack->region property of package.json, replacing "%%REGION%%".
-- If you have never used CDK before, then the deployment command below may fail with a message saying that you first need to run `cdk bootstrap {accountId}/{region}`. This will deploy a small stack with resources for running CDK. Afterwards, run the below yarn command again.
+Now switch to the source directory, and use yarn to deploy the solution:
+
+```
+cd ./source
+```
 
 ```
 yarn && yarn deploy
@@ -30,25 +90,6 @@ This will create 3 or 4 S3 buckets that will have to be manually deleted when th
 - 1 for the client bucket
 - 1 for CDK toolkit (if this is your first time using CDK)
 
-2. CICD Deploy:
-
-There is also a way to deploy the solution that invokes the same CICD pipeline that is used by Solutions Builder team. This will create a separate stack that loads all resource onto CodePipeline, and then uses CodePipeline to invoke CDK. Make sure stack->region inside package.json contains its original value, "%%REGION%%".
-
-```
-./deployment/build_and_deploy_project.sh [bucket-name-minus-region] [version] [email address]
-```
-
-Note: To deploy this solution, you must create an S3 bucket that will house the project resources. The bucket name must end with the region in which you wish to deploy the solution, e.g `dus-bucket-us-east-1`.
-However, when you feed the bucket as an argument to the above script, omit the region at the end, e.g `dus-bucket`. This is designed to replicate how the solutions builder website will deploy this solution.
-
-This solutions will create 6 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
-
-- 2 for CICD
-- 1 for solution specific CDK Toolkit
-- 2 for documents (sample and general documents)
-- 1 for the client bucket
-- 1 for CDK toolkit (if this is the customer's first try with CDK)
-
 ### Development Deploy Commands
 
 - `yarn deploy:backend` : deploys or updates the backend stack
@@ -60,7 +101,7 @@ This solutions will create 6 S3 buckets that need to be manually deleted when th
 
 ### Development Deploy Workflow and stacknaming
 
-The `package.json` script node `stackname` sets the stackname for the deploy commands. Throughout development it has been imparative to maintain multiple stacks in order to allow client app development and stack architecture development to work without creating breaking changes. When a new stackname is merged into develop it should have the most up to date deployments.
+The `package.json` script node `stackname` sets the stackname for the deploy commands. Throughout development it has been imperative to maintain multiple stacks in order to allow client app development and stack architecture development to work without creating breaking changes. When a new stackname is merged into develop it should have the most up to date deployments.
 
 ## Developing Locally
 
@@ -96,15 +137,17 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 - There are 3 SQS queues created as part of this solution, and every one of them has a Lambda that is polling them once every 4 seconds. This means that, after about 15 days, the solution will use up the 1,000,000 requests associated with the AWS free tier, and you will start receiving charges for every SQS request. Please follow this link for more information: https://aws.amazon.com/sqs/pricing/
 
+- The CDK Toolkit stacks that are created during deploy of this solution are not destroyed when you tear down the solution stacks. If you want to remove these resources, delete the S3 bucket that contains `staging-bucket` in the name, and then delete the `CDKToolkit` stack.
+
 ## Delete demo application
 
-1. Direct Deploy:
-
-Run `yarn destroy`.
-
-2. CICD Deploy:
+1. Full CICD Deploy:
 
 Either run `aws cloudformation delete-stack --stack-name {CICD stack}`, or go to Cloudformation in the AWS Console and delete the stack that ends with "CICD". You will also have to go to CodeCommit in the console and manually delete the Repository that was created during the deploy.
+
+2. Dev Deploy:
+
+Make sure you are in the `source` directory, and then run `yarn destroy`.
 
 ## License
 
