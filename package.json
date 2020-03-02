@@ -27,7 +27,7 @@
     "deploy:show": "AWS_REGION=$npm_package_stack_region node ./bin/client-stack-url.js",
     "deploy": "yarn deploy:stack && yarn deploy:client && yarn deploy:setup-samples && yarn deploy:show",
     "deploy:frontend": "yarn deploy:client && yarn deploy:setup-samples && yarn deploy:show",
-    "destroy": "AWS_REGION=$npm_package_stack_region cdk destroy -v true",
+    "destroy": "AWS_REGION=$npm_package_stack_region cdk destroy -v true -a \"node bin/deploy-client-stack.js\" && AWS_REGION=$npm_package_stack_region cdk destroy -v true",
     "update-client-stack-variables": "bash ./deployment/custom-deployment/bin/stack-variables-to-client.sh",
     "update-pdf-lambda-code": "bash ./deployment/custom-deployment/bin/update-pdf-lambda-code.sh",
     "dev": "next app",
