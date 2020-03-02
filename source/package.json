@@ -29,7 +29,7 @@
     "deploy:setup-user": "AWS_REGION=$npm_package_stack_region node bin/user-setup.js",
     "deploy:setup-samples": "AWS_REGION=$npm_package_stack_region bash ./bin/upload-samples.sh",
     "deploy:show": "AWS_REGION=$npm_package_stack_region node ./bin/client-stack-url.js",
-    "deploy-all": "yarn compile-ts-stacks && yarn bootstrap && yarn deploy:backend && yarn deploy:client && yarn deploy:setup-samples && yarn deploy:show",
+    "deploy-all": "yarn compile-ts-stacks && yarn bootstrap && yarn deploy:backend && yarn deploy:client && yarn deploy:setup-samples",
     "deploy": "yarn deploy-all && yarn update-pdf-lambda-code",
     "deploy:frontend": "yarn deploy:client && yarn deploy:setup-samples && yarn deploy:show",
     "destroy": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk destroy -v true $npm_package_stack_stacknameStack $npm_package_stack_stacknameClientStack",
