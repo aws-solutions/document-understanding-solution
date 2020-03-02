@@ -24,9 +24,9 @@ def deleteESItem(elasticsearchDomain, documentId):
             connection_class=RequestsHttpConnection
         )
 
-        es.delete(index="textract", doc_type="document", id=documentId)
-
-        print("Deleted document: {}".format(documentId))
+        if es.exists(index="textract", doc_type="document", id=documentId):
+            es.delete(index="textract", doc_type="document", id=documentId)
+            print("Deleted document: {}".format(documentId))
 
 
 def search(request):
