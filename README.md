@@ -64,6 +64,7 @@ There is also a deploy option for developers, and those wishing to modify the so
 - node 10+
 - aws cli
 - tsc
+- jq
 
 To deploy using this approach, you must first set several values inside the `package.json` file in the `source` folder.
 
