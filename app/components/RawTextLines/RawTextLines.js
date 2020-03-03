@@ -49,7 +49,6 @@ export default function RawTextLines({
                 className={cs(css.line, pageNumber === currentPageNumber && css.onThisPage)}
                 onClick={() => {
                   onHighlight(id)
-                  onSwitchPage(pageNumber)
                 }}
               >
                 {text}
