@@ -52,7 +52,7 @@ This solutions will create 6 S3 buckets that need to be manually deleted when th
 ### Notes
 
 - Do NOT change the `cicd` in package.json. This field is for the deployment system to use in CodePipeline
-- Dude to limitations of CodeCommit, you cannot use this deploy approach if you add a file to the solution that is above 6MB (for good measure, stay below 5MB)
+- Due to limitations of CodeCommit, you cannot use this deploy approach if you add a file to the solution that is above 6MB (for good measure, stay below 5MB)
 
 ## Development Deploy
 
