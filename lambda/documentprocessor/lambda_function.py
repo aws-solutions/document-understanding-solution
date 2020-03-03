@@ -3,7 +3,7 @@ import os
 from helper import FileHelper, AwsHelper
 
 ASYNC_JOB_TIMEOUT_SECONDS = 1800
-SYNC_JOB_TIMEOUT_SECONDS = 90
+SYNC_JOB_TIMEOUT_SECONDS = 180
 def postMessage(client, qUrl, jsonMessage,delaySeconds=0):
 
     message = json.dumps(jsonMessage)
@@ -13,7 +13,6 @@ def postMessage(client, qUrl, jsonMessage,delaySeconds=0):
         MessageBody=message,
         DelaySeconds = delaySeconds
     )
-
     print("Submitted message to queue: {}".format(message))
 
 def processRequest(request):
@@ -32,6 +31,15 @@ def processRequest(request):
     ext = FileHelper.getFileExtenstion(objectName.lower())
     print("Extension: {}".format(ext))
 
+
+    client = AwsHelper().getClient('sqs')
+    if(ext and ext not in ["jpg", "jpeg", "png", "pdf"]): #If not expected extension, change status to FAILED and exit
+        jsonErrorHandlerMessage = {
+            'documentId' : documentId
+        }
+        postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage)
+        return 
+    
     if(ext and ext in ["jpg", "jpeg", "png"]):
         qUrl = request['syncQueueUrl']
         errorHandlerTimeoutSeconds = SYNC_JOB_TIMEOUT_SECONDS
@@ -41,22 +49,19 @@ def processRequest(request):
 
     if(qUrl):
         features = ["Text", "Forms", "Tables"]
-
         jsonMessage = { 'documentId' : documentId,
             "features" : features,
             'bucketName': bucketName,
             'objectName' : objectName }
-
-        client = AwsHelper().getClient('sqs')
         postMessage(client, qUrl, jsonMessage)
 
-        jsonMessage = {
+
+        jsonErrorHandlerMessage = {
             'documentId' : documentId
         }
-        postMessage(client, jobErrorHandlerQueueUrl, jsonMessage , errorHandlerTimeoutSeconds)
+        postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage , errorHandlerTimeoutSeconds)
 
     output = "Completed routing for documentId: {}, object: {}/{}".format(documentId, bucketName, objectName)
-
     print(output)
 
 def processRecord(record, syncQueueUrl, asyncQueueUrl,errorHandlerQueueUrl):
