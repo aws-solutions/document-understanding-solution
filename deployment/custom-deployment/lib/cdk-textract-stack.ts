@@ -223,17 +223,17 @@ export class CdkTextractStack extends cdk.Stack {
 
     // SQS queues
     const syncJobsQueue = new sqs.Queue(this, this.resourceName("SyncJobs"), {
-      visibilityTimeout: cdk.Duration.seconds(30),
+      visibilityTimeout: cdk.Duration.seconds(900),
       retentionPeriod: cdk.Duration.seconds(1209600)
     });
 
     const asyncJobsQueue = new sqs.Queue(this, this.resourceName("AsyncJobs"), {
-      visibilityTimeout: cdk.Duration.seconds(30),
+      visibilityTimeout: cdk.Duration.seconds(120),
       retentionPeriod: cdk.Duration.seconds(1209600)
     });
 
     const jobErrorHandlerQueue = new sqs.Queue(this, this.resourceName("jobErrorHandler"), {
-      visibilityTimeout: cdk.Duration.seconds(30),
+      visibilityTimeout: cdk.Duration.seconds(60),
       retentionPeriod: cdk.Duration.seconds(1209600)
     });
 
@@ -441,6 +441,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.fromAsset("lambda/documentprocessor"),
         handler: "lambda_function.lambda_handler",
+        reservedConcurrentExecutions: 100,
         timeout: cdk.Duration.seconds(300),
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
@@ -472,8 +473,9 @@ export class CdkTextractStack extends cdk.Stack {
       {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.fromAsset("lambda/joberrorhandler"),
+        reservedConcurrentExecutions: 100,
         handler: "lambda_function.lambda_handler",
-        timeout: cdk.Duration.seconds(30),
+        timeout: cdk.Duration.seconds(60),
         environment: {
           DOCUMENTS_TABLE: documentsTable.tableName
         }
@@ -501,6 +503,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         runtime: lambda.Runtime.JAVA_8,
         code: lambda.Code.fromAsset("lambda/pdfgenerator"),
+        reservedConcurrentExecutions: 100,
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
         timeout: cdk.Duration.seconds(900)
@@ -520,8 +523,8 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 1,
-        timeout: cdk.Duration.seconds(25),
+        reservedConcurrentExecutions: 50,
+        timeout: cdk.Duration.seconds(900),
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
@@ -589,8 +592,8 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/asyncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 1,
-        timeout: cdk.Duration.seconds(15),
+        reservedConcurrentExecutions: 50,
+        timeout: cdk.Duration.seconds(120),
         environment: {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
@@ -720,7 +723,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/apiprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 50,
+        reservedConcurrentExecutions: 100,
         timeout: cdk.Duration.seconds(60),
         environment: {
           CONTENT_BUCKET: documentsS3Bucket.bucketName,
@@ -757,7 +760,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     const api = new apigateway.LambdaRestApi(
       this,
-      this.resourceName("TextractAPI"),
+      this.resourceName("DUSAPI"),
       {
         handler: apiProcessor,
         proxy: false

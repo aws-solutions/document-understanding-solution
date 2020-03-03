@@ -17,6 +17,23 @@ DocumentList.defaultProps = {
   items: [],
 }
 
+ function isSupportedExtension(extension){
+  console.log(extension)
+  if (['png', 'jpg', 'jpeg','pdf'].indexOf(extension.toLowerCase()) >= 0) {
+    return true
+  }
+  return false
+}
+
+function returnFormattedExtension(extension){
+  if (isSupportedExtension(extension)){
+    return extension.toUpperCase();
+  }
+  else{
+    return "NOT SUPPORTED";
+  }
+}
+
 export default function DocumentList({ className, items }) {
   const listClassNames = classNames(css.list, className)
 
@@ -35,7 +52,7 @@ export default function DocumentList({ className, items }) {
             const { target, ...linkProps } = link || {}
 
             const filenameParts = title.split('.')
-            const extension = filenameParts.pop().toUpperCase()
+            const extension = returnFormattedExtension(filenameParts.pop())
             const basename = filenameParts.join('.')
 
             return (
