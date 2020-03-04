@@ -55,15 +55,15 @@ class ComprehendHelper:
                     # some block may not contain text
                     if  'Text' in block:
                         
-                        # calculate the size of this page if we add this text element + a space separator.
+                        # calculate the size of this page if we add this text element + the ". " separator.
                         # Comprehend has a UTF8 size limit, so we dismiss excessive elements once size is
                         # reached.
-                        projectedSize = len(rawPages[pageResultIndex]) + len(block['Text']) + 1
+                        projectedSize = len(rawPages[pageResultIndex]) + len(block['Text']) + 2
                         
                         # add if page size allows
                         if MAX_COMPREHEND_UTF8_PAGE_SIZE > projectedSize :
                             # add a separator from previous text block
-                            rawPages[pageResultIndex] += " "
+                            rawPages[pageResultIndex] += ". "
                             # text block
                             rawPages[pageResultIndex] += block['Text']
 
