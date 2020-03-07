@@ -4,6 +4,7 @@ from trp import *
 from elasticsearch import Elasticsearch, RequestsHttpConnection, client
 from requests_aws4auth import AWS4Auth
 import boto3
+import datetime
 
 
 def round_floats(o):
@@ -28,6 +29,52 @@ def prune_blocks(o):
                 del block['Geometry']['Polygon']
 
     return o
+
+def format_date(date):
+    try:
+        # to support dates like 02/25/2019 or 2/25/2019
+        date_object = datetime.datetime.strptime(date,"%m/%d/%Y")
+    except ValueError:
+        try:
+            # to support dates in format 02-25-2019 or 2-25-2019
+            date_object = datetime.datetime.strptime(date,"%m-%d-%Y")
+        except ValueError:
+            try:
+                # to support dates in format January 2020
+                date_object = datetime.datetime.strptime(date,"%B %Y")
+            except ValueError:
+                try:
+                    # to support dates in format Jan 2020
+                    date_object = datetime.datetime.strptime(date,"%b %Y")
+                except ValueError:
+                    try:
+                        # to support dates in format 5/22/19 or 05/22/19
+                        date_object = datetime.datetime.strptime(date,"%m/%d/%y")
+                    except ValueError:
+                        try:
+                            # to support dates in format January 2020
+                            date_object = datetime.datetime.strptime(date,"%B %Y")
+                        except ValueError:
+                            try:
+                                # to support dates in format 2020
+                                date_object = datetime.datetime.strptime(date,"%Y")
+                            except ValueError:
+                                try:
+                                    # to support dates in format 5-22-2019 or 05-22-2019
+                                    date_object = datetime.datetime.strptime(date,"%m-%d-%Y")
+                                except ValueError:
+                                    try:
+                                        # to support dates in format December 31,2019
+                                        date_object = datetime.datetime.strptime(date,"%B %d, %Y")
+                                    except ValueError:
+                                        try:
+                                            # to support dates in format Dec 31,2019
+                                            date_object = datetime.datetime.strptime(date,"%b %d, %Y")
+                                        except ValueError:
+                                            print("Date format not matched {}".format(date))
+                                            date_object = "INVALID"
+    return date_object
+
 
 
 class OutputGenerator:
@@ -103,53 +150,84 @@ class OutputGenerator:
         S3Helper.writeCSVRaw(csvData, self.bucketName, opath)
         self.saveItem(self.documentId, "page-{}-Tables".format(p), opath)
 
-    def _indexDocument(self, text):
+    def indexDocument(self, text, comprehendEntities):
+        
+        if(self.elasticsearchDomain):
 
-        host = self.elasticsearchDomain
+            host = self.elasticsearchDomain
 
-        if(text):
-            service = 'es'
-            ss = boto3.Session()
-            credentials = ss.get_credentials()
-            region = ss.region_name
+            if(text):
+                service = 'es'
+                ss = boto3.Session()
+                credentials = ss.get_credentials()
+                region = ss.region_name
 
-            awsauth = AWS4Auth(credentials.access_key, credentials.secret_key,
-                               region, service, session_token=credentials.token)
+                awsauth = AWS4Auth(credentials.access_key, credentials.secret_key,
+                                region, service, session_token=credentials.token)
 
-            es = Elasticsearch(
-                hosts=[{'host': host, 'port': 443}],
-                http_auth=awsauth,
-                use_ssl=True,
-                verify_certs=True,
-                connection_class=RequestsHttpConnection
-            )
-
-            es_index_client = client.IndicesClient(es)
-
-            document = {
-                "documentId": "{}".format(self.documentId),
-                "name": "{}".format(self.objectName),
-                "bucket": "{}".format(self.bucketName),
-                "content": text
-            }
-
-            if not es_index_client.exists(index='textract'):
-                print("Index 'textract' does not exist, creating...")
-                es_index_client.create(
-                    index='textract',
-                    body={
-                        'settings': {
-                            'index': {
-                                "number_of_shards": 2
-                            }
-                        }
-                    }
+                es = Elasticsearch(
+                    hosts=[{'host': host, 'port': 443}],
+                    http_auth=awsauth,
+                    use_ssl=True,
+                    verify_certs=True,
+                    connection_class=RequestsHttpConnection
                 )
 
-            es.index(index="textract", doc_type="document",
-                     id=self.documentId, body=document)
+                es_index_client = client.IndicesClient(es)
 
-            print("Indexed document: {}".format(self.objectName))
+                document = {
+                    "documentId": "{}".format(self.documentId),
+                    "name": "{}".format(self.objectName),
+                    "bucket": "{}".format(self.bucketName),
+                    "content": text
+                }
+
+                # add comprehend entities while indexing the document
+                for key, val in comprehendEntities.items():
+                    key = key.lower()
+                    if(key == "date"):
+                        for date in val:
+                            date_object = format_date(date)
+                            if(date_object!="INVALID"):
+                                if(key not in document):
+                                    document[key] = []
+                                document[key].append(date_object.strftime("%Y-%m-%d"))
+                        print("Document with Converted dates: {}".format(document))
+                    else:
+                        document[key] = val
+                    
+                try:
+                    if not es_index_client.exists(index='textract'):
+                        print("Index 'textract' does not exist, creating...")
+                        es_index_client.create(
+                            index="textract",
+                            body={
+                                "settings": {
+                                    "index": {
+                                        "number_of_shards": 2
+                                    }
+                                },
+                                "mappings":{
+                                    "document":{
+                                        "properties":{
+                                        "date":{ 
+                                            "type": "date",
+                                            "format": "M'/'dd'/'yyyy||date||year||year_month||dd MMM yyyy||dd'/'MM'/'yyyy||yyyy'/'MM'/'dd||dd'/'MM'/'YY||year_month_day||MM'/'dd'/'yy||dd MMM||MM'/'yyyy||M-dd-yyyy||MM'/'dd'/'yyyy||M||d'/'MM'/'yyyy||MM'/'dd'/'yy"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
+
+                    es.index(index="textract", doc_type="document",
+                            id=self.documentId, body=json.loads(json.dumps(document)))
+
+                    print("Indexed document: {}".format(self.objectName))
+                except Exception as E:
+                    print("Failed to create index with desired mapping {}".format(E))
+        else:
+            print("Document not indexed {}".format(self.elasticsearchDomain))
 
     def run(self):
 
@@ -177,5 +255,6 @@ class OutputGenerator:
 
             p = p + 1
 
-        if(self.elasticsearchDomain):
-            self._indexDocument(docText)
+        return docText
+        # if(self.elasticsearchDomain):
+        #     self._indexDocument(docText)

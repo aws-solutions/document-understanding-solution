@@ -183,6 +183,7 @@ class ComprehendHelper:
 
         data = {}
         data['results'] = []
+        entities_to_index = {}
         
         # process comprehend entities for each page
         for p in range(0, numOfPages):
@@ -204,6 +205,10 @@ class ComprehendHelper:
                     entity['Type'] = e['Type']
                     entity['Score'] = e['Score']
                     page['Entities'].append(entity)
+
+                    if e['Type'] not in entities_to_index:
+                        entities_to_index[e['Type']] = []
+                    entities_to_index[e['Type']].append(e['Text'])
                 
                     # make a note of this added entity
                     entities.add(e['Text'].upper())
@@ -212,6 +217,7 @@ class ComprehendHelper:
 
         # create results file in S3 under document folder
         S3Helper.writeToS3(json.dumps(data), bucket, documentPath + "comprehendEntities.json")
+        return entities_to_index
 
 
     #
@@ -431,7 +437,7 @@ class ComprehendHelper:
             pagesProcessed += pagesToProcess
 
         # process comprehend data, create the entities result file in S3
-        self.processComprehendEntities(comprehendEntities,
+        processedComprehendData = self.processComprehendEntities(comprehendEntities,
                                        numOfPages,
                                        bucket,
                                        documentPath)
@@ -449,5 +455,5 @@ class ComprehendHelper:
                                            documentPath)
                              
                                          
-        return True
+        return processedComprehendData
 
