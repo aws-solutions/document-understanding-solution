@@ -52,19 +52,23 @@ def search(request):
     if 'date:' in keyword:
         date_range = re.findall(r'date:\'\[\d{4}-\d{2}-\d{2} TO \d{4}-\d{2}-\d{2}\]\'',keyword)
         # for cases where user has input a single date
-        if len(date_range)!=1:
+        if len(date_range)< 1:
             date = re.findall(r'date:\'\[(\d{4}-\d{2}-\d{2})\]\'',keyword)
-            if len(date)!=1:
+            if len(date)< 1:
                 raise ValueError("Invalid Search. Date search should be in format date:'[YYYY-mm-dd TO YYYY-mm-dd]' or date:'[YYYY-mm-dd]'")
             elif len(date) == 1:
                 date_from = date_to = datetime.datetime.strptime(date[0],"%Y-%m-%d")
                 keyword = re.sub(r'date:\'\[\d{4}-\d{2}-\d{2}\]\'',str(date[0])+" TO "+str(date[0]),keyword)
                 print(keyword)
+            elif len(date) > 1 :
+                raise ValueError("Searching for multiple dates at a time is not permitted. Use a date range instead.")
         elif len(date_range)==1:
             # for cases where a range of date is provided by user
             date_range = re.findall(r'date:\'\[(\d{4}-\d{2}-\d{2} TO \d{4}-\d{2}-\d{2})\]\'',keyword)[0]
             date_from = datetime.datetime.strptime(date_range.split(" TO ")[0],"%Y-%m-%d")
             date_to = datetime.datetime.strptime(date_range.split(" TO ")[1],"%Y-%m-%d")
+        elif len(date_range) > 1:
+            raise ValueError("Searching for multiple date ranges at a time is not permitted")
                 
 
     if(keyword is not None):

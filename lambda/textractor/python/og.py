@@ -6,6 +6,7 @@ from requests_aws4auth import AWS4Auth
 import boto3
 import datetime
 
+UNSUPPORTED_DATE_FORMAT = "UNSUPPORTED_DATE_FORMAT"
 
 def round_floats(o):
     if isinstance(o, float):
@@ -38,7 +39,7 @@ def format_date(date):
             return datetime.datetime.strptime(date,pattern)
         except:
             print("Date format not matched {}".format(date))
-            return "INVALID"
+            return UNSUPPORTED_DATE_FORMAT
 
 class OutputGenerator:
     def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb, elasticsearchDomain=None):
@@ -151,7 +152,7 @@ class OutputGenerator:
                     if(key == "date"):
                         for date in val:
                             date_object = format_date(date)
-                            if(date_object!="INVALID"):
+                            if(date_object!= UNSUPPORTED_DATE_FORMAT):
                                 if(key not in document):
                                     document[key] = []
                                 document[key].append(date_object.strftime("%Y-%m-%d"))
