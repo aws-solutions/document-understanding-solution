@@ -30,52 +30,15 @@ def prune_blocks(o):
 
     return o
 
+# This function will convert all the dates to a given format so as to enable search in an easy way for the users
 def format_date(date):
-    try:
-        # to support dates like 02/25/2019 or 2/25/2019
-        date_object = datetime.datetime.strptime(date,"%m/%d/%Y")
-    except ValueError:
+    date_patterns = ["%m/%d/%Y", "%m-%d-%Y", "%B %Y", "%b %Y", "%m/%d/%y", "%B, %Y", "%Y", "%d-%m-%Y", "%B %d, %Y", "%b %d, %Y", "%Y."]
+    for pattern in date_patterns:
         try:
-            # to support dates in format 02-25-2019 or 2-25-2019
-            date_object = datetime.datetime.strptime(date,"%m-%d-%Y")
-        except ValueError:
-            try:
-                # to support dates in format January 2020
-                date_object = datetime.datetime.strptime(date,"%B %Y")
-            except ValueError:
-                try:
-                    # to support dates in format Jan 2020
-                    date_object = datetime.datetime.strptime(date,"%b %Y")
-                except ValueError:
-                    try:
-                        # to support dates in format 5/22/19 or 05/22/19
-                        date_object = datetime.datetime.strptime(date,"%m/%d/%y")
-                    except ValueError:
-                        try:
-                            # to support dates in format January 2020
-                            date_object = datetime.datetime.strptime(date,"%B %Y")
-                        except ValueError:
-                            try:
-                                # to support dates in format 2020
-                                date_object = datetime.datetime.strptime(date,"%Y")
-                            except ValueError:
-                                try:
-                                    # to support dates in format 5-22-2019 or 05-22-2019
-                                    date_object = datetime.datetime.strptime(date,"%m-%d-%Y")
-                                except ValueError:
-                                    try:
-                                        # to support dates in format December 31,2019
-                                        date_object = datetime.datetime.strptime(date,"%B %d, %Y")
-                                    except ValueError:
-                                        try:
-                                            # to support dates in format Dec 31,2019
-                                            date_object = datetime.datetime.strptime(date,"%b %d, %Y")
-                                        except ValueError:
-                                            print("Date format not matched {}".format(date))
-                                            date_object = "INVALID"
-    return date_object
-
-
+            return datetime.datetime.strptime(date,pattern)
+        except:
+            print("Date format not matched {}".format(date))
+            return "INVALID"
 
 class OutputGenerator:
     def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb, elasticsearchDomain=None):
