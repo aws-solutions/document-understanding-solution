@@ -76,3 +76,12 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 ## License
 
 This project is licensed under the Apache-2.0 License.
+You may not use this file except in compliance with the License. A copy of the License is located at
+http://www.apache.org/licenses/
+
+
+## Additional Notes
+
+ The intended use is for users to use this application as a reference architecutre to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
