@@ -12,7 +12,7 @@
 
 _Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. Also, the assets in this bucket should be publicly accessible.
 
-For example, you create a bucket called `document-understanding-bucket-us-east-1`,
+For example, you create a bucket called `my-solutions-bucket-us-east-1`,
 
 - Now build the distributable:
 
@@ -24,7 +24,7 @@ chmod +x ./deployment/build-s3-dist.sh
 For example,
 
 ```
-./deployment/build-s3-dist.sh document-understanding-bucket document-understanding-solution v1.0.0
+./deployment/build-s3-dist.sh my-solutions-bucket document-understanding-solution v1.0.0
 ```
 
 - Deploy the distributable to an Amazon S3 bucket in your account. _Note:_ you must have the AWS Command Line Interface installed.
