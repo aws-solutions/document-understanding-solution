@@ -81,7 +81,7 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
 
     opg = OutputGenerator(documentId, response, outputBucketName,
                           objectName, detectForms, detectTables, ddb, elasticsearchDomain)
-    opg.run()
+    docText = opg.run()
 
     generatePdf(documentId, bucketName, objectName, outputBucketName)
 
@@ -90,10 +90,13 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     print("path: " + path)
     maxPages = 100
     comprehendClient = ComprehendHelper()
-    comprehendClient.processComprehend(
+    processedComprehendData = comprehendClient.processComprehend(
         outputBucketName, 'response.json', path, maxPages)
 
     print("DocumentId: {}".format(documentId))
+    print("Processed Comprehend data: {}".format(processedComprehendData))
+
+    opg.indexDocument(docText, processedComprehendData)
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
     ds.markDocumentComplete(documentId)

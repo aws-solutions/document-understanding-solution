@@ -4,16 +4,19 @@ from helper import FileHelper, AwsHelper
 
 ASYNC_JOB_TIMEOUT_SECONDS = 1800
 SYNC_JOB_TIMEOUT_SECONDS = 180
-def postMessage(client, qUrl, jsonMessage,delaySeconds=0):
+
+
+def postMessage(client, qUrl, jsonMessage, delaySeconds=0):
 
     message = json.dumps(jsonMessage)
 
     client.send_message(
         QueueUrl=qUrl,
         MessageBody=message,
-        DelaySeconds = delaySeconds
+        DelaySeconds=delaySeconds
     )
     print("Submitted message to queue: {}".format(message))
+
 
 def processRequest(request):
 
@@ -31,15 +34,15 @@ def processRequest(request):
     ext = FileHelper.getFileExtenstion(objectName.lower())
     print("Extension: {}".format(ext))
 
-
     client = AwsHelper().getClient('sqs')
-    if(ext and ext not in ["jpg", "jpeg", "png", "pdf"]): #If not expected extension, change status to FAILED and exit
+    # If not expected extension, change status to FAILED and exit
+    if(ext and ext not in ["jpg", "jpeg", "png", "pdf"]):
         jsonErrorHandlerMessage = {
-            'documentId' : documentId
+            'documentId': documentId
         }
         postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage)
-        return 
-    
+        return
+
     if(ext and ext in ["jpg", "jpeg", "png"]):
         qUrl = request['syncQueueUrl']
         errorHandlerTimeoutSeconds = SYNC_JOB_TIMEOUT_SECONDS
@@ -49,30 +52,32 @@ def processRequest(request):
 
     if(qUrl):
         features = ["Text", "Forms", "Tables"]
-        jsonMessage = { 'documentId' : documentId,
-            "features" : features,
-            'bucketName': bucketName,
-            'objectName' : objectName }
+        jsonMessage = {'documentId': documentId,
+                       "features": features,
+                       'bucketName': bucketName,
+                       'objectName': objectName}
         postMessage(client, qUrl, jsonMessage)
 
-
         jsonErrorHandlerMessage = {
-            'documentId' : documentId
+            'documentId': documentId
         }
-        postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage , errorHandlerTimeoutSeconds)
+        postMessage(client, jobErrorHandlerQueueUrl,
+                    jsonErrorHandlerMessage, errorHandlerTimeoutSeconds)
 
-    output = "Completed routing for documentId: {}, object: {}/{}".format(documentId, bucketName, objectName)
+    output = "Completed routing for documentId: {}, object: {}/{}".format(
+        documentId, bucketName, objectName)
     print(output)
 
-def processRecord(record, syncQueueUrl, asyncQueueUrl,errorHandlerQueueUrl):
-    
+
+def processRecord(record, syncQueueUrl, asyncQueueUrl, errorHandlerQueueUrl):
+
     newImage = record["dynamodb"]["NewImage"]
-    
+
     documentId = None
     bucketName = None
     objectName = None
     documentStatus = None
-    
+
     if("documentId" in newImage and "S" in newImage["documentId"]):
         documentId = newImage["documentId"]["S"]
     if("bucketName" in newImage and "S" in newImage["bucketName"]):
@@ -82,7 +87,8 @@ def processRecord(record, syncQueueUrl, asyncQueueUrl,errorHandlerQueueUrl):
     if("documentStatus" in newImage and "S" in newImage["documentStatus"]):
         documentStatus = newImage["documentStatus"]["S"]
 
-    print("DocumentId: {}, BucketName: {}, ObjectName: {}, DocumentStatus: {}".format(documentId, bucketName, objectName, documentStatus))
+    print("DocumentId: {}, BucketName: {}, ObjectName: {}, DocumentStatus: {}".format(
+        documentId, bucketName, objectName, documentStatus))
 
     if(documentId and bucketName and objectName and documentStatus):
         request = {}
@@ -91,13 +97,14 @@ def processRecord(record, syncQueueUrl, asyncQueueUrl,errorHandlerQueueUrl):
         request["objectName"] = objectName
         request['syncQueueUrl'] = syncQueueUrl
         request['asyncQueueUrl'] = asyncQueueUrl
-        request['errorHandlerQueueUrl']= errorHandlerQueueUrl
+        request['errorHandlerQueueUrl'] = errorHandlerQueueUrl
         processRequest(request)
+
 
 def lambda_handler(event, context):
 
     try:
-        
+
         print("event: {}".format(event))
 
         syncQueueUrl = os.environ['SYNC_QUEUE_URL']
@@ -110,7 +117,8 @@ def lambda_handler(event, context):
 
                     if("eventName" in record and record["eventName"] == "INSERT"):
                         if("dynamodb" in record and record["dynamodb"] and "NewImage" in record["dynamodb"]):
-                            processRecord(record, syncQueueUrl, asyncQueueUrl,errorHandlerQueueUrl)
+                            processRecord(record, syncQueueUrl,
+                                          asyncQueueUrl, errorHandlerQueueUrl)
 
                 except Exception as e:
                     print("Faild to process record. Exception: {}".format(e))

@@ -107,7 +107,7 @@ def processRequest(request):
     ddb = dynamodb.Table(outputTable)
 
     opg = OutputGenerator(jobTag, pages, outputBucketName, objectName, detectForms, detectTables, ddb, elasticsearchDomain)
-    opg.run()
+    docText = opg.run()
 
     generatePdf(jobTag, bucketName, objectName, outputBucketName)
 
@@ -116,9 +116,13 @@ def processRequest(request):
     print("path: " +  path)
     maxPages = 100
     comprehendClient = ComprehendHelper()
-    comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
+    processedComprehendData = comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
 
     print("DocumentId: {}".format(jobTag))
+    print("Processed Comprehend Data: {}".format(processedComprehendData))
+
+    # index document once the comprehend entities have been extracted
+    opg.indexDocument(docText,processedComprehendData)
 
     ds = datastore.DocumentStore(documentsTable, outputTable)
     ds.markDocumentComplete(jobTag)
