@@ -3,6 +3,7 @@ import ddb = require("@aws-cdk/aws-dynamodb");
 import es = require("@aws-cdk/aws-elasticsearch");
 import iam = require("@aws-cdk/aws-iam");
 import lambda = require("@aws-cdk/aws-lambda");
+import kms = require('@aws-cdk/aws-kms');
 import s3 = require("@aws-cdk/aws-s3");
 import sns = require("@aws-cdk/aws-sns");
 import snsSubscriptions = require("@aws-cdk/aws-sns-subscriptions");
@@ -28,6 +29,8 @@ import {
 } from "@aws-cdk/aws-cloudfront";
 import { CanonicalUserPrincipal } from "@aws-cdk/aws-iam";
 import uuid = require("short-uuid");
+import { BucketEncryption } from "@aws-cdk/aws-s3";
+import { QueueEncryption } from "@aws-cdk/aws-sqs";
 
 export interface TextractStackProps {
   email: string;
@@ -75,7 +78,8 @@ export class CdkTextractStack extends cdk.Stack {
       {
         bucketName: this.resourceName("document-s3-bucket"),
         versioned: false,
-        cors: [corsRule]
+        cors: [corsRule],
+        encryption: BucketEncryption.S3_MANAGED
       }
     );
 
@@ -85,7 +89,8 @@ export class CdkTextractStack extends cdk.Stack {
       {
         bucketName: this.resourceName("sample-s3-bucket"),
         versioned: false,
-        cors: [corsRule]
+        cors: [corsRule],
+        encryption: BucketEncryption.S3_MANAGED
       }
     );
 
@@ -96,7 +101,8 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("ClientAppS3Bucket"),
       {
         websiteIndexDocument: "index.html",
-        cors: [corsRule]
+        cors: [corsRule],
+        encryption: BucketEncryption.S3_MANAGED
       }
     );
 
@@ -163,6 +169,10 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
+    
+    const esEncryptionKey = new kms.Key(this, 'esEncryptionKey', {
+      enableKeyRotation: true
+    });
     // Elasticsearch
     const elasticSearch = new es.CfnDomain(
       this,
@@ -170,12 +180,16 @@ export class CdkTextractStack extends cdk.Stack {
       {
         elasticsearchVersion: "6.5",
         elasticsearchClusterConfig: {
-          instanceType: "t2.medium.elasticsearch"
+          instanceType: "m5.xlarge.elasticsearch"
         },
           ebsOptions: {
           ebsEnabled: true,
           volumeSize: 20,
           volumeType: "gp2"
+        },
+        encryptionAtRestOptions:{
+          enabled: true,
+          kmsKeyId : esEncryptionKey.keyId
         }
       }
     );
@@ -209,7 +223,8 @@ export class CdkTextractStack extends cdk.Stack {
     // DynamoDB tables
     const outputTable = new ddb.Table(this, this.resourceName("OutputTable"), {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
-      sortKey: { name: "outputType", type: ddb.AttributeType.STRING }
+      sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
+      serverSideEncryption: true,
     });
 
     const documentsTable = new ddb.Table(
@@ -217,24 +232,28 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("DocumentsTable"),
       {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
-        stream: ddb.StreamViewType.NEW_IMAGE
+        stream: ddb.StreamViewType.NEW_IMAGE,
+        serverSideEncryption: true,
       }
     );
 
     // SQS queues
     const syncJobsQueue = new sqs.Queue(this, this.resourceName("SyncJobs"), {
       visibilityTimeout: cdk.Duration.seconds(900),
-      retentionPeriod: cdk.Duration.seconds(1209600)
+      retentionPeriod: cdk.Duration.seconds(1209600),
+      encryption : QueueEncryption.KMS_MANAGED
     });
 
     const asyncJobsQueue = new sqs.Queue(this, this.resourceName("AsyncJobs"), {
       visibilityTimeout: cdk.Duration.seconds(120),
-      retentionPeriod: cdk.Duration.seconds(1209600)
+      retentionPeriod: cdk.Duration.seconds(1209600),
+      encryption : QueueEncryption.KMS_MANAGED
     });
 
     const jobErrorHandlerQueue = new sqs.Queue(this, this.resourceName("jobErrorHandler"), {
       visibilityTimeout: cdk.Duration.seconds(60),
-      retentionPeriod: cdk.Duration.seconds(1209600)
+      retentionPeriod: cdk.Duration.seconds(1209600),
+      encryption : QueueEncryption.KMS_MANAGED
     });
 
     const jobResultsQueue = new sqs.Queue(
@@ -242,7 +261,8 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("JobResults"),
       {
         visibilityTimeout: cdk.Duration.seconds(900),
-        retentionPeriod: cdk.Duration.seconds(1209600)
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption : QueueEncryption.KMS_MANAGED
       }
     );
     // trigger
@@ -553,6 +573,7 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket.grantReadWrite(syncProcessor);
     outputTable.grantReadWriteData(syncProcessor);
     documentsTable.grantReadWriteData(syncProcessor);
+    esEncryptionKey.grantEncryptDecrypt(syncProcessor);
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
@@ -606,16 +627,7 @@ export class CdkTextractStack extends cdk.Stack {
     asyncProcessor.addLayers(helperLayer);
     asyncProcessor.addLayers(boto3Layer);
 
-    //Triggers
-    // Run async job processor every minute
-    //const rule = new events.EventRule(this, resourceName('Rule'), {
-    //  scheduleExpression: 'rate(1 minute)',
-    //})
-    //rule.addTarget(asyncProcessor)
-
-    // Run when a job is successfully complete
-    //asyncProcessor.addEventSource(new SnsEventSource(jobCompletionTopic))
-
+  
     asyncProcessor.addEventSource(
       new SqsEventSource(asyncJobsQueue, {
         batchSize: 1
@@ -707,6 +719,8 @@ export class CdkTextractStack extends cdk.Stack {
       })
     );
 
+    esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
+
 
     //------------------------------------------------------------
 
@@ -747,16 +761,12 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket.grantRead(apiProcessor);
     apiProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["es:*"],
+        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*'],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
-    apiProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: ["comprehend:*"],
-        resources: ["*"]
-      })
-    );
+    esEncryptionKey.grantEncryptDecrypt(apiProcessor);
+
 
     const api = new apigateway.LambdaRestApi(
       this,
