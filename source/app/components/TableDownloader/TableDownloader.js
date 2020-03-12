@@ -33,8 +33,8 @@ export default function TableDownloader({ table, rows }) {
         left: `${Left * 100}%`,
       }}
       className={css.button}
-      href={url}
-      link={{ download: 'table.csv' }}
+      
+      link={{ download: 'table.csv', href:url}}
     >
       Download CSV
     </Button>
