@@ -46,6 +46,17 @@ export default {
         "public/samples/Finance/USDE balance sheet.png"
       ]
     }
+  },    
+  medical: {
+    id: "medical",
+    title: "Medical",
+    previewImage: "/static/images/sample-previews/history.png",
+    objects: [
+      "public/samples/Medical/HIPAA Release Form.pdf",
+      "public/samples/Medical/Medical History Form.png",
+      "public/samples/Medical/Medical Insurance Claim Form.pdf",
+      "public/samples/Medical/Medical Progress Tracker.png"
+    ]
   }
   
 
