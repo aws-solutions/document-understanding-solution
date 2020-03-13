@@ -577,21 +577,21 @@ export class CdkTextractStack extends cdk.Stack {
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["textract:*"],
+        actions: ["textract:DetectDocumentText","textract:AnalyzeDocument"],
         resources: ["*"]
       })
     );
 
    syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehend:*"],
+        actions: ["comprehend:BatchDetectEntities","comprehend:DetectEntities"],
         resources: ["*"]
       })
     );
 
    syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehendmedical:*"],
+        actions: ["comprehendmedical:InferICD10CM","comprehendmedical:DetectEntitiesV2"],
         resources: ["*"]
       })
     );
@@ -646,7 +646,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
     asyncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["textract:*"],
+        actions: ["textract:StartDocumentTextDetection","textract:StartDocumentAnalysis"],
         resources: ["*"]
       })
     );
@@ -694,7 +694,7 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket.grantReadWrite(jobResultProcessor);
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["textract:*"],
+        actions: ["textract:GetDocumentTextDetection","textract:GetDocumentAnalysis"],
         resources: ["*"]
       })
     );
@@ -707,14 +707,14 @@ export class CdkTextractStack extends cdk.Stack {
 
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehend:*"],
+        actions: ["comprehend:BatchDetectEntities","comprehend:DetectEntities"],
         resources: ["*"]
       })
     );
 
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehendmedical:*"],
+        actions: ["comprehendmedical:InferICD10CM","comprehendmedical:DetectEntitiesV2"],
         resources: ["*"]
       })
     );
