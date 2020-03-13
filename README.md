@@ -1,4 +1,4 @@
-# Amazon Textract Document Understanding Solution
+# Document Understanding Solution
 
 ## Development Deploy
 
