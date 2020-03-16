@@ -7,6 +7,8 @@ from og import OutputGenerator
 import datastore
 from comprehendHelper import ComprehendHelper
 
+DOCTEXT = "docText"
+KVPAIRS = "KVPairs"
 
 def generatePdf(documentId, bucketName, objectName, responseBucketName):
     
@@ -107,7 +109,7 @@ def processRequest(request):
     ddb = dynamodb.Table(outputTable)
 
     opg = OutputGenerator(jobTag, pages, outputBucketName, objectName, detectForms, detectTables, ddb, elasticsearchDomain)
-    docText = opg.run()
+    opg_output = opg.run()
 
     generatePdf(jobTag, bucketName, objectName, outputBucketName)
 
@@ -116,13 +118,18 @@ def processRequest(request):
     print("path: " +  path)
     maxPages = 100
     comprehendClient = ComprehendHelper()
-    processedComprehendData = comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
+    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
 
     print("DocumentId: {}".format(jobTag))
-    print("Processed Comprehend Data: {}".format(processedComprehendData))
+    print("Processed Comprehend Data: {}".format(comprehendAndMedicalEntities))
 
-    # index document once the comprehend entities have been extracted
-    opg.indexDocument(docText,processedComprehendData)
+    # index document once the comprehend entities and KVPairs have been extracted
+    for key, val in opg_output[KVPAIRS].items():
+        if key not in comprehendAndMedicalEntities:
+            comprehendAndMedicalEntities[key] = val
+        else:
+            comprehendAndMedicalEntities[key].add(val)
+    opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTable, outputTable)
     ds.markDocumentComplete(jobTag)
