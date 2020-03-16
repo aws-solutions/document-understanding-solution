@@ -274,7 +274,8 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(900),
         retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption : QueueEncryption.KMS_MANAGED
+        encryption : QueueEncryption.KMS,
+        encryptionMasterKey : asyncEncryptionKey
       }
     );
     // trigger
