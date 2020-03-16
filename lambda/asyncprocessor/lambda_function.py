@@ -74,6 +74,8 @@ def processRequest(request):
 
     if(jobId):
         output = "Started Job with Id: {}".format(jobId)
+    else:
+        output = "No job id returned from Textract"
 
     print(output)
 
