@@ -194,24 +194,12 @@ export class CdkTextractStack extends cdk.Stack {
         }
       }
     );
-
-    const asyncEncryptionKey = new kms.Key(this, 'asyncEncryptionKey', {
-      enableKeyRotation: true
-    });
-    const asyncEncryptionKeyUsageStatment = new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      resources: ["*"],
-      actions: ["kms:GenerateDataKey","kms:Encrypt","kms:Decrypt"]
-    });
-    asyncEncryptionKeyUsageStatment.addServicePrincipal('sns.awsamazon.com')
-    
     // SNS Topic
     const jobCompletionTopic = new sns.Topic(
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic",
-
+        displayName: "Job completion topic"
       }
     );
 
@@ -273,9 +261,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("JobResults"),
       {
         visibilityTimeout: cdk.Duration.seconds(900),
-        retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption : QueueEncryption.KMS,
-        encryptionMasterKey : asyncEncryptionKey
+        retentionPeriod: cdk.Duration.seconds(1209600)
       }
     );
     // trigger
@@ -722,8 +708,7 @@ export class CdkTextractStack extends cdk.Stack {
     documentsTable.grantReadWriteData(jobResultProcessor);
     documentsS3Bucket.grantReadWrite(jobResultProcessor);
     samplesS3Bucket.grantReadWrite(jobResultProcessor);
-    asyncEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
-
+    
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ["textract:GetDocumentTextDetection","textract:GetDocumentAnalysis"],
