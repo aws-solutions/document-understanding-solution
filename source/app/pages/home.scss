@@ -1,0 +1,37 @@
+@import '../styles/shared/index';
+
+.home {
+  width: span(8);
+  margin: 3rem auto 1rem;
+  min-width: 800px;
+
+  > p img {
+    display: inline-block;
+    margin-right: 0.25em;
+    vertical-align: text-bottom;
+  }
+
+  @include media-grid(8) {
+    width: span(6, $grid-8col);
+    min-width: 0;
+  }
+
+  @include media-grid(4) {
+    width: 100%;
+  }
+}
+
+.tracks {
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: row;
+
+  > * {
+    margin-bottom: 1rem;
+    flex: 1 1 0px;
+  }
+
+  @include media-grid(8) {
+    flex-direction: column;
+  }
+}

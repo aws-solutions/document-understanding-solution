@@ -8,14 +8,16 @@
 
 # production
 /build
+deployment/build-dist/
 
 # misc
 .DS_Store
 .env
 
 # Web app
-app/.next/
-app/out/
+source/app/.next/
+source/app/out/
+source/app/node_modules/
 
 # CDK
 cdk.out/

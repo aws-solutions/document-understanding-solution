@@ -1,0 +1,13 @@
+@import '../../styles/shared/index';
+
+.loading {
+  display: inline-block;
+}
+
+.overlay {
+  @include absolute(0, 0, 0, 0);
+  display: flex;
+  background-color: rgba(color(gray, 80), 0.7);
+  align-items: center;
+  justify-content: center;
+}

@@ -1,0 +1,120 @@
+@import '../../styles/shared/index';
+
+// File Upload Container
+.fileUpload {
+  width: span(6);
+  padding: rem(32);
+  margin: 0 auto;
+  text-align: center;
+  background-color: color(gray, 80);
+  border: 1px dashed color(gray, 60);
+  border-radius: rem(5);
+  user-select: none;
+
+  // File upload icon
+  > img {
+    height: rem(80);
+  }
+
+  // Click to upload CTA
+  em {
+    font-style: normal;
+    color: color(orange, 20);
+    cursor: pointer;
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+      outline: 0;
+    }
+  }
+
+  // File list
+  ul {
+    padding: 0;
+    margin: 2em 0;
+    color: color(gray, 20);
+    text-align: left;
+    list-style-type: none;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // File item
+  li {
+    position: relative;
+    padding-right: rem(32);
+    padding-left: 3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    // Success/error icons + progress percentage
+    img,
+    span {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-right: 0.5rem;
+      margin-left: -3rem;
+      vertical-align: middle;
+    }
+
+    // Progress percentage overrides
+    span {
+      @include type-body-supplemental(color(teal, 10));
+      display: inline-flex;
+      align-items: center;
+    }
+
+    // Delete icon
+    svg {
+      @include absolute(50%, 0);
+      cursor: pointer;
+      transform: translateY(-50%);
+      fill: color(gray, 40);
+
+      &:hover {
+        fill: color(red);
+      }
+    }
+  }
+
+  // Focus styles
+  &:focus {
+    outline: 0;
+  }
+
+  @include media-grid(8) {
+    width: span(6, $grid-8col);
+  }
+
+  @include media-grid(4) {
+    width: 100%;
+  }
+}
+
+// Instructions
+.instructions {
+  @include type-heading-h5();
+  margin-top: 2em;
+}
+
+// Limits
+.limits {
+  @include type-body-supplemental(color(gray, 60));
+  margin-top: em(32, 12);
+  margin-bottom: 0;
+}
+
+// Drag hover
+.dragActive {
+  border-color: color(orange, 20);
+  border-style: solid;
+
+  .limits {
+    color: color(orange, 20);
+  }
+}

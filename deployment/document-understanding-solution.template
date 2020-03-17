@@ -1,0 +1,702 @@
+# Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Amazon Software License (the "License").
+# You may not use this file except in compliance with the License.
+# A copy of the License is located at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# or in the "license" file accompanying this file. This file is distributed
+# on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+# express or implied. See the License for the specific language governing
+# permissions and limitations under the License.
+
+Description: "(SO0046) - The AWS CloudFormation template for deployment of the document-understanding-solution. Version v1.0.0"
+
+Parameters:
+  Email:
+    Description: User email address
+    Type: String
+  CodeCommitRepository:
+    Description: Enter the repository name that will be created
+    Type: String
+    AllowedPattern: "[a-zA-Z0-9-]+"
+    Default: document-understanding-reference-architecture
+  Version:
+    Description: Solution Version
+    Type: String
+    Default: "v0.0.1"
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Pipeline Configuration
+        Parameters:
+          - CodeCommitRepository
+      - Label:
+          default: Solution Feature Configuration
+        Parameters:
+          - Version
+          - Email
+    ParameterLabels:
+      CodeCommitRepository:
+        default: CodeCommit Repository Name
+      WebApp:
+        default: Web Console
+      Version:
+        default: Solution Version
+
+Mappings:
+  BuildEnv:
+    Images:
+      Standard3: "aws/codebuild/amazonlinux2-x86_64-standard:2.0"
+    CDK:
+      StackName: "DUS"
+      ClientStackName: "DUSClient"
+    Metrics:
+      SendAnonymousUsage: "true"
+  SourceCode:
+    Source:
+      S3Bucket: "%%BUCKET_NAME%%"
+      Version: "%%VERSION%%"
+      KeyPrefix: "%%SOLUTION_NAME%%/%%VERSION%%"
+
+Resources:
+  # CICD resources [start]
+  DevOutputBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W35
+            reason: "validated and does not require access logging to be configured."
+          - id: W41
+            reason: "validated and does not require to encrypt the bucket."
+          - id: W51
+            reason: "The dev output bucket does not require bucket policy because the bucket is only accessed by CodeBuild and CodePipeline."
+
+  DocumentUnderstandingRepo:
+    Type: AWS::CodeCommit::Repository
+    DeletionPolicy: Retain
+    Properties:
+      RepositoryName: !Ref CodeCommitRepository
+      RepositoryDescription: document understanding reference architecture
+
+  ArtifactS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      VersioningConfiguration:
+        Status: Enabled
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W35
+            reason: "validated and does not require access logging to be configured."
+          - id: W41
+            reason: "validated and does not require to encrypt the bucket."
+          - id: W51
+            reason: "The artifact bucket does not require bucket policy because the bucket is only accessed by CodeBuild and CodePipeline."
+
+  DevCodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    DependsOn: CICDCustomResource
+    Properties:
+      Name: !Sub ${CodeCommitRepository}
+      RoleArn: !Sub ${CodePipelineRole.Arn}
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactS3Bucket
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: CodeCommit
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: "1"
+                Provider: CodeCommit
+              OutputArtifacts:
+                - Name: SourceApp
+              Configuration:
+                RepositoryName: !Ref CodeCommitRepository
+                BranchName: master
+                PollForSourceChanges: false
+        - Name: Deploy
+          Actions:
+            - Name: CDKDeploy
+              InputArtifacts:
+                - Name: SourceApp
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: "1"
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildCDK
+  # CICD resources [end]
+
+  CodeBuildCDK:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${CodeCommitRepository}-CDK
+      Description: "CDK project to deploy custom components for document understanding"
+      ServiceRole: !Sub ${CodeBuildRole.Arn}
+      EncryptionKey: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+          phases:
+            install:
+              runtime-versions:
+                nodejs: 12
+                ruby: 2.6
+              commands:
+                - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:2.0"
+                - node --version
+                - npm install -g cdk@1.18.0
+                - cdk --version
+                - npm install -g typescript
+                - tsc --version
+                - echo "Installing cfn_nag"
+                - gem install cfn-nag
+                - cfn_nag --version
+                - echo "Installing Yarn"
+                - curl -o- -L https://yarnpkg.com/install.sh | bash
+                - echo "Injecting values for Deploy Type, Region, Email, Version, and boto/pdf lambda code S3 location to the project"
+                - sed -i -e "s/SOURCE_BUCKET/$SOURCE_BUCKET-$AWS_REGION/g" ./source/lib/cdk-textract-stack.ts
+                - sed -i -e "s/CODE_VERSION/$VERSION/g" ./source/lib/cdk-textract-stack.ts
+                - sed -i -e "s/\"email\":.*/\"email\":\ \"$USER_EMAIL\",/g" "./source/package.json"
+                - sed -i -e "s/\"region\":.*/\"region\":\ \"$AWS_REGION\"/g" "./source/package.json"
+                - sed -i -e "s/\"stackname\":.*/\"stackname\":\ \"$MAIN_STACK_NAME\",/g" "./source/package.json"
+                - sed -i -e "s/\"cicd\":.*/\"cicd\":\ \"true\",/g" "./source/package.json"
+            build:
+              commands:
+                - cd ./source
+                - echo "Installing all dependencies"
+                - yarn
+                - echo "----- Deploying complete solution -----"
+                - yarn deploy-all
+          artifacts:
+            files:
+              - '**/*'
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: !FindInMap [BuildEnv, Images, Standard3]
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: BUILD_OUTPUT_BUCKET
+            Value: !Ref DevOutputBucket
+          - Name: MAIN_STACK_NAME
+            Value: !FindInMap [BuildEnv, CDK, StackName]
+          - Name: SOURCE_BUCKET
+            Value: !FindInMap [SourceCode, Source, S3Bucket]
+          - Name: VERSION
+            Value: !FindInMap [SourceCode, Source, Version]
+          - Name: USER_EMAIL
+            Value: !Ref Email
+      Artifacts:
+        Name: CodeBuild-CDK-output
+        Type: CODEPIPELINE
+  # CodeBuild projects [end]
+
+  # CICD helper resources [start]
+  CICDHelper:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Description: "Document Understanding Solution CICD helper"
+      Code:
+        S3Bucket:
+          !Join [
+            "-",
+            [
+              !FindInMap ["SourceCode", "Source", "S3Bucket"],
+              Ref: "AWS::Region",
+            ],
+          ]
+        S3Key:
+          !Join [
+            "/",
+            [
+              !FindInMap ["SourceCode", "Source", "KeyPrefix"],
+              "document-understanding-cicd.zip",
+            ],
+          ]
+      Handler: index.handler
+      Runtime: nodejs12.x
+      Role: !GetAtt CICDHelperRole.Arn
+      Timeout: 600
+      MemorySize: 2048
+      Environment:
+        Variables:
+          CODE_BUCKET:
+            !Join [
+              "",
+              [
+                !FindInMap ["SourceCode", "Source", "S3Bucket"],
+                "-",
+                !Ref "AWS::Region",
+              ],
+            ]
+          CODE_KEY: !FindInMap ["SourceCode", "Source", "KeyPrefix"]
+          CODE_SOURCE: "document-understanding-solution.zip"
+          CODECOMMIT_REPO: !Sub ${DocumentUnderstandingRepo.Name}
+          LOGGING_LEVEL: 2
+
+  CICDCustomResource:
+    Type: "Custom::CreateCommit"
+    DependsOn: CICDHelperPolicy
+    Properties:
+      ServiceToken: !GetAtt CICDHelper.Arn
+
+  CDKManifestGenerator:
+    Type: "Custom::ManifestGenerator"
+    DependsOn: CICDCustomResource
+    Properties:
+      ServiceToken: !GetAtt CICDHelper.Arn
+      Email: !Ref Email
+      VERSION: !Ref Version
+      ANONYMOUS_METRICS: !FindInMap [BuildEnv, Metrics, SendAnonymousUsage]
+
+  CICDDeleteStack:
+    Type: "Custom::DeleteStack"
+    DependsOn: CICDHelperPolicy
+    Properties:
+      ServiceToken: !GetAtt CICDHelper.Arn
+      STACK_NAME: !FindInMap [BuildEnv, CDK, StackName]
+      CLIENT_STACK_NAME: !FindInMap [BuildEnv, CDK, ClientStackName]
+      CDK_TOOLKIT_STACK_NAME: DocumentUnderstandingCDKToolkit
+  # Custom resource [end]
+
+  # IAM resources [start]
+  CICDHelperRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+
+  CICDHelperPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W13
+            reason: "Reviewed, actions split per service, and which cannot be applied at resource level. Because of CDK deployment we do not know the exact resource ARN"
+          - id: F5
+            reason: "Reviewed, need permissions to delete various IAM resources"
+    Properties:
+      Description: "Policy for the Document Understanding CICD Lambda function."
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource:
+              - !Join [
+                  "",
+                  [
+                    "arn:aws:logs:",
+                    Ref: "AWS::Region",
+                    ":",
+                    Ref: "AWS::AccountId",
+                    ":log-group:/aws/lambda/",
+                    !Ref CICDHelper,
+                    ":*",
+                  ],
+                ]
+          - Effect: "Allow"
+            Action:
+              - "codecommit:CreateCommit"
+              - "codecommit:PutFile"
+              - "codecommit:GetBranch"
+            Resource:
+              - !Sub ${DocumentUnderstandingRepo.Arn}
+          - Effect: "Allow"
+            Action:
+              - "apigateway:Delete*"
+            Resource:
+              - !Sub "arn:aws:apigateway:${AWS::Region}::*"
+          - Effect: "Allow"
+            Action:
+              - "cloudformation:DeleteStack"
+              - "cloudformation:Describe*"
+              - "cloudformation:Delete*"
+            Resource:
+              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "cognito-idp:AdminDeleteUser"
+              - "cognito-idp:DeleteUser"
+              - "cognito-idp:DeleteUserPool"
+              - "cognito-idp:DeleteUserPoolClient"
+            Resource:
+              - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "cognito-identity:DeleteIdentityPool"
+              - "cognito-identity:SetIdentityPoolRoles"
+            Resource:
+              - !Sub "arn:aws:cognito-identity:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "dynamodb:DeleteTable"
+              - "dynamodb:Describe*"
+            Resource:
+              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "es:DeleteElasticsearchDomain"
+              - "es:DescribeElasticsearchDomain"
+            Resource:
+              - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*"
+          - Effect: "Allow"
+            Action:
+              - "iam:Delete*"
+              - "iam:Describe*"
+              - "iam:DetachRolePolicy"
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "lambda:GetEventSourceMapping"
+              - "lambda:DeleteFunction"
+              - "lambda:InvokeFunction"
+              - "lambda:RemovePermission"
+              - "lambda:DeleteLayerVersion"
+              - "lambda:DeleteEventSourceMapping"
+            Resource:
+              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "lambda:GetEventSourceMapping"
+              - "lambda:DeleteEventSourceMapping"
+            Resource: "*"
+          - Effect: "Allow"
+            Action:
+              - "sns:DeleteTopic"
+              - "sns:GetTopicAttributes"
+              - "sns:Unsubscribe"
+            Resource:
+              - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "sqs:SetQueueAttributes"
+              - "sqs:DeleteQueue"
+            Resource:
+              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: "Allow"
+            Action:
+              - "s3:DeleteBucketPolicy"
+              - "s3:DeleteBucket"
+            Resource:
+              - !Sub "arn:aws:s3:::*"
+          - Effect: "Allow"
+            Action:
+              - "cloudfront:Get*"
+              - "cloudfront:GetCloudFrontOriginAccessIdentityConfig"
+              - "cloudfront:Delete*"
+              - "cloudfront:UpdateDistribution"
+            Resource:
+              - "*"
+          - Effect: "Allow"
+            Action:
+              - "s3:GetObject"
+            Resource:
+              - !Join [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    !FindInMap ["SourceCode", "Source", "S3Bucket"],
+                    "-",
+                    !Ref "AWS::Region",
+                    "/",
+                    !FindInMap ["SourceCode", "Source", "KeyPrefix"],
+                    "/document-understanding-solution.zip",
+                  ],
+                ]
+      Roles:
+        - Ref: "CICDHelperRole"
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "codepipeline.amazonaws.com"
+                }
+            }]
+        }
+      Policies:
+        - PolicyName: !Sub ${CodeCommitRepository}-codepipeline
+          PolicyDocument: !Sub |
+            {
+                "Statement": [
+                    {
+                        "Action": [ "s3:GetBucketVersioning" ],
+                        "Resource": [ "arn:aws:s3:::${ArtifactS3Bucket}" ],
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "s3:PutObject",
+                            "s3:GetObject",
+                            "S3:GetObjectVersion"
+                        ],
+                        "Resource": [
+                            "arn:aws:s3:::${ArtifactS3Bucket}/*"
+                        ],
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "codecommit:BatchGetRepositories",
+                            "codecommit:UploadArchive",
+                            "codecommit:Get*",
+                            "codecommit:List*",
+                            "codecommit:GitPull"
+                        ],
+                        "Resource": "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepository}",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                            "codebuild:BatchGetBuilds",
+                            "codebuild:StartBuild"
+                        ],
+                        "Resource": [
+                            "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuildCDK}"
+                        ],
+                        "Effect": "Allow"
+                    }
+                ]
+            }
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+            "Version": "2012-10-17",
+            "Statement": [{
+                "Action": "sts:AssumeRole",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "codebuild.amazonaws.com"
+                }
+            }]
+        }
+      Policies:
+        - PolicyName: !Sub ${CodeCommitRepository}-codebuild
+          PolicyDocument: !Sub |
+            {
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Resource": [ "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*" ],
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": [
+                            "arn:aws:s3:::${ArtifactS3Bucket}/*",
+                            "arn:aws:s3:::${DevOutputBucket}/*"
+                        ],
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:apigateway:${AWS::Region}::*",
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:cloudfront::${AWS::AccountId}:origin-access-identity/*",
+                        "Action": [
+                            "cloudfront:CreateCloudFrontOriginAccessIdentity",
+                            "cloudfront:DeleteCloudFrontOriginAccessIdentity"
+                        ]
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:cloudfront::${AWS::AccountId}:distribution/*",
+                        "Action": [
+                            "cloudfront:CreateDistribution",
+                            "cloudfront:DeleteDistribution"
+                        ]
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*",
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:*",
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:*",
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*",
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:iam::${AWS::AccountId}:*",
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*",
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*",
+                        "Action": "*"
+                    },
+                    {
+                        "Action": "*",
+                        "Resource": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": [
+                            "arn:aws:s3:::*"
+                        ],
+                        "Action": "*"
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "*",
+                        "Action": "*"
+                    }
+                ]
+            }
+  AmazonCloudWatchEventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: cwe-pipeline-execution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource:
+                  !Join [
+                    "",
+                    [
+                      "arn:aws:codepipeline:",
+                      !Ref "AWS::Region",
+                      ":",
+                      !Ref "AWS::AccountId",
+                      ":",
+                      !Ref DevCodePipeline,
+                    ],
+                  ]
+  # IAM resources [start]
+
+  # CloudWatch resources [start]
+  AmazonCloudWatchEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - "CodeCommit Repository State Change"
+        resources:
+          - !Join [
+              "",
+              [
+                "arn:aws:codecommit:",
+                !Ref "AWS::Region",
+                ":",
+                !Ref "AWS::AccountId",
+                ":",
+                !Ref CodeCommitRepository,
+              ],
+            ]
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType:
+            - branch
+          referenceName:
+            - master
+      Targets:
+        - Arn:
+            !Join [
+              "",
+              [
+                "arn:aws:codepipeline:",
+                !Ref "AWS::Region",
+                ":",
+                !Ref "AWS::AccountId",
+                ":",
+                !Ref DevCodePipeline,
+              ],
+            ]
+          RoleArn: !GetAtt AmazonCloudWatchEventRole.Arn
+          Id: codepipeline-document-understanding
+
+Outputs:
+  SolutionPipeline:
+    Description: "Pipeline created for this solution."
+    Value: !Sub ${CodeCommitRepository}
+  PipelineBuildImage:
+    Description: "Image used to build this pipeline"
+    Value: !FindInMap [BuildEnv, Images, Standard3]
+  PipelineS3Artifacts:
+    Description: "Bucket for CodePipeline to store build artifacts"
+    Value: !Ref ArtifactS3Bucket
+  DistArtifactBucket:
+    Description: "Bucket prefix that custom CFN templates will reference for artifacts (template will append [region-name] to this prefix)"
+    Value: !Ref DevOutputBucket
