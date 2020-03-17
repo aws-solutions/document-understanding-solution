@@ -70,7 +70,7 @@
     "express": "^4.17.1",
     "inquirer": "^6.4.1",
     "lodash": "^4.17.11",
-    "next": "^9.2.2",
+    "next": "^8.1.0x",
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-sass": "^4.12.0",
     "normalizr": "^3.4.0",

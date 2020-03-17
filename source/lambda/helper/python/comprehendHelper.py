@@ -10,6 +10,7 @@ MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
 # Comprehend batch API call has a limit of 25
 PAGES_PER_BATCH = 15
 
+
 class ComprehendHelper:
 
     def getNumOfPages(self,
@@ -31,12 +32,12 @@ class ComprehendHelper:
         # A new one is creatd and appended when the previous blocklist reaches that limit.
         # Not sure why it is so. A blocklist may contain blocks from different document pages.
         for blocklist in textract:
-        
+
             for block in blocklist['Blocks']:
-        
+
                 # PAGE block type have no text, so skip those
                 if block['BlockType'] == 'LINE':
-                    
+
                     # page numbers start at 1 in Textract for png, however
                     # for png there are no page reference since it is a single
                     # page, in this case all blocks have page 1
@@ -44,24 +45,25 @@ class ComprehendHelper:
                         pageNumber = 1
                     else:
                         pageNumber = block['Page']
-                    
+
                     # skip pages above limit
                     if pageNumber > numOfPages:
                         continue
-                    
+
                     # but our storage of page results list start at index 0
                     pageResultIndex = pageNumber - 1
-                
+
                     # some block may not contain text
-                    if  'Text' in block:
-                        
+                    if 'Text' in block:
+
                         # calculate the size of this page if we add this text element + the ". " separator.
                         # Comprehend has a UTF8 size limit, so we dismiss excessive elements once size is
                         # reached.
-                        projectedSize = len(rawPages[pageResultIndex]) + len(block['Text']) + 2
-                        
+                        projectedSize = len(
+                            rawPages[pageResultIndex]) + len(block['Text']) + 2
+
                         # add if page size allows
-                        if MAX_COMPREHEND_UTF8_PAGE_SIZE > projectedSize :
+                        if MAX_COMPREHEND_UTF8_PAGE_SIZE > projectedSize:
                             # add a separator from previous text block
                             rawPages[pageResultIndex] += ". "
                             # text block
@@ -78,103 +80,103 @@ class ComprehendHelper:
                                           pagesToProcess,
                                           pageStartIndex,
                                           comprehendEntities):
-        
+
         try:
             client = boto3.client('comprehend')
-        
+
             textPages = []
             endIndex = pageStartIndex + pagesToProcess
-        
+
             for i in range(pageStartIndex, endIndex):
                 textPages.append(rawPages[i])
 
             # service limit is around 10tps, sdk implements 3 retries with backoff
             # if that's not enough then fail
             response = client.batch_detect_entities(
-                                                TextList=textPages,
-                                                LanguageCode="en")
-            
+                TextList=textPages,
+                LanguageCode="en")
+
             # store results
             for i in range(0, pagesToProcess):
-                comprehendEntities[pageStartIndex + i] = response['ResultList'][i]
-        
-        except ClientError as e:
-            print( "batchComprehendDetectEntitiesSync ClientError: %s" % e )
-        except Exception as e:
-            print( "batchComprehendDetectEntitiesSync Exception: %s" % e )
-        except:
-            print( "batchComprehendDetectEntitiesSync exception")
+                comprehendEntities[pageStartIndex +
+                                   i] = response['ResultList'][i]
 
+        except ClientError as e:
+            print("batchComprehendDetectEntitiesSync ClientError: %s" % e)
+        except Exception as e:
+            print("batchComprehendDetectEntitiesSync Exception: %s" % e)
+        except:
+            print("batchComprehendDetectEntitiesSync exception")
 
     #
     # thread execution calling ComprehendMedical Entities synchronously for each page
     #
+
     def comprehendMedicalDetectEntitiesSync(self,
                                             rawPages,
                                             index,
                                             comprehendMedicalEntities,
                                             mutex):
-        
+
         try:
             client = boto3.client('comprehendmedical')
 
             # service limit is 10tps, sdk implements 3 retries with backoff
             # if that's not enough then fail
             response = client.detect_entities_v2(Text=rawPages[index])
-            #response = client.detect_entities_v2(Text=rawPages[index])
-            
+
             # save results for later processing
             if 'Entities' not in response:
                 return
-        
+
             mutex.acquire()
             comprehendMedicalEntities[index] = response['Entities']
             mutex.release()
-        
-        except ClientError as e:
-            print( "comprehendMedicalDetectEntitiesSync ClientError: %s" % e )
-        except Exception as e:
-            print( "comprehendMedicalDetectEntitiesSync Exception: %s" % e )
-        except:
-            print( "comprehendMedicalDetectEntitiesSync exception")
 
+        except ClientError as e:
+            print("comprehendMedicalDetectEntitiesSync ClientError: %s" % e)
+        except Exception as e:
+            print("comprehendMedicalDetectEntitiesSync Exception: %s" % e)
+        except:
+            print("comprehendMedicalDetectEntitiesSync exception")
 
     #
     # thread execution calling ComprehendMedical ICD10 synchronously for each page
     #
+
     def comprehendMedicalDetectICD10Sync(self,
-                                            rawPages,
-                                            index,
-                                            comprehendMedicalICD10,
-                                            mutex):
-        
+                                         rawPages,
+                                         index,
+                                         comprehendMedicalICD10,
+                                         mutex):
+
         try:
             client = boto3.client('comprehendmedical')
-            
+
             # service limit is 10tps, sdk implements 3 retries with backoff
             # if that's not enough then fail
-            response = client.infer_icd10_cm(Text=rawPages[index])
-                #response = client.detect_entities_v2(Text=rawPages[index])
-                
+            # response = client.infer_icd10_cm(Text=rawPages[index])
+            response = client.detect_entities_v2(Text=rawPages[index])
+
             # save results for later processing
             if 'Entities' not in response:
                 return
-        
+
             mutex.acquire()
             comprehendMedicalICD10[index] = response['Entities']
             mutex.release()
-        
+
         except ClientError as e:
-            print( "comprehendMedicalDetectICD10Sync ClientError: %s" % e )
+            print("comprehendMedicalDetectICD10Sync ClientError: %s" % e)
         except Exception as e:
-            print( "comprehendMedicalDetectICD10Sync Exception: %s" % e )
+            print("comprehendMedicalDetectICD10Sync Exception: %s" % e)
         except:
-            print( "comprehendMedicalDetectICD10Sync exception")
-    
-    
+            print("comprehendMedicalDetectICD10Sync exception")
+
     #
     # processes all Comprehend results for all pages
     #
+
     def processComprehendEntities(self,
                                   comprehendEntities,
                                   numOfPages,
@@ -184,19 +186,19 @@ class ComprehendHelper:
         data = {}
         data['results'] = []
         entities_to_index = {}
-        
+
         # process comprehend entities for each page
         for p in range(0, numOfPages):
             page = {}
             # page number start at 1 but list of page data starts at 0
             page['Page'] = p + 1
             page['Entities'] = []
-            
+
             # to detect and skip duplicates
             entities = set()
-            
+
             for e in comprehendEntities[p]['Entities']:
-                
+
                 # add this entity if not already present
                 if e['Text'].upper() not in entities:
                     # add entity to results list
@@ -209,84 +211,86 @@ class ComprehendHelper:
                     if e['Type'] not in entities_to_index:
                         entities_to_index[e['Type']] = []
                     entities_to_index[e['Type']].append(e['Text'])
-                
+
                     # make a note of this added entity
                     entities.add(e['Text'].upper())
-                    
+
             data['results'].append(page)
 
         # create results file in S3 under document folder
-        S3Helper.writeToS3(json.dumps(data), bucket, documentPath + "comprehendEntities.json")
+        S3Helper.writeToS3(json.dumps(data), bucket,
+                           documentPath + "comprehendEntities.json")
         return entities_to_index
-
 
     #
     # processes all ComprehendMedical results for all pages
     #
+
     def processComprehendMedicalEntities(self,
                                          comprehendMedicalEntities,
                                          numOfPages,
                                          bucket,
                                          documentPath):
-        
+
         data = {}
         data['results'] = []
-        
+
         for p in range(0, numOfPages):
             page = {}
             # page numbers start at 1
             page['Page'] = p + 1
             page['Entities'] = []
-            
+
             # to detect and skip duplicates
             entities = set()
-            
+
             for e in comprehendMedicalEntities[p]:
-            
+
                 # add this entity if not already present
                 if e['Text'].upper() not in entities:
                     # add entity to results list
                     entity = {}
                     entity['Text'] = e['Text']
                     entity['Category'] = e['Category']
-                    
+
                     if 'Score' in e:
                         entity['Score'] = e['Score']
-                    
+
                     page['Entities'].append(entity)
-                    
+
                     # make a note of this added entity
                     entities.add(e['Text'].upper())
-        
-            data['results'].append(page)
-        
-        # create results file in S3 under document folder
-        S3Helper.writeToS3(json.dumps(data), bucket, documentPath + "comprehendMedicalEntities.json")
 
-    
+            data['results'].append(page)
+
+        # create results file in S3 under document folder
+        S3Helper.writeToS3(json.dumps(data), bucket,
+                           documentPath + "comprehendMedicalEntities.json")
+
     #
     # processes all ComprehendMedical results for all pages
     #
+
     def processComprehendMedicalICD10(self,
                                       comprehendMedicalICD10,
                                       numOfPages,
                                       bucket,
                                       documentPath):
-    
+
         data = {}
         data['results'] = []
-    
+
         for p in range(0, numOfPages):
             page = {}
             # page numbers start at 1
             page['Page'] = p + 1
             page['Entities'] = []
-            
+
             # to detect and skip duplicates
             entities = set()
-            
+
             for e in comprehendMedicalICD10[p]:
-                
+
                 # add this entity if not already present
                 if e['Text'].upper() not in entities:
                     # add entity to results list
@@ -294,31 +298,30 @@ class ComprehendHelper:
                     entity['Text'] = e['Text']
                     entity['Category'] = e['Category']
                     entity['Type'] = e['Type']
-                    
+
                     entity['ICD10CMConcepts'] = []
-                    
+
                     if 'ICD10CMConcepts' in e:
-                    
+
                         for c in e['ICD10CMConcepts']:
                             concept = {}
                             concept['Description'] = c['Description']
                             concept['Code'] = c['Code']
                             concept['Score'] = c['Score']
                             entity['ICD10CMConcepts'].append(concept)
-                
+
                     page['Entities'].append(entity)
                     entities.add(e['Text'].upper())
-                    
+
                     # make a note of this added entity
                     entities.add(e['Text'].upper())
-        
-            
-            data['results'].append(page)
-        
-        # create results file in S3 under document folder
-        S3Helper.writeToS3(json.dumps(data), bucket, documentPath + "comprehendMedicalICD10.json")
 
-    
+            data['results'].append(page)
+
+        # create results file in S3 under document folder
+        S3Helper.writeToS3(json.dumps(data), bucket,
+                           documentPath + "comprehendMedicalICD10.json")
+
     #
     #  Call this function from the sync processor or the job result processor to
     #  feed Textract results to Comprehend and ComprehendMedical.  This function will
@@ -331,24 +334,25 @@ class ComprehendHelper:
     #   maxPages:                   max number of pages to process for the document, counted from page 1. Suggested to limit
     #                               that number to 200 pages or so.
     #
+
     def processComprehend(self,
                           bucket,
                           textractResultsFilename,
                           documentPath,
                           maxPages=200):
 
-        
         # get textract results from S3
-        textractFile = S3Helper.readFromS3(bucket, documentPath + textractResultsFilename)
+        textractFile = S3Helper.readFromS3(
+            bucket, documentPath + textractResultsFilename)
         textract = json.loads(textractFile)
-        
+
         # total number of textracted pages
         numOfPages = self.getNumOfPages(textract)
-        
+
         # error
         if numOfPages <= 0:
             return False
-        
+
         # enforce a maximum of pages to be processed
         if numOfPages > maxPages:
             numOfPages = maxPages
@@ -375,10 +379,10 @@ class ComprehendHelper:
 
             pageStartIndex = batch * PAGES_PER_BATCH
             pagesToProcess = numOfPages - pagesProcessed
-            
+
             if pagesToProcess > PAGES_PER_BATCH:
                 pagesToProcess = PAGES_PER_BATCH
-            
+
             # keep track of all threads we spawn
             threads = list()
 
@@ -387,13 +391,13 @@ class ComprehendHelper:
                                  args=(rawPages, pagesToProcess, pageStartIndex, comprehendEntities))
             x.start()
             threads.append(x)
-           
+
             # comprehendMedicalEntities is shared among threads
             medicalEntitiesMutex = threading.Lock()
 
             # ComprehendMedical
             for index in range(0, pagesToProcess):
-    
+
                 # Comprehend Medical can only handle one page at a time synchronously. The SDK handles
                 # throttling by the service.
                 x = threading.Thread(target=self.comprehendMedicalDetectEntitiesSync,
@@ -403,13 +407,13 @@ class ComprehendHelper:
                                            medicalEntitiesMutex))
                 x.start()
                 threads.append(x)
-            
+
             # comprehendMedicalEntities is shared among threads
             medicalICD10Mutex = threading.Lock()
-            
+
             # ComprehendMedical
             for index in range(0, pagesToProcess):
-                
+
                 # Comprehend Medical can only handle one page at a time synchronously. The SDK handles
                 # throttling by the service.
                 x = threading.Thread(target=self.comprehendMedicalDetectICD10Sync,
@@ -419,12 +423,11 @@ class ComprehendHelper:
                                            medicalICD10Mutex))
                 x.start()
                 threads.append(x)
-            
-            
+
             # wait on all threads to finish their work
             for index, thread in enumerate(threads):
                 thread.join()
-            
+
             print("all threads joined...")
 
             # check success of threads
@@ -438,10 +441,10 @@ class ComprehendHelper:
 
         # process comprehend data, create the entities result file in S3
         processedComprehendData = self.processComprehendEntities(comprehendEntities,
-                                       numOfPages,
-                                       bucket,
-                                       documentPath)
-                                  
+                                                                 numOfPages,
+                                                                 bucket,
+                                                                 documentPath)
+
         # process comprehend medical data, create the entities result file in S3
         self.processComprehendMedicalEntities(comprehendMedicalEntities,
                                               numOfPages,
@@ -453,7 +456,5 @@ class ComprehendHelper:
                                            numOfPages,
                                            bucket,
                                            documentPath)
-                             
-                                         
-        return processedComprehendData
 
+        return processedComprehendData
