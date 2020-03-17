@@ -4,12 +4,6 @@ import os
 from helper import AwsHelper
 import time
 
-import json
-import boto3
-import os
-from helper import AwsHelper
-import time
-
 def startJob(bucketName, objectName, documentId, snsTopic, snsRole, detectForms, detectTables):
 
     print("Starting job with documentId: {}, bucketName: {}, objectName: {}".format(documentId, bucketName, objectName))

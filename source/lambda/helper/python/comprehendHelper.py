@@ -176,8 +176,7 @@ class ComprehendHelper:
     #
     # processes all Comprehend results for all pages
     #
-
-    def processComprehendEntities(self,
+    def processAndReturnComprehendEntities(self,
                                   comprehendEntities,
                                   numOfPages,
                                   bucket,
@@ -225,8 +224,7 @@ class ComprehendHelper:
     #
     # processes all ComprehendMedical results for all pages
     #
-
-    def processComprehendMedicalEntities(self,
+    def processAndReturnComprehendMedicalEntities(self,
                                          comprehendMedicalEntities,
                                          numOfPages,
                                          bucket,
@@ -234,7 +232,8 @@ class ComprehendHelper:
 
         data = {}
         data['results'] = []
-
+        medical_entities_to_index = {}
+        
         for p in range(0, numOfPages):
             page = {}
             # page numbers start at 1
@@ -257,6 +256,10 @@ class ComprehendHelper:
                         entity['Score'] = e['Score']
 
                     page['Entities'].append(entity)
+                    
+                    if e['Category'] not in medical_entities_to_index:
+                        medical_entities_to_index[e['Category']] = []
+                    medical_entities_to_index[e['Category']].append(e['Text'])
 
                     # make a note of this added entity
                     entities.add(e['Text'].upper())
@@ -264,8 +267,8 @@ class ComprehendHelper:
             data['results'].append(page)
 
         # create results file in S3 under document folder
-        S3Helper.writeToS3(json.dumps(data), bucket,
-                           documentPath + "comprehendMedicalEntities.json")
+        S3Helper.writeToS3(json.dumps(data), bucket, documentPath + "comprehendMedicalEntities.json")
+        return medical_entities_to_index
 
     #
     # processes all ComprehendMedical results for all pages
@@ -440,16 +443,18 @@ class ComprehendHelper:
             pagesProcessed += pagesToProcess
 
         # process comprehend data, create the entities result file in S3
-        processedComprehendData = self.processComprehendEntities(comprehendEntities,
-                                                                 numOfPages,
-                                                                 bucket,
-                                                                 documentPath)
-
+        processedComprehendData = self.processAndReturnComprehendEntities(comprehendEntities,
+                                       numOfPages,
+                                       bucket,
+                                       documentPath)
+                                  
         # process comprehend medical data, create the entities result file in S3
-        self.processComprehendMedicalEntities(comprehendMedicalEntities,
+        comprehendMedicalEntities = self.processAndReturnComprehendMedicalEntities(comprehendMedicalEntities,
                                               numOfPages,
                                               bucket,
                                               documentPath)
+        # final list of comprehend and comprehend medical entities to be indexed
+        processedComprehendData.update(comprehendMedicalEntities)
 
         # process comprehend medical data, create the ICD10 result file in S3
         self.processComprehendMedicalICD10(comprehendMedicalICD10,
