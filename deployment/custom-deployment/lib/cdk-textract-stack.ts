@@ -198,7 +198,8 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic"
+        displayName: "Job completion topic",
+
       }
     );
 
