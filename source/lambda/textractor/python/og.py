@@ -169,10 +169,6 @@ class OutputGenerator:
                         print("Document with Converted dates: {}".format(document))
                     else:
                         document[key] = val
-                
-                # add the key value pairs to be indexed
-                for key, val in key_val_pairs.items():
-                    document[key.lower()] = val
                     
                 try:
                     if not es_index_client.exists(index='textract'):
