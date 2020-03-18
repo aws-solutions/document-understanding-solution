@@ -3,12 +3,9 @@ import os
 import boto3
 import time
 from helper import AwsHelper
-from og import OutputGenerator
+from og import OutputGenerator, DOCTEXT, KVPAIRS
 import datastore
 from comprehendHelper import ComprehendHelper
-
-DOCTEXT = "docText"
-KVPAIRS = "KVPairs"
 
 def generatePdf(documentId, bucketName, objectName, responseBucketName):
     

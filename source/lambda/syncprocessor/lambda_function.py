@@ -3,7 +3,7 @@ from decimal import Decimal
 import json
 import os
 from helper import AwsHelper, S3Helper, DynamoDBHelper
-from og import OutputGenerator
+from og import OutputGenerator, KVPAIRS, DOCTEXT
 import datastore
 from comprehendHelper import ComprehendHelper
 
