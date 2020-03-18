@@ -20,11 +20,6 @@ export default function DocumentPreview({
       if (firstOnThisPage) firstOnThisPage.scrollIntoView()
     }
   }, [ visible])
-  
-<<<<<<< HEAD:source/app/components/DocumentPreview/DocumentPreview.js
-  console.log(document.searchablePdfURL)
-=======
->>>>>>> 56a1bfc97f54ee47329d14b50bb986d7f1345231:app/components/DocumentPreview/DocumentPreview.js
         
   return (
      <div className={cs(css.entityList, visible && css.visible)} ref={container}>

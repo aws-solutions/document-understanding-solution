@@ -31,6 +31,7 @@ export default function TableResults({
   if (!tables.length&& visible) {
     return <p className={css.noTable}>No Tables detected</p>
   }
+  
   return (
 
     <div className={cs(css.tableList, visible && css.visible,)} ref={container}>
