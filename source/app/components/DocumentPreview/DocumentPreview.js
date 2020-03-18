@@ -21,7 +21,10 @@ export default function DocumentPreview({
     }
   }, [ visible])
   
+<<<<<<< HEAD:source/app/components/DocumentPreview/DocumentPreview.js
   console.log(document.searchablePdfURL)
+=======
+>>>>>>> 56a1bfc97f54ee47329d14b50bb986d7f1345231:app/components/DocumentPreview/DocumentPreview.js
         
   return (
      <div className={cs(css.entityList, visible && css.visible)} ref={container}>
@@ -38,7 +41,8 @@ export default function DocumentPreview({
         <footer className={css.actions}>
             {track === 'search' ? (
                   <div className={css.downloadButtons}>
-                  <Button link={{ download: 'searchable-pdf.pdf', href:document.searchablePdfURL  }}>
+                  <Button link={{ download: 'searchable-pdf.pdf' }} 
+                  href={document.searchablePdfURL}>
                     ⬇ Searchable PDF
                   </Button>
                 </div>) : null}
@@ -46,7 +50,8 @@ export default function DocumentPreview({
                 <div className={css.downloadButtons}>
               <Button
                 inverted
-                link={{ download: document.documentName.split('/').pop(), href:document.documentURL } }
+                link={{ download: document.documentName.split('/').pop()  } } 
+                href={document.documentURL}
                 
               >
                 ⬇ Original Doc
