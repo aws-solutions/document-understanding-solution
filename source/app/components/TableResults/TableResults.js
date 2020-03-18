@@ -31,7 +31,7 @@ export default function TableResults({
   if (!tables.length&& visible) {
     return <p className={css.noTable}>No Tables detected</p>
   }
-  console.log(pageCount)
+  
   return (
 
     <div className={cs(css.tableList, visible && css.visible,)} ref={container}>

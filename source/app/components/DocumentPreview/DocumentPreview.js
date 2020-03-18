@@ -20,8 +20,7 @@ export default function DocumentPreview({
       if (firstOnThisPage) firstOnThisPage.scrollIntoView()
     }
   }, [ visible])
-  
-  
+        
   return (
      <div className={cs(css.entityList, visible && css.visible)} ref={container}>
       <ul>
@@ -35,10 +34,10 @@ export default function DocumentPreview({
       </ul>
     
         <footer className={css.actions}>
-
             {track === 'search' ? (
                   <div className={css.downloadButtons}>
-                  <Button link={{ download: 'searchable-pdf.pdf' }} href={document.searchablePdfURL}>
+                  <Button link={{ download: 'searchable-pdf.pdf' }} 
+                  href={document.searchablePdfURL}>
                     ⬇ Searchable PDF
                   </Button>
                 </div>) : null}
@@ -46,8 +45,9 @@ export default function DocumentPreview({
                 <div className={css.downloadButtons}>
               <Button
                 inverted
-                link={{ download: document.documentName.split('/').pop() }}
+                link={{ download: document.documentName.split('/').pop()  } } 
                 href={document.documentURL}
+                
               >
                 ⬇ Original Doc
               </Button>

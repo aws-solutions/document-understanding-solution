@@ -2,7 +2,7 @@ import json
 import os
 from helper import FileHelper, AwsHelper
 
-ASYNC_JOB_TIMEOUT_SECONDS = 1800
+ASYNC_JOB_TIMEOUT_SECONDS = 900
 SYNC_JOB_TIMEOUT_SECONDS = 180
 
 

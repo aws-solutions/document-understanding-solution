@@ -18,7 +18,6 @@ DocumentList.defaultProps = {
 }
 
  function isSupportedExtension(extension){
-  console.log(extension)
   if (['png', 'jpg', 'jpeg','pdf'].indexOf(extension.toLowerCase()) >= 0) {
     return true
   }
