@@ -180,7 +180,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         elasticsearchVersion: "6.5",
         elasticsearchClusterConfig: {
-          instanceType: "m5.xlarge.elasticsearch"
+          instanceType: "m5.large.elasticsearch"
         },
           ebsOptions: {
           ebsEnabled: true,
