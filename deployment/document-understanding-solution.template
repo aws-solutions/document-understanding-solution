@@ -60,6 +60,7 @@ Mappings:
     Source:
       S3Bucket: "%%BUCKET_NAME%%"
       Version: "%%VERSION%%"
+      SolutionName: "%%SOLUTION_NAME%%"
       KeyPrefix: "%%SOLUTION_NAME%%/%%VERSION%%"
 
 Resources:
@@ -180,6 +181,7 @@ Resources:
                 - echo "Injecting values for Deploy Type, Region, Email, Version, and boto/pdf lambda code S3 location to the project"
                 - sed -i -e "s/SOURCE_BUCKET/$SOURCE_BUCKET-$AWS_REGION/g" ./source/lib/cdk-textract-stack.ts
                 - sed -i -e "s/CODE_VERSION/$VERSION/g" ./source/lib/cdk-textract-stack.ts
+                - sed -i -e "s/SOLUTION_NAME/$SOLUTION_NAME/g" ./source/lib/cdk-textract-stack.ts
                 - sed -i -e "s/\"email\":.*/\"email\":\ \"$USER_EMAIL\",/g" "./source/package.json"
                 - sed -i -e "s/\"region\":.*/\"region\":\ \"$AWS_REGION\"/g" "./source/package.json"
                 - sed -i -e "s/\"stackname\":.*/\"stackname\":\ \"$MAIN_STACK_NAME\",/g" "./source/package.json"
@@ -209,6 +211,8 @@ Resources:
             Value: !FindInMap [SourceCode, Source, Version]
           - Name: USER_EMAIL
             Value: !Ref Email
+          - Name: SOLUTION_NAME
+            Value: !FindInMap [SourceCode, Source, SolutionName]
       Artifacts:
         Name: CodeBuild-CDK-output
         Type: CODEPIPELINE
