@@ -615,7 +615,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["es:*"],
+        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*','es:ESHttpGet','es:ESHttpDelete','es:ESHttpPost','es:ESHttpPut'],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
@@ -718,7 +718,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["es:*"],
+        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*','es:ESHttpGet','es:ESHttpDelete','es:ESHttpPost','es:ESHttpPut'],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
@@ -755,7 +755,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/apiprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 50,
+        reservedConcurrentExecutions: 100,
         timeout: cdk.Duration.seconds(60),
         environment: {
           CONTENT_BUCKET: documentsS3Bucket.bucketName,
@@ -779,7 +779,7 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket.grantRead(apiProcessor);
     apiProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*'],
+        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*','es:ESHttpGet','es:ESHttpDelete','es:ESHttpPost','es:ESHttpPut'],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
