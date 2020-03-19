@@ -442,7 +442,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                  onSwitchPage={switchPage}
                  onRedact={redactEntityMatches}
                  onRedactAll={redactAllValues}
-                 onDownloadPrimary={downloadEntities}
+                 onDownloadPrimary={downloadMedicalEntities}
                  onDownloadSecondary = {downloadMedicalICD10Ontologies}
                  visible={tab === 'medical_entities'}
                  comprehendService={COMPREHEND_MEDICAL_SERVICE}
