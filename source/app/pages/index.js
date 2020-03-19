@@ -39,10 +39,8 @@ export default function Login() {
       e.preventDefault();
       setIsLoading(true);
       try {
-        console.log("Signing in");
         const userInit = await Auth.signIn(username, password);
         if (userInit && userInit.challengeName === "NEW_PASSWORD_REQUIRED") {
-          console.log("New password is required");
           setCredentials({
             passwordChangeRequired: true,
             userInit: userInit
@@ -64,9 +62,7 @@ export default function Login() {
       e.preventDefault();
       setIsLoading(true);
       try {
-        console.log("Signed in, submitting new password");
         const user = await Auth.completeNewPassword(userInit, newPassword);
-        console.log("Password change complete");
         user.signInUserSession && Router.push("/home");
       } catch ({ message }) {
         setError(message);

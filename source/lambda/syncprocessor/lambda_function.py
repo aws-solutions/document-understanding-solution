@@ -3,7 +3,7 @@ from decimal import Decimal
 import json
 import os
 from helper import AwsHelper, S3Helper, DynamoDBHelper
-from og import OutputGenerator
+from og import OutputGenerator, KVPAIRS, DOCTEXT
 import datastore
 from comprehendHelper import ComprehendHelper
 
@@ -79,9 +79,8 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
 
     print("Generating output for DocumentId: {}".format(documentId))
 
-    opg = OutputGenerator(documentId, response, outputBucketName,
-                          objectName, detectForms, detectTables, ddb, elasticsearchDomain)
-    docText = opg.run()
+    opg = OutputGenerator(documentId, response, outputBucketName, objectName, detectForms, detectTables, ddb, elasticsearchDomain)
+    opg_output = opg.run()
 
     generatePdf(documentId, bucketName, objectName, outputBucketName)
 
@@ -90,13 +89,17 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     print("path: " + path)
     maxPages = 100
     comprehendClient = ComprehendHelper()
-    processedComprehendData = comprehendClient.processComprehend(
-        outputBucketName, 'response.json', path, maxPages)
+    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
 
     print("DocumentId: {}".format(documentId))
-    print("Processed Comprehend data: {}".format(processedComprehendData))
+    print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))
 
-    opg.indexDocument(docText, processedComprehendData)
+    for key, val in opg_output[KVPAIRS].items():
+        if key not in comprehendAndMedicalEntities:
+            comprehendAndMedicalEntities[key] = val
+        else:
+            comprehendAndMedicalEntities[key].add(val)
+    opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
     ds.markDocumentComplete(documentId)
