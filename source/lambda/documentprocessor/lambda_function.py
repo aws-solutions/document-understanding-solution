@@ -32,8 +32,7 @@ def processRequest(request):
     print("Input Object: {}/{}".format(bucketName, objectName))
 
     ext = FileHelper.getFileExtenstion(objectName.lower())
-    print("Extension: {}".format(ext))
-
+    
     client = AwsHelper().getClient('sqs')
     # If not expected extension, change status to FAILED and exit
     if(ext and ext not in ["jpg", "jpeg", "png", "pdf"]):
@@ -66,8 +65,7 @@ def processRequest(request):
 
     output = "Completed routing for documentId: {}, object: {}/{}".format(
         documentId, bucketName, objectName)
-    print(output)
-
+    
 
 def processRecord(record, syncQueueUrl, asyncQueueUrl, errorHandlerQueueUrl):
 
@@ -121,7 +119,7 @@ def lambda_handler(event, context):
                                           asyncQueueUrl, errorHandlerQueueUrl)
 
                 except Exception as e:
-                    print("Faild to process record. Exception: {}".format(e))
+                    print("Failed to process record. Exception: {}".format(e))
 
     except Exception as e:
         print("Failed to process records. Exception: {}".format(e))

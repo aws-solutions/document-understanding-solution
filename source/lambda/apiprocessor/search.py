@@ -59,7 +59,6 @@ def search(request):
             elif len(date) == 1:
                 date_from = date_to = datetime.datetime.strptime(date[0],"%Y-%m-%d")
                 keyword = re.sub(r'date:\'\[\d{4}-\d{2}-\d{2}\]\'',str(date[0])+" TO "+str(date[0]),keyword)
-                print(keyword)
             elif len(date) > 1 :
                 raise ValueError("Searching for multiple dates at a time is not permitted. Use a date range instead.")
         elif len(date_range)==1:
@@ -110,7 +109,6 @@ def search(request):
             _source = True,
             filter_path=['hits.hits._id', 'hits.hits._source','hits.hits.highlight']
         )
-        print(output)
         
         if("hits" in output):
             output = output["hits"]
@@ -142,5 +140,4 @@ def search(request):
                 }
                 results.append(obj)
             output = results
-            print(output)
         return output

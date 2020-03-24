@@ -19,8 +19,6 @@ def createDocument(request):
         "documentId": documentId
     }
 
-    print("{}".format(output))
-
     return output
 
 
@@ -33,8 +31,6 @@ def getDocument(request):
 
     ds = datastore.DocumentStore(documentsTable, outputTable)
     doc = ds.getDocument(documentId)
-
-    print("{}".format(doc))
 
     output = {}
 

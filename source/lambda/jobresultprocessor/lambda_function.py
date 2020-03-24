@@ -30,8 +30,7 @@ def generatePdf(documentId, bucketName, objectName, responseBucketName):
     Payload=json.dumps(data)
     )
     
-    print(response["Payload"].read())
-
+    
 def getJobResults(api, jobId):
 
     pages = []
@@ -118,8 +117,7 @@ def processRequest(request):
     comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
 
     print("DocumentId: {}".format(jobTag))
-    print("Processed Comprehend Data: {}".format(comprehendAndMedicalEntities))
-
+    
     # index document once the comprehend entities and KVPairs have been extracted
     for key, val in opg_output[KVPAIRS].items():
         if key not in comprehendAndMedicalEntities:
@@ -133,8 +131,7 @@ def processRequest(request):
 
     output = "Processed -> Document: {}, Object: {}/{} processed.".format(jobTag, bucketName, objectName)
 
-    print(output)
-
+   
     return {
         'statusCode': 200,
         'body': output

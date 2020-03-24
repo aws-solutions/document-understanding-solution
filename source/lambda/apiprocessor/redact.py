@@ -49,7 +49,6 @@ def getPageForm(request):
         file = S3Helper.readFromS3(doc["bucketName"], fileName)
         doc["textractResponse"] = parsePairs(file)
     output = {}
-    print(output)
     if(doc):
         output = doc
     return output
