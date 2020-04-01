@@ -3,7 +3,7 @@ import ddb = require("@aws-cdk/aws-dynamodb");
 import es = require("@aws-cdk/aws-elasticsearch");
 import iam = require("@aws-cdk/aws-iam");
 import lambda = require("@aws-cdk/aws-lambda");
-import kms = require('@aws-cdk/aws-kms');
+import kms = require("@aws-cdk/aws-kms");
 import s3 = require("@aws-cdk/aws-s3");
 import sns = require("@aws-cdk/aws-sns");
 import snsSubscriptions = require("@aws-cdk/aws-sns-subscriptions");
@@ -170,8 +170,7 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
-    
-    const esEncryptionKey = new kms.Key(this, 'esEncryptionKey', {
+    const esEncryptionKey = new kms.Key(this, "esEncryptionKey", {
       enableKeyRotation: true
     });
     // Elasticsearch
@@ -188,9 +187,9 @@ export class CdkTextractStack extends cdk.Stack {
           volumeSize: 20,
           volumeType: "gp2"
         },
-        encryptionAtRestOptions:{
+        encryptionAtRestOptions: {
           enabled: true,
-          kmsKeyId : esEncryptionKey.keyId
+          kmsKeyId: esEncryptionKey.keyId
         }
       }
     );
@@ -199,8 +198,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic",
-
+        displayName: "Job completion topic"
       }
     );
 
@@ -225,7 +223,7 @@ export class CdkTextractStack extends cdk.Stack {
     const outputTable = new ddb.Table(this, this.resourceName("OutputTable"), {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
       sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
-      serverSideEncryption: true,
+      serverSideEncryption: true
     });
 
     const documentsTable = new ddb.Table(
@@ -234,7 +232,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
         stream: ddb.StreamViewType.NEW_IMAGE,
-        serverSideEncryption: true,
+        serverSideEncryption: true
       }
     );
 
@@ -242,20 +240,24 @@ export class CdkTextractStack extends cdk.Stack {
     const syncJobsQueue = new sqs.Queue(this, this.resourceName("SyncJobs"), {
       visibilityTimeout: cdk.Duration.seconds(900),
       retentionPeriod: cdk.Duration.seconds(1209600),
-      encryption : QueueEncryption.KMS_MANAGED
+      encryption: QueueEncryption.KMS_MANAGED
     });
 
     const asyncJobsQueue = new sqs.Queue(this, this.resourceName("AsyncJobs"), {
       visibilityTimeout: cdk.Duration.seconds(120),
       retentionPeriod: cdk.Duration.seconds(1209600),
-      encryption : QueueEncryption.KMS_MANAGED
+      encryption: QueueEncryption.KMS_MANAGED
     });
 
-    const jobErrorHandlerQueue = new sqs.Queue(this, this.resourceName("jobErrorHandler"), {
-      visibilityTimeout: cdk.Duration.seconds(60),
-      retentionPeriod: cdk.Duration.seconds(1209600),
-      encryption : QueueEncryption.KMS_MANAGED
-    });
+    const jobErrorHandlerQueue = new sqs.Queue(
+      this,
+      this.resourceName("jobErrorHandler"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(60),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED
+      }
+    );
 
     const jobResultsQueue = new sqs.Queue(
       this,
@@ -277,6 +279,17 @@ export class CdkTextractStack extends cdk.Stack {
       autoVerifiedAttributes: [UserPoolAttribute.EMAIL],
       aliasAttributes: [UserPoolAttribute.EMAIL],
       mfaConfiguration: "OFF",
+      userPoolAddOns: {
+        advancedSecurityMode: "ENFORCED"
+      },
+      policies: {
+        passwordPolicy: {
+          minimumLength: 8,
+          requireUppercase: true,
+          requireNumbers: true,
+          requireSymbols: true
+        }
+      },
       adminCreateUserConfig: {
         allowAdminCreateUserOnly: true,
         inviteMessageTemplate: {
@@ -594,28 +607,43 @@ export class CdkTextractStack extends cdk.Stack {
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["textract:DetectDocumentText","textract:AnalyzeDocument"],
+        actions: ["textract:DetectDocumentText", "textract:AnalyzeDocument"],
         resources: ["*"]
       })
     );
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehend:BatchDetectEntities","comprehend:DetectEntities"],
+        actions: [
+          "comprehend:BatchDetectEntities",
+          "comprehend:DetectEntities"
+        ],
         resources: ["*"]
       })
     );
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehendmedical:InferICD10CM","comprehendmedical:DetectEntitiesV2"],
+        actions: [
+          "comprehendmedical:InferICD10CM",
+          "comprehendmedical:DetectEntitiesV2"
+        ],
         resources: ["*"]
       })
     );
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*','es:ESHttpGet','es:ESHttpDelete','es:ESHttpPost','es:ESHttpPut'],
+        actions: [
+          "es:ESHttpHead",
+          "es:Get*",
+          "es:List*",
+          "es:Describe*",
+          "es:ESHttpGet",
+          "es:ESHttpDelete",
+          "es:ESHttpPost",
+          "es:ESHttpPut"
+        ],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
@@ -644,7 +672,6 @@ export class CdkTextractStack extends cdk.Stack {
     asyncProcessor.addLayers(helperLayer);
     asyncProcessor.addLayers(boto3Layer);
 
-  
     asyncProcessor.addEventSource(
       new SqsEventSource(asyncJobsQueue, {
         batchSize: 1
@@ -663,7 +690,10 @@ export class CdkTextractStack extends cdk.Stack {
     );
     asyncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["textract:StartDocumentTextDetection","textract:StartDocumentAnalysis"],
+        actions: [
+          "textract:StartDocumentTextDetection",
+          "textract:StartDocumentAnalysis"
+        ],
         resources: ["*"]
       })
     );
@@ -709,36 +739,53 @@ export class CdkTextractStack extends cdk.Stack {
     documentsTable.grantReadWriteData(jobResultProcessor);
     documentsS3Bucket.grantReadWrite(jobResultProcessor);
     samplesS3Bucket.grantReadWrite(jobResultProcessor);
-    
+
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["textract:GetDocumentTextDetection","textract:GetDocumentAnalysis"],
+        actions: [
+          "textract:GetDocumentTextDetection",
+          "textract:GetDocumentAnalysis"
+        ],
         resources: ["*"]
       })
     );
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*','es:ESHttpGet','es:ESHttpDelete','es:ESHttpPost','es:ESHttpPut'],
+        actions: [
+          "es:ESHttpHead",
+          "es:Get*",
+          "es:List*",
+          "es:Describe*",
+          "es:ESHttpGet",
+          "es:ESHttpDelete",
+          "es:ESHttpPost",
+          "es:ESHttpPut"
+        ],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
 
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehend:BatchDetectEntities","comprehend:DetectEntities"],
+        actions: [
+          "comprehend:BatchDetectEntities",
+          "comprehend:DetectEntities"
+        ],
         resources: ["*"]
       })
     );
 
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["comprehendmedical:InferICD10CM","comprehendmedical:DetectEntitiesV2"],
+        actions: [
+          "comprehendmedical:InferICD10CM",
+          "comprehendmedical:DetectEntitiesV2"
+        ],
         resources: ["*"]
       })
     );
 
     esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
-
 
     //------------------------------------------------------------
 
@@ -779,12 +826,20 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket.grantRead(apiProcessor);
     apiProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['es:ESHttpHead','es:Get*','es:List*','es:Describe*','es:ESHttpGet','es:ESHttpDelete','es:ESHttpPost','es:ESHttpPut'],
+        actions: [
+          "es:ESHttpHead",
+          "es:Get*",
+          "es:List*",
+          "es:Describe*",
+          "es:ESHttpGet",
+          "es:ESHttpDelete",
+          "es:ESHttpPost",
+          "es:ESHttpPut"
+        ],
         resources: [`${elasticSearch.attrArn}/*`]
       })
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
-
 
     const api = new apigateway.LambdaRestApi(
       this,
