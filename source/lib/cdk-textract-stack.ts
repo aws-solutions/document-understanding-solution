@@ -926,8 +926,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
 
-    const reValidatorId = this.resourceName("apigwResourceValidator");
-
+    // API
     const api = new apigateway.LambdaRestApi(
       this,
       this.resourceName("DUSAPI"),
