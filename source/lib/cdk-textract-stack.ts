@@ -1,5 +1,6 @@
 import cdk = require("@aws-cdk/core");
 import ddb = require("@aws-cdk/aws-dynamodb");
+import ec2 = require("@aws-cdk/aws-ec2");
 import es = require("@aws-cdk/aws-elasticsearch");
 import iam = require("@aws-cdk/aws-iam");
 import lambda = require("@aws-cdk/aws-lambda");
@@ -18,19 +19,19 @@ import {
   CfnUserPoolClient,
   CfnUserPool,
   CfnIdentityPool,
-  CfnIdentityPoolRoleAttachment,
-  UserPoolAttribute
+  CfnIdentityPoolRoleAttachment
 } from "@aws-cdk/aws-cognito";
 import {
-  CfnCloudFrontOriginAccessIdentity,
   CloudFrontWebDistribution,
   PriceClass,
-  HttpVersion
+  HttpVersion,
+  OriginAccessIdentity
 } from "@aws-cdk/aws-cloudfront";
 import { CanonicalUserPrincipal } from "@aws-cdk/aws-iam";
 import uuid = require("short-uuid");
 import { BucketEncryption } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
+import { LogGroup } from "@aws-cdk/aws-logs";
 
 export interface TextractStackProps {
   email: string;
@@ -73,55 +74,27 @@ export class CdkTextractStack extends cdk.Stack {
     };
 
     // S3 buckets
-    const logBucketName = this.resourceName("logs-s3-bucket");
     const logsS3Bucket = new s3.Bucket(
       this,
       this.resourceName("LogsS3Bucket"),
       {
-        bucketName: logBucketName,
+        bucketName: this.resourceName("logs-s3-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED
       }
     );
 
-    // const documentsS3Bucket = new s3.Bucket(
-    //   this,
-    //   this.resourceName("DocumentsS3Bucket"),
-    //   {
-    //     bucketName: this.resourceName("document-s3-bucket"),
-    //     versioned: false,
-    //     cors: [corsRule],
-    //     encryption: BucketEncryption.S3_MANAGED,
-    //     serverAccessLogsBucket: logsS3Bucket,
-    //     serverAccessLogsPrefix: "documentsS3Logs"
-    //   }
-    // );
-
-    const documentsS3Bucket = new s3.CfnBucket(
+    const documentsS3Bucket = new s3.Bucket(
       this,
       this.resourceName("DocumentsS3Bucket"),
       {
-        bucketName: this.resourceName("logs-s3-bucket"),
-        versioningConfiguration: {
-          status: "Suspended"
-        },
-        corsConfiguration: {
-          corsRules: [corsRule]
-        },
-        bucketEncryption: {
-          serverSideEncryptionConfiguration: [
-            {
-              serverSideEncryptionByDefault: {
-                sseAlgorithm: "AES256"
-              }
-            }
-          ]
-        },
-        loggingConfiguration: {
-          destinationBucketName: logBucketName,
-          logFilePrefix: "documentsS3Logs"
-        }
+        bucketName: this.resourceName("document-s3-bucket"),
+        versioned: false,
+        cors: [corsRule],
+        encryption: BucketEncryption.S3_MANAGED,
+        serverAccessLogsBucket: logsS3Bucket,
+        serverAccessLogsPrefix: "documentsS3Logs"
       }
     );
 
@@ -132,9 +105,9 @@ export class CdkTextractStack extends cdk.Stack {
         bucketName: this.resourceName("sample-s3-bucket"),
         versioned: false,
         cors: [corsRule],
-        encryption: BucketEncryption.S3_MANAGED
-        // serverAccessLogsBucket: logsS3Bucket,
-        // serverAccessLogsPrefix: "samplesS3Logs"
+        encryption: BucketEncryption.S3_MANAGED,
+        serverAccessLogsBucket: logsS3Bucket,
+        serverAccessLogsPrefix: "samplesS3Logs"
       }
     );
 
@@ -146,24 +119,17 @@ export class CdkTextractStack extends cdk.Stack {
       {
         websiteIndexDocument: "index.html",
         cors: [corsRule],
-        encryption: BucketEncryption.S3_MANAGED
-        // serverAccessLogsBucket: logsS3Bucket,
-        // serverAccessLogsPrefix: "clientAppS3Logs"
+        encryption: BucketEncryption.S3_MANAGED,
+        serverAccessLogsBucket: logsS3Bucket,
+        serverAccessLogsPrefix: "clientAppS3Logs"
       }
     );
 
     // eslint-disable-next-line no-unused-vars
-
-    const oai = new CfnCloudFrontOriginAccessIdentity(
-      this,
-      "cdk-textract-oai",
-      {
-        cloudFrontOriginAccessIdentityConfig: {
-          comment:
-            "Origin Access Identity for Textract web stack bucket cloudfront distribution"
-        }
-      }
-    );
+    const oai = new OriginAccessIdentity(this, "cdk-textract-oai", {
+      comment:
+        "Origin Access Identity for Textract web stack bucket cloudfront distribution"
+    });
 
     const distribution = new CloudFrontWebDistribution(
       this,
@@ -173,7 +139,7 @@ export class CdkTextractStack extends cdk.Stack {
           {
             s3OriginSource: {
               s3BucketSource: clientAppS3Bucket,
-              originAccessIdentityId: oai.ref
+              originAccessIdentity: oai
             },
             behaviors: [{ isDefaultBehavior: true }]
           }
@@ -196,13 +162,21 @@ export class CdkTextractStack extends cdk.Stack {
         clientAppS3Bucket.bucketArn,
         `${clientAppS3Bucket.bucketArn}/*`
       ],
-      principals: [new CanonicalUserPrincipal(oai.attrS3CanonicalUserId)]
+      principals: [
+        new CanonicalUserPrincipal(
+          oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
+        )
+      ]
     });
 
     const cloudfrontSamplesBucketPolicyStatement = new iam.PolicyStatement({
       actions: ["s3:*"],
       resources: [samplesS3Bucket.bucketArn, `${samplesS3Bucket.bucketArn}/*`],
-      principals: [new CanonicalUserPrincipal(oai.attrS3CanonicalUserId)]
+      principals: [
+        new CanonicalUserPrincipal(
+          oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
+        )
+      ]
     });
 
     const cloudfrontDocumentsBucketPolicyStatement = new iam.PolicyStatement({
@@ -211,7 +185,11 @@ export class CdkTextractStack extends cdk.Stack {
         documentsS3Bucket.bucketArn,
         `${documentsS3Bucket.bucketArn}/*`
       ],
-      principals: [new CanonicalUserPrincipal(oai.attrS3CanonicalUserId)]
+      principals: [
+        new CanonicalUserPrincipal(
+          oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
+        )
+      ]
     });
 
     clientAppS3Bucket.addToResourcePolicy(cloudfrontPolicyStatement);
@@ -220,35 +198,103 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
+    const esLogGroup = new LogGroup(
+      this,
+      this.resourceName("ElasticSearchLogGroup"),
+      {
+        logGroupName: this.resourceName("ElasticSearchLogGroup")
+      }
+    );
+
+    // Elasticsearch
+    let elasticSearch;
+
     const esEncryptionKey = new kms.Key(this, "esEncryptionKey", {
       enableKeyRotation: true
     });
-    // Elasticsearch
-    const elasticSearch = new es.CfnDomain(
-      this,
-      this.resourceName("ElasticSearchCluster"),
-      {
-        elasticsearchVersion: "6.5",
-        elasticsearchClusterConfig: {
-          instanceType: "m5.large.elasticsearch"
-        },
-        ebsOptions: {
-          ebsEnabled: true,
-          volumeSize: 20,
-          volumeType: "gp2"
-        },
-        encryptionAtRestOptions: {
-          enabled: true,
-          kmsKeyId: esEncryptionKey.keyId
+
+    if (!props.isCICDDeploy) {
+      elasticSearch = new es.CfnDomain(
+        this,
+        this.resourceName("ElasticSearchCluster"),
+        {
+          elasticsearchVersion: "7.1",
+          elasticsearchClusterConfig: {
+            instanceType: "m5.large.elasticsearch"
+          },
+          ebsOptions: {
+            ebsEnabled: true,
+            volumeSize: 20,
+            volumeType: "gp2"
+          },
+          encryptionAtRestOptions: {
+            enabled: true,
+            kmsKeyId: esEncryptionKey.keyId
+          },
+          logPublishingOptions: {
+            accessLogs: {
+              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
+              enabled: true
+            }
+          }
         }
-      }
-    );
+      );
+    } else {
+      // CICD VPC
+      const vpc = new ec2.Vpc(this, this.resourceName("ESClusterVPC"), {
+        cidr: "10.0.0.0/16"
+      });
+
+      elasticSearch = new es.CfnDomain(
+        this,
+        this.resourceName("ElasticSearchCluster"),
+        {
+          elasticsearchVersion: "7.1",
+          elasticsearchClusterConfig: {
+            instanceType: "m5.large.elasticsearch",
+            dedicatedMasterEnabled: true,
+            zoneAwarenessEnabled: true,
+            zoneAwarenessConfig: {
+              availabilityZoneCount: 2
+            }
+          },
+          ebsOptions: {
+            ebsEnabled: true,
+            volumeSize: 20,
+            volumeType: "gp2"
+          },
+          encryptionAtRestOptions: {
+            enabled: true,
+            kmsKeyId: esEncryptionKey.keyId
+          },
+          nodeToNodeEncryptionOptions: {
+            enabled: true
+          },
+          logPublishingOptions: {
+            accessLogs: {
+              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
+              enabled: true
+            }
+          },
+          vpcOptions: {
+            securityGroupIds: [vpc.vpcDefaultSecurityGroup],
+            subnetIds: vpc.publicSubnets.map(sn => sn.subnetId)
+          }
+        }
+      );
+    }
+
+    const jobCompletionTopicKey = new kms.Key(this, "jobCompletionTopicKey", {
+      enableKeyRotation: true
+    });
+
     // SNS Topic
     const jobCompletionTopic = new sns.Topic(
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic"
+        displayName: "Job completion topic",
+        masterKey: jobCompletionTopicKey
       }
     );
 
@@ -326,8 +372,8 @@ export class CdkTextractStack extends cdk.Stack {
 
     const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
       userPoolName: "textract-user-pool",
-      autoVerifiedAttributes: [UserPoolAttribute.EMAIL],
-      aliasAttributes: [UserPoolAttribute.EMAIL],
+      autoVerifiedAttributes: ["email"],
+      aliasAttributes: ["email"],
       mfaConfiguration: "OFF",
       adminCreateUserConfig: {
         allowAdminCreateUserOnly: true,
@@ -880,12 +926,28 @@ export class CdkTextractStack extends cdk.Stack {
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
 
+    const reValidatorId = this.resourceName("apigwResourceValidator");
+
     const api = new apigateway.LambdaRestApi(
       this,
       this.resourceName("DUSAPI"),
       {
         handler: apiProcessor,
-        proxy: false
+        proxy: false,
+        deployOptions: {
+          loggingLevel: apigateway.MethodLoggingLevel.INFO,
+          dataTraceEnabled: true
+        }
+      }
+    );
+
+    const reqValidator = new apigateway.RequestValidator(
+      this,
+      this.resourceName("apigwResourceValidator"),
+      {
+        restApi: api,
+        validateRequestBody: true,
+        validateRequestParameters: true
       }
     );
 
@@ -937,7 +999,8 @@ export class CdkTextractStack extends cdk.Stack {
                 "method.response.header.Access-Control-Allow-Origin": true
               }
             }
-          ]
+          ],
+          requestValidator: reqValidator
         }
       );
 

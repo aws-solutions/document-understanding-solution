@@ -41,12 +41,13 @@ aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<sol
 aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
 ```
 
-This solutions will create 6 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
+This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
 
 - 2 for CICD
 - 1 for solution specific CDK Toolkit
 - 2 for documents (sample and general documents)
 - 1 for the client bucket
+- 1 for access logs
 - 1 for CDK toolkit (if this is the customer's first try with CDK)
 
 ### Notes
@@ -156,9 +157,8 @@ This project is licensed under the Apache-2.0 License.
 You may not use this file except in compliance with the License. A copy of the License is located at
 http://www.apache.org/licenses/
 
-
 ## Additional Notes
 
- The intended use is for users to use this application as a reference architecutre to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
+The intended use is for users to use this application as a reference architecutre to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
