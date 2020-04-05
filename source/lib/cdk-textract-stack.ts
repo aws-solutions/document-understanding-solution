@@ -16,10 +16,11 @@ import {
 } from "@aws-cdk/aws-lambda-event-sources";
 import {
   CfnUserPoolUser,
-  CfnUserPoolClient,
-  CfnUserPool,
   CfnIdentityPool,
-  CfnIdentityPoolRoleAttachment
+  CfnIdentityPoolRoleAttachment,
+  UserPoolClient,
+  UserPool,
+  Mfa
 } from "@aws-cdk/aws-cognito";
 import {
   CloudFrontWebDistribution,
@@ -232,7 +233,7 @@ export class CdkTextractStack extends cdk.Stack {
             kmsKeyId: esEncryptionKey.keyId
           },
           logPublishingOptions: {
-            accessLogs: {
+            INDEX_SLOW_LOGS: {
               cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
               enabled: true
             }
@@ -241,6 +242,18 @@ export class CdkTextractStack extends cdk.Stack {
       );
     } else {
       // CICD VPC
+      const serviceLinkedRole = new cdk.CfnResource(
+        this,
+        this.resourceName("es-service-linked-role"),
+        {
+          type: "AWS::IAM::ServiceLinkedRole",
+          properties: {
+            AWSServiceName: "es.amazonaws.com",
+            Description: "Role for ES to access resources in my VPC"
+          }
+        }
+      );
+
       const vpc = new ec2.Vpc(this, this.resourceName("ESClusterVPC"), {
         cidr: "10.0.0.0/16"
       });
@@ -252,6 +265,7 @@ export class CdkTextractStack extends cdk.Stack {
           elasticsearchVersion: "7.1",
           elasticsearchClusterConfig: {
             instanceType: "m5.large.elasticsearch",
+            instanceCount: 2,
             dedicatedMasterEnabled: true,
             zoneAwarenessEnabled: true,
             zoneAwarenessConfig: {
@@ -271,7 +285,7 @@ export class CdkTextractStack extends cdk.Stack {
             enabled: true
           },
           logPublishingOptions: {
-            accessLogs: {
+            INDEX_SLOW_LOGS: {
               cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
               enabled: true
             }
@@ -282,6 +296,8 @@ export class CdkTextractStack extends cdk.Stack {
           }
         }
       );
+
+      elasticSearch.node.addDependency(serviceLinkedRole);
     }
 
     const jobCompletionTopicKey = new kms.Key(this, "jobCompletionTopicKey", {
@@ -369,33 +385,38 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     // ####### Cognito User Authentication #######
-
-    const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
-      userPoolName: "textract-user-pool",
-      autoVerifiedAttributes: ["email"],
-      aliasAttributes: ["email"],
-      mfaConfiguration: "OFF",
-      adminCreateUserConfig: {
-        allowAdminCreateUserOnly: true,
-        inviteMessageTemplate: {
+    const textractUserPool = new UserPool(
+      this,
+      this.resourceName("textract-user-pool"),
+      {
+        userPoolName: "textract-user-pool",
+        autoVerify: {
+          email: true
+        },
+        signInAliases: {
+          email: true
+        },
+        mfa: Mfa.OFF,
+        userInvitation: {
           emailSubject: "Your Textract Solution login",
-          emailMessage: `<p>You are invited to join the Textract Solution page. Your credentials are:</p> \
-                <p> \
-                Username: <strong>{username}</strong><br /> \
-                Password: <strong>{####}</strong> \
-                </p> \
-                <p> \
-                Please sign in with the user name and your temporary password provided above at: <br /> \
-                https://${distribution.domainName} \
-                </p>`
-        }
+          emailBody: `<p>You are invited to join the Textract Solution page. Your credentials are:</p> \
+              <p> \
+              Username: <strong>{username}</strong><br /> \
+              Password: <strong>{####}</strong> \
+              </p> \
+              <p> \
+              Please sign in with the user name and your temporary password provided above at: <br /> \
+              https://${distribution.domainName} \
+              </p>`
+        },
+        selfSignUpEnabled: false
       }
-    });
+    );
 
     // Depends upon all other parts of the stack having been created.
     const textractUserPoolUser = new CfnUserPoolUser(
       this,
-      "textract-user-pool-user",
+      this.resourceName("textract-user-pool-user"),
       {
         desiredDeliveryMediums: ["EMAIL"],
         forceAliasCreation: false,
@@ -410,12 +431,12 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    const textractUserPoolClient = new CfnUserPoolClient(
+    const textractUserPoolClient = new UserPoolClient(
       this,
-      "textract-user-pool-client",
+      this.resourceName("textract-user-pool-client"),
       {
-        clientName: "textract_app",
-        userPoolId: textractUserPool.ref
+        userPoolClientName: "textract_app",
+        userPool: textractUserPool
       }
     );
 
