@@ -4,6 +4,7 @@ import classNames from 'classnames'
 import { Storage } from 'aws-amplify'
 import { useDropzone } from 'react-dropzone'
 import { format } from 'date-fns'
+import uuid from "uuid/v4";
 
 import Button from '../Button/Button'
 import CameraCapture from '../CameraCapture/CameraCapture'
@@ -80,7 +81,7 @@ function FileUpload({ dispatch }) {
         }))
       },
       onSuccess({ result, fileName }) {
-        return dispatch(submitDocument({ key: `public/${result.key}` })).then(() => {
+        return dispatch(submitDocument({ key: `input/${result.key}` })).then(() => {
           setFileStatus(fileStatus => ({
             ...fileStatus,
             ...{ [fileName]: { success: true } },
@@ -101,7 +102,8 @@ function FileUpload({ dispatch }) {
         dispatch(clearSearchQuery())
         setUploadStatus('success')
       })
-      .catch(() => setUploadStatus('error'))
+      .catch(error => {
+      setUploadStatus('error')})
   }, [dispatch, fileNames, files])
 
   /**
@@ -122,7 +124,7 @@ function FileUpload({ dispatch }) {
 
     const datestring = format(new Date(), 'YYYYMMDDHHmmss')
 
-    const filename = `upload-${datestring}.jpg`
+    const filename = `cameracapture-${datestring}.jpg`
     setFiles(files => ({ ...files, [filename]: blob }))
   }, [])
 
@@ -238,21 +240,20 @@ function uploadFiles({ fileNames = [], files = {}, onSuccess, onError, onProgres
       file,
     })
 
-    const key = [Date.now(), fileName].join('/')
-
+    const key = [uuid(), fileName].join('/')
     return Storage.put(key, file, {
-      progressCallback(progress) {
-        onProgress({ progress, fileName, file })
-      },
-    })
-      .then(result => {
+        progressCallback(progress) {
+          onProgress({ progress, fileName, file })
+        },
+      }).then(result => {
         return onSuccess({ result, fileName, file })
       })
       .catch(error => {
         onError({ error, fileName, file })
         throw error
       })
-  })
+  });
+
 }
 
 /**
