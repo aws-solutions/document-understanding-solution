@@ -180,7 +180,7 @@ class ComprehendHelper:
                                   comprehendEntities,
                                   numOfPages,
                                   bucket,
-                                  documentPath):
+                                  comprehendOutputPath):
 
         data = {}
         data['results'] = []
@@ -218,7 +218,7 @@ class ComprehendHelper:
 
         # create results file in S3 under document folder
         S3Helper.writeToS3(json.dumps(data), bucket,
-                           documentPath + "comprehendEntities.json")
+                           comprehendOutputPath + "comprehendEntities.json")
         return entities_to_index
 
     #
@@ -228,7 +228,7 @@ class ComprehendHelper:
                                          comprehendMedicalEntities,
                                          numOfPages,
                                          bucket,
-                                         documentPath):
+                                         comprehendOutputPath):
 
         data = {}
         data['results'] = []
@@ -267,7 +267,7 @@ class ComprehendHelper:
             data['results'].append(page)
 
         # create results file in S3 under document folder
-        S3Helper.writeToS3(json.dumps(data), bucket, documentPath + "comprehendMedicalEntities.json")
+        S3Helper.writeToS3(json.dumps(data), bucket, comprehendOutputPath + "comprehendMedicalEntities.json")
         return medical_entities_to_index
 
     #
@@ -278,7 +278,7 @@ class ComprehendHelper:
                                       comprehendMedicalICD10,
                                       numOfPages,
                                       bucket,
-                                      documentPath):
+                                      comprehendOutputPath):
 
         data = {}
         data['results'] = []
@@ -323,7 +323,7 @@ class ComprehendHelper:
 
         # create results file in S3 under document folder
         S3Helper.writeToS3(json.dumps(data), bucket,
-                           documentPath + "comprehendMedicalICD10.json")
+                           comprehendOutputPath + "comprehendMedicalICD10.json")
 
     #
     #  Call this function from the sync processor or the job result processor to
@@ -340,13 +340,14 @@ class ComprehendHelper:
 
     def processComprehend(self,
                           bucket,
-                          textractResultsFilename,
-                          documentPath,
+                          textractResponseLocation,
+                          comprehendOutputPath,
                           maxPages=200):
+
 
         # get textract results from S3
         textractFile = S3Helper.readFromS3(
-            bucket, documentPath + textractResultsFilename)
+            bucket, textractResponseLocation)
         textract = json.loads(textractFile)
 
         # total number of textracted pages
@@ -446,13 +447,13 @@ class ComprehendHelper:
         processedComprehendData = self.processAndReturnComprehendEntities(comprehendEntities,
                                        numOfPages,
                                        bucket,
-                                       documentPath)
+                                       comprehendOutputPath)
                                   
         # process comprehend medical data, create the entities result file in S3
         comprehendMedicalEntities = self.processAndReturnComprehendMedicalEntities(comprehendMedicalEntities,
                                               numOfPages,
                                               bucket,
-                                              documentPath)
+                                              comprehendOutputPath)
         # final list of comprehend and comprehend medical entities to be indexed
         processedComprehendData.update(comprehendMedicalEntities)
 
@@ -460,6 +461,6 @@ class ComprehendHelper:
         self.processComprehendMedicalICD10(comprehendMedicalICD10,
                                            numOfPages,
                                            bucket,
-                                           documentPath)
+                                           comprehendOutputPath)
 
         return processedComprehendData
