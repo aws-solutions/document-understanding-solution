@@ -12,14 +12,11 @@ def createDocument(request):
     bucketName = request["bucketName"]
     objectName = request["objectName"]
     ds = datastore.DocumentStore(documentsTable, outputTable)
-    documentId = str(uuid.uuid1())
+    documentId = objectName.split('/')[1]
     ds.createDocument(documentId, bucketName, objectName)
-
     output = {
         "documentId": documentId
     }
-
-    print("{}".format(output))
 
     return output
 
@@ -33,8 +30,6 @@ def getDocument(request):
 
     ds = datastore.DocumentStore(documentsTable, outputTable)
     doc = ds.getDocument(documentId)
-
-    print("{}".format(doc))
 
     output = {}
 

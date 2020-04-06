@@ -9,6 +9,10 @@ import datetime
 UNSUPPORTED_DATE_FORMAT = "UNSUPPORTED_DATE_FORMAT"
 DOCTEXT = "docText"
 KVPAIRS = "KVPairs"
+SERVICE_OUTPUT_PATH_S3_PREFIX = "output/"
+TEXTRACT_PATH_S3_PREFIX = "textract/"
+COMPREHEND_PATH_S3_PREFIX = "comprehend/"
+
 
 def round_floats(o):
     if isinstance(o, float):
@@ -45,7 +49,7 @@ def format_date(date):
     return UNSUPPORTED_DATE_FORMAT
 
 class OutputGenerator:
-    def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb, elasticsearchDomain=None):
+    def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb,outputPath, elasticsearchDomain=None):
         self.documentId = documentId
         self.response = response
         self.bucketName = bucketName
@@ -55,7 +59,7 @@ class OutputGenerator:
         self.ddb = ddb
         self.elasticsearchDomain = elasticsearchDomain
 
-        self.outputPath = "{}-analysis/{}/".format(objectName, documentId)
+        self.outputPath = outputPath
 
         self.document = Document(self.response)
 
@@ -70,15 +74,15 @@ class OutputGenerator:
 
     def _outputText(self, page, p):
         text = page.text
-        opath = "{}page-{}-text.txt".format(self.outputPath, p)
+        opath = "{}{}page-{}-text.txt".format(self.outputPath,TEXTRACT_PATH_S3_PREFIX, p)
         S3Helper.writeToS3(text, self.bucketName, opath)
-        self.saveItem(self.documentId, "page-{}-Text".format(p), opath)
+        self.saveItem(self.documentId, "{}page-{}-Text".format(TEXTRACT_PATH_S3_PREFIX, p), opath)
 
         textInReadingOrder = page.getTextInReadingOrder()
-        opath = "{}page-{}-text-inreadingorder.txt".format(self.outputPath, p)
+        opath = "{}{}page-{}-text-inreadingorder.txt".format(self.outputPath,TEXTRACT_PATH_S3_PREFIX, p)
         S3Helper.writeToS3(textInReadingOrder, self.bucketName, opath)
         self.saveItem(self.documentId,
-                      "page-{}-TextInReadingOrder".format(p), opath)
+                      "{}page-{}-TextInReadingOrder".format(TEXTRACT_PATH_S3_PREFIX, p), opath)
 
     def _outputForm(self, page, p):
         csvData = []
@@ -100,9 +104,9 @@ class OutputGenerator:
                 csv_key = csvItem[0]
             key_value_pairs[csv_key] = csvItem[1]
         csvFieldNames = ['Key', 'Value']
-        opath = "{}page-{}-forms.csv".format(self.outputPath, p)
+        opath = "{}{}page-{}-forms.csv".format(self.outputPath,TEXTRACT_PATH_S3_PREFIX, p)
         S3Helper.writeCSV(csvFieldNames, csvData, self.bucketName, opath)
-        self.saveItem(self.documentId, "page-{}-Forms".format(p), opath)
+        self.saveItem(self.documentId, "{}page-{}-Forms".format(TEXTRACT_PATH_S3_PREFIX, p), opath)
         return key_value_pairs
 
     def _outputTable(self, page, p):
@@ -120,9 +124,9 @@ class OutputGenerator:
             csvData.append([])
             csvData.append([])
 
-        opath = "{}page-{}-tables.csv".format(self.outputPath, p)
+        opath = "{}{}page-{}-tables.csv".format(self.outputPath,TEXTRACT_PATH_S3_PREFIX, p)
         S3Helper.writeCSVRaw(csvData, self.bucketName, opath)
-        self.saveItem(self.documentId, "page-{}-Tables".format(p), opath)
+        self.saveItem(self.documentId, "{}page-{}-Tables".format(TEXTRACT_PATH_S3_PREFIX, p), opath)
 
     def indexDocument(self, text, entitiesToIndex):
         
@@ -208,10 +212,10 @@ class OutputGenerator:
         if(not self.document.pages):
             return
 
-        opath = "{}response.json".format(self.outputPath)
+        opath = "{}{}response.json".format(self.outputPath,TEXTRACT_PATH_S3_PREFIX)
         S3Helper.writeToS3(json.dumps(round_floats(prune_blocks(
             self.response)), separators=(',', ':')), self.bucketName, opath)
-        self.saveItem(self.documentId, 'Response', opath)
+        self.saveItem(self.documentId, '{}Response'.format(TEXTRACT_PATH_S3_PREFIX), opath)
 
         print("Total Pages in Document: {}".format(len(self.document.pages)))
 
