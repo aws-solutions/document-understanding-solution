@@ -3,7 +3,7 @@ from decimal import Decimal
 import json
 import os
 from helper import AwsHelper, S3Helper, DynamoDBHelper
-from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX
+from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX,PUBLIC_PATH_S3_PREFIX
 import datastore
 from comprehendHelper import ComprehendHelper
 
@@ -77,7 +77,7 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     ddb = dynamodb.Table(outputTableName)
 
     
-    outputPath = '{}/{}'.format(objectName.rsplit('/',1)[0],SERVICE_OUTPUT_PATH_S3_PREFIX)
+    outputPath = '{}{}/{}'.format(PUBLIC_PATH_S3_PREFIX,documentId,SERVICE_OUTPUT_PATH_S3_PREFIX)
     print("Generating output for DocumentId: {} and storing in {}".format(documentId,outputPath))
 
     opg = OutputGenerator(documentId, response, outputBucketName, objectName, detectForms, detectTables, ddb,outputPath, elasticsearchDomain)

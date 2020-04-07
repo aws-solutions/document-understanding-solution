@@ -81,7 +81,7 @@ function FileUpload({ dispatch }) {
         }))
       },
       onSuccess({ result, fileName }) {
-        return dispatch(submitDocument({ key: `input/${result.key}` })).then(() => {
+        return dispatch(submitDocument({ key: `public/${result.key}` })).then(() => {
           setFileStatus(fileStatus => ({
             ...fileStatus,
             ...{ [fileName]: { success: true } },
@@ -217,6 +217,22 @@ function FileUpload({ dispatch }) {
 
 export default connect()(FileUpload)
 
+async function isUUIdPresentInS3(documentUUID){
+  var s3ListPromise = Storage.list(`${documentUUID}/`)
+      .then((result) => {return result});
+  let s3Result = await s3ListPromise
+  return s3Result.length > 0
+}
+ 
+async function getUniqueDocumentId(){
+  let documentUUID = uuid() 
+    if (await isUUIdPresentInS3(documentUUID)){
+      return getUniqueDocumentId()
+    }else{
+      return documentUUID
+    }  
+}
+
 /**
  * Upload files to S3. NOTE: Amplify does not allow you to upload multiple files
  * in a single call, which is why this function runs a loop to make a call for each file.
@@ -239,21 +255,24 @@ function uploadFiles({ fileNames = [], files = {}, onSuccess, onError, onProgres
       fileName,
       file,
     })
-
-    const key = [uuid(), fileName].join('/')
-    return Storage.put(key, file, {
-        progressCallback(progress) {
-          onProgress({ progress, fileName, file })
-        },
-      }).then(result => {
-        return onSuccess({ result, fileName, file })
-      })
-      .catch(error => {
-        onError({ error, fileName, file })
-        throw error
-      })
-  });
-
+ 
+    getUniqueDocumentId()
+      .then((result) => {   
+        const key = [result, fileName].join('/')
+        Storage.put(key, file, {
+          progressCallback(progress) {
+            onProgress({ progress, fileName, file })
+          },
+        })
+          .then(result => {
+            return onSuccess({ result, fileName, file })
+          })
+          .catch(error => {
+            onError({ error, fileName, file })
+            throw error
+          })
+      });
+  })
 }
 
 /**

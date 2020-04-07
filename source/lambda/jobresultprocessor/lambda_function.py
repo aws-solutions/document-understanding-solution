@@ -3,7 +3,7 @@ import os
 import boto3
 import time
 from helper import AwsHelper
-from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX
+from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX,PUBLIC_PATH_S3_PREFIX
 import datastore
 from comprehendHelper import ComprehendHelper
 
@@ -100,7 +100,7 @@ def processRequest(request):
     dynamodb = AwsHelper().getResource('dynamodb')
     ddb = dynamodb.Table(outputTable)
 
-    outputPath = '{}/{}'.format(objectName.rsplit('/',1)[0],SERVICE_OUTPUT_PATH_S3_PREFIX)
+    outputPath = '{}{}/{}'.format(PUBLIC_PATH_S3_PREFIX,documentId,SERVICE_OUTPUT_PATH_S3_PREFIX)
     print("Generating output for DocumentId: {} and storing in {}".format(documentId,outputPath))
 
     opg = OutputGenerator(documentId, pages, outputBucketName, objectName, detectForms, detectTables, ddb,outputPath, elasticsearchDomain)
