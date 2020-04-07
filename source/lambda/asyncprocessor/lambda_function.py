@@ -71,8 +71,6 @@ def processRequest(request):
     else:
         output = "No job id returned from Textract"
 
-    print(output)
-
     return {
         'statusCode': 200,
         'body': output

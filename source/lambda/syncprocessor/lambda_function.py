@@ -132,8 +132,7 @@ def processRequest(request):
 
         output = "Document: {}, features: {}, Object: {}/{} processed.".format(
             documentId, features, bucketName, objectName)
-        print(output)
-
+    
     return {
         'statusCode': 200,
         'body': output
