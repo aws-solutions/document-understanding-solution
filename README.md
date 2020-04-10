@@ -1,16 +1,18 @@
 # Document Understanding Solution
 
+There are multiple options to deploy the solution. Please review them below-
+
 ## CICD Deploy
 
 ### Requirements
 
 - aws cli
 
-### Getting Started with Full Deploy
+### 1. Getting Started with Full Deploy
 
 - Create a bucket to act as the target Amazon S3 distribution bucket
 
-_Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. Also, the assets in this bucket should be publicly accessible.
+_Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. 
 
 For example, you create a bucket called `my-solutions-bucket-us-east-1`,
 
@@ -54,7 +56,7 @@ This solutions will create 6 S3 buckets that need to be manually deleted when th
 - Do NOT change the `cicd` in package.json. This field is for the deployment system to use in CodePipeline
 - Due to limitations of CodeCommit, you cannot use this deploy approach if you add a file to the solution that is above 6MB (for good measure, stay below 5MB)
 
-## Development Deploy
+## 2. Development Deploy
 
 There is also a deploy option for developers, and those wishing to modify the source code. This deploy does not involve creating any buckets, and allows for running the client-side code on a local server.
 
@@ -104,8 +106,8 @@ This will create 3 or 4 S3 buckets that will have to be manually deleted when th
 
 The `package.json` script node `stackname` sets the stackname for the deploy commands. Throughout development it has been imperative to maintain multiple stacks in order to allow client app development and stack architecture development to work without creating breaking changes. When a new stackname is merged into develop it should have the most up to date deployments.
 
-## Developing Locally
-
+### Developing Locally
+Once deployed into the AWS account, you can also deploy locally for web development
 This application uses [next.js](https://github.com/zeit/next.js/) along with [next-scss](https://github.com/zeit/next-plugins/tree/master/packages/next-sass) — all documentation for those packages apply here. NOTE: This application uses the static export feature of next.js — be aware of the limited features available when using static export.
 
 ### Start Dev Server
