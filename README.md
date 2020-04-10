@@ -2,13 +2,13 @@
 
 There are multiple options to deploy the solution. Please review them below-
 
-## CICD Deploy
+## 1. CICD Deploy
 
 ### Requirements
 
 - aws cli
 
-### 1. Getting Started with Full Deploy
+### Getting Started with Full Deploy
 
 - Create a bucket to act as the target Amazon S3 distribution bucket
 
