@@ -1,5 +1,6 @@
 # Document Understanding Solution
 
+To run the solution, clone/download the project
 There are multiple options to deploy the solution. Please review them below-
 
 ## 1. CICD Deploy
