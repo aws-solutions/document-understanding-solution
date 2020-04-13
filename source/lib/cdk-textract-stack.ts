@@ -16,11 +16,10 @@ import {
 } from "@aws-cdk/aws-lambda-event-sources";
 import {
   CfnUserPoolUser,
+  CfnUserPoolClient,
+  CfnUserPool,
   CfnIdentityPool,
-  CfnIdentityPoolRoleAttachment,
-  UserPoolClient,
-  UserPool,
-  Mfa
+  CfnIdentityPoolRoleAttachment
 } from "@aws-cdk/aws-cognito";
 import {
   CloudFrontWebDistribution,
@@ -219,7 +218,7 @@ export class CdkTextractStack extends cdk.Stack {
         this,
         this.resourceName("ElasticSearchCluster"),
         {
-          elasticsearchVersion: "7.1",
+          elasticsearchVersion: "6.5",
           elasticsearchClusterConfig: {
             instanceType: "m5.large.elasticsearch"
           },
@@ -231,38 +230,15 @@ export class CdkTextractStack extends cdk.Stack {
           encryptionAtRestOptions: {
             enabled: true,
             kmsKeyId: esEncryptionKey.keyId
-          },
-          logPublishingOptions: {
-            INDEX_SLOW_LOGS: {
-              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true
-            }
           }
         }
       );
     } else {
-      // CICD VPC
-      const serviceLinkedRole = new cdk.CfnResource(
-        this,
-        this.resourceName("es-service-linked-role"),
-        {
-          type: "AWS::IAM::ServiceLinkedRole",
-          properties: {
-            AWSServiceName: "es.amazonaws.com",
-            Description: "Role for ES to access resources in my VPC"
-          }
-        }
-      );
-
-      const vpc = new ec2.Vpc(this, this.resourceName("ESClusterVPC"), {
-        cidr: "10.0.0.0/16"
-      });
-
       elasticSearch = new es.CfnDomain(
         this,
         this.resourceName("ElasticSearchCluster"),
         {
-          elasticsearchVersion: "7.1",
+          elasticsearchVersion: "6.5",
           elasticsearchClusterConfig: {
             instanceType: "m5.large.elasticsearch",
             instanceCount: 2,
@@ -288,16 +264,14 @@ export class CdkTextractStack extends cdk.Stack {
             INDEX_SLOW_LOGS: {
               cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
               enabled: true
+            },
+            SEARCH_SLOW_LOGS: {
+              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
+              enabled: true
             }
-          },
-          vpcOptions: {
-            securityGroupIds: [vpc.vpcDefaultSecurityGroup],
-            subnetIds: vpc.publicSubnets.map(sn => sn.subnetId)
           }
         }
       );
-
-      elasticSearch.node.addDependency(serviceLinkedRole);
     }
 
     const jobCompletionTopicKey = new kms.Key(this, "jobCompletionTopicKey", {
@@ -349,17 +323,55 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     // SQS queues
+    const syncJobsDLQueue = new sqs.Queue(
+      this,
+      this.resourceName("SyncJobsDLQ"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(120),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED
+      }
+    );
+
     const syncJobsQueue = new sqs.Queue(this, this.resourceName("SyncJobs"), {
       visibilityTimeout: cdk.Duration.seconds(900),
       retentionPeriod: cdk.Duration.seconds(1209600),
-      encryption: QueueEncryption.KMS_MANAGED
+      encryption: QueueEncryption.KMS_MANAGED,
+      deadLetterQueue: {
+        maxReceiveCount: 3,
+        queue: syncJobsDLQueue
+      }
     });
+
+    const asyncJobsDLQueue = new sqs.Queue(
+      this,
+      this.resourceName("AsyncJobsDLQ"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(120),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED
+      }
+    );
 
     const asyncJobsQueue = new sqs.Queue(this, this.resourceName("AsyncJobs"), {
       visibilityTimeout: cdk.Duration.seconds(120),
       retentionPeriod: cdk.Duration.seconds(1209600),
-      encryption: QueueEncryption.KMS_MANAGED
+      encryption: QueueEncryption.KMS_MANAGED,
+      deadLetterQueue: {
+        maxReceiveCount: 3,
+        queue: asyncJobsDLQueue
+      }
     });
+
+    const jobErrorHandlerDLQueue = new sqs.Queue(
+      this,
+      this.resourceName("jobErrorHandlerDLQ"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(60),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED
+      }
+    );
 
     const jobErrorHandlerQueue = new sqs.Queue(
       this,
@@ -367,7 +379,20 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(60),
         retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption: QueueEncryption.KMS_MANAGED
+        encryption: QueueEncryption.KMS_MANAGED,
+        deadLetterQueue: {
+          maxReceiveCount: 3,
+          queue: jobErrorHandlerDLQueue
+        }
+      }
+    );
+
+    const jobResultsDLQueue = new sqs.Queue(
+      this,
+      this.resourceName("JobResultsDLQ"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(900),
+        retentionPeriod: cdk.Duration.seconds(1209600)
       }
     );
 
@@ -376,7 +401,12 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("JobResults"),
       {
         visibilityTimeout: cdk.Duration.seconds(900),
-        retentionPeriod: cdk.Duration.seconds(1209600)
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED,
+        deadLetterQueue: {
+          maxReceiveCount: 3,
+          queue: jobResultsDLQueue
+        }
       }
     );
     // trigger
@@ -385,38 +415,45 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     // ####### Cognito User Authentication #######
-    const textractUserPool = new UserPool(
-      this,
-      this.resourceName("textract-user-pool"),
-      {
-        userPoolName: "textract-user-pool",
-        autoVerify: {
-          email: true
-        },
-        signInAliases: {
-          email: true
-        },
-        mfa: Mfa.OFF,
-        userInvitation: {
+
+    const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
+      userPoolName: "textract-user-pool",
+      autoVerifiedAttributes: ["email"],
+      aliasAttributes: ["email"],
+      mfaConfiguration: "OFF",
+      userPoolAddOns: {
+        advancedSecurityMode: "ENFORCED"
+      },
+      policies: {
+        passwordPolicy: {
+          minimumLength: 8,
+          requireLowercase: true,
+          requireNumbers: true,
+          requireSymbols: true,
+          requireUppercase: true
+        }
+      },
+      adminCreateUserConfig: {
+        allowAdminCreateUserOnly: true,
+        inviteMessageTemplate: {
           emailSubject: "Your Textract Solution login",
-          emailBody: `<p>You are invited to join the Textract Solution page. Your credentials are:</p> \
-              <p> \
-              Username: <strong>{username}</strong><br /> \
-              Password: <strong>{####}</strong> \
-              </p> \
-              <p> \
-              Please sign in with the user name and your temporary password provided above at: <br /> \
-              https://${distribution.domainName} \
-              </p>`
-        },
-        selfSignUpEnabled: false
+          emailMessage: `<p>You are invited to join the Textract Solution page. Your credentials are:</p> \
+                <p> \
+                Username: <strong>{username}</strong><br /> \
+                Password: <strong>{####}</strong> \
+                </p> \
+                <p> \
+                Please sign in with the user name and your temporary password provided above at: <br /> \
+                https://${distribution.domainName} \
+                </p>`
+        }
       }
-    );
+    });
 
     // Depends upon all other parts of the stack having been created.
     const textractUserPoolUser = new CfnUserPoolUser(
       this,
-      this.resourceName("textract-user-pool-user"),
+      "textract-user-pool-user",
       {
         desiredDeliveryMediums: ["EMAIL"],
         forceAliasCreation: false,
@@ -431,12 +468,12 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    const textractUserPoolClient = new UserPoolClient(
+    const textractUserPoolClient = new CfnUserPoolClient(
       this,
-      this.resourceName("textract-user-pool-client"),
+      "textract-user-pool-client",
       {
-        userPoolClientName: "textract_app",
-        userPool: textractUserPool
+        clientName: "textract_app",
+        userPoolId: textractUserPool.ref
       }
     );
 
