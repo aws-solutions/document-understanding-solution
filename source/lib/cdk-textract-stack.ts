@@ -94,7 +94,7 @@ export class CdkTextractStack extends cdk.Stack {
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
-        serverAccessLogsPrefix: "documentsS3Logs"
+        serverAccessLogsPrefix: "document-s3-bucket"
       }
     );
 
@@ -107,7 +107,7 @@ export class CdkTextractStack extends cdk.Stack {
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
-        serverAccessLogsPrefix: "samplesS3Logs"
+        serverAccessLogsPrefix: "sample-s3-bucket"
       }
     );
 
@@ -121,7 +121,7 @@ export class CdkTextractStack extends cdk.Stack {
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
-        serverAccessLogsPrefix: "clientAppS3Logs"
+        serverAccessLogsPrefix: "clientapps3bucket"
       }
     );
 
