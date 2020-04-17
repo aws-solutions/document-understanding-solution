@@ -3,15 +3,14 @@ from decimal import Decimal
 import json
 import os
 from helper import AwsHelper, S3Helper, DynamoDBHelper
-from og import OutputGenerator, KVPAIRS, DOCTEXT
+from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX,PUBLIC_PATH_S3_PREFIX
 import datastore
 from comprehendHelper import ComprehendHelper
 
 
-def generatePdf(documentId, bucketName, objectName, responseBucketName):
+def generatePdf(documentId, bucketName, objectName, responseBucketName, outputPath):
 
-    outputPath = "{}-analysis/{}/".format(objectName, documentId)
-    responseDocumentName = "{}response.json".format(outputPath)
+    responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
     outputDocumentName = "{}searchable-pdf.pdf".format(outputPath)
 
     data = {}
@@ -77,19 +76,22 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     dynamodb = AwsHelper().getResource("dynamodb")
     ddb = dynamodb.Table(outputTableName)
 
-    print("Generating output for DocumentId: {}".format(documentId))
+    
+    outputPath = '{}{}/{}'.format(PUBLIC_PATH_S3_PREFIX,documentId,SERVICE_OUTPUT_PATH_S3_PREFIX)
+    print("Generating output for DocumentId: {} and storing in {}".format(documentId,outputPath))
 
-    opg = OutputGenerator(documentId, response, outputBucketName, objectName, detectForms, detectTables, ddb, elasticsearchDomain)
+    opg = OutputGenerator(documentId, response, outputBucketName, objectName, detectForms, detectTables, ddb,outputPath, elasticsearchDomain)
     opg_output = opg.run()
 
-    generatePdf(documentId, bucketName, objectName, outputBucketName)
+    generatePdf(documentId, bucketName, objectName, outputBucketName,outputPath)
 
     # generate Comprehend and ComprehendMedical entities in S3
-    path = objectName + "-analysis" + "/" + documentId + "/"
-    print("path: " + path)
+    comprehendOutputPath = "{}{}".format(outputPath,COMPREHEND_PATH_S3_PREFIX)
+    print("Comprehend output path: " + comprehendOutputPath)
     maxPages = 100
     comprehendClient = ComprehendHelper()
-    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
+    responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
+    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, maxPages)
 
     print("DocumentId: {}".format(documentId))
     print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))

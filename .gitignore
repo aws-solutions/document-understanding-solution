@@ -1,7 +1,8 @@
 # dependencies
-/node_modules
+source/node_modules/
 /.pnp
 .pnp.js
+node_modules/
 
 # testing
 /coverage
@@ -9,10 +10,14 @@
 # production
 /build
 deployment/build-dist/
+deployment/global-s3-assets/
+deployment/regional-s3-assets/
 
 # misc
 .DS_Store
 .env
+.idea/
+.vscode/
 
 # Web app
 source/app/.next/
@@ -25,4 +30,5 @@ cdk.out/
 #deployment
 deployment/build-dist/
 deployment/build-dist/*
+
 

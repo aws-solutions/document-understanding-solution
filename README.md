@@ -1,5 +1,9 @@
 # Document Understanding Solution
 
+DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical and Amazon Elasticsearch to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capaibilities.
+
+Current document formats supported : **PDF,JPG,PNG**
+
 To run the solution, clone/download the project
 There are multiple options to deploy the solution. Please review them below-
 
