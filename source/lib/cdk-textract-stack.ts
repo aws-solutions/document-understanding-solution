@@ -274,17 +274,12 @@ export class CdkTextractStack extends cdk.Stack {
       );
     }
 
-    const jobCompletionTopicKey = new kms.Key(this, "jobCompletionTopicKey", {
-      enableKeyRotation: true
-    });
-
     // SNS Topic
     const jobCompletionTopic = new sns.Topic(
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic",
-        masterKey: jobCompletionTopicKey
+        displayName: "Job completion topic"
       }
     );
 
@@ -300,8 +295,8 @@ export class CdkTextractStack extends cdk.Stack {
     textractServiceRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        resources: [jobCompletionTopic.topicArn],
-        actions: ["sns:Publish"]
+        resources: ["*"],
+        actions: ["sns:Publish", "kms:GenerateDataKey", "kms:Decrypt"]
       })
     );
 
@@ -402,7 +397,6 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(900),
         retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption: QueueEncryption.KMS_MANAGED,
         deadLetterQueue: {
           maxReceiveCount: 3,
           queue: jobResultsDLQueue
