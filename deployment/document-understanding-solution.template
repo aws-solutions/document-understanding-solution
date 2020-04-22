@@ -11,7 +11,7 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-Description: "(SO0046) - The AWS CloudFormation template for deployment of the document-understanding-solution. Version v1.0.0"
+Description: "(SO0084) - The AWS CloudFormation template for deployment of the document-understanding-solution. Version v1.0.0"
 
 Parameters:
   Email:
