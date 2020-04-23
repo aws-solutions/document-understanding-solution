@@ -4,6 +4,7 @@ import classNames from 'classnames'
 import { Storage } from 'aws-amplify'
 import { useDropzone } from 'react-dropzone'
 import { format } from 'date-fns'
+import uuid from "uuid/v4";
 
 import Button from '../Button/Button'
 import CameraCapture from '../CameraCapture/CameraCapture'
@@ -101,7 +102,8 @@ function FileUpload({ dispatch }) {
         dispatch(clearSearchQuery())
         setUploadStatus('success')
       })
-      .catch(() => setUploadStatus('error'))
+      .catch(error => {
+      setUploadStatus('error')})
   }, [dispatch, fileNames, files])
 
   /**
@@ -122,7 +124,7 @@ function FileUpload({ dispatch }) {
 
     const datestring = format(new Date(), 'YYYYMMDDHHmmss')
 
-    const filename = `upload-${datestring}.jpg`
+    const filename = `cameracapture-${datestring}.jpg`
     setFiles(files => ({ ...files, [filename]: blob }))
   }, [])
 
@@ -215,6 +217,22 @@ function FileUpload({ dispatch }) {
 
 export default connect()(FileUpload)
 
+async function isUUIdPresentInS3(documentUUID){
+  var s3ListPromise = Storage.list(`${documentUUID}/`)
+      .then((result) => {return result});
+  let s3Result = await s3ListPromise
+  return s3Result.length > 0
+}
+ 
+async function getUniqueDocumentId(){
+  let documentUUID = uuid() 
+    if (await isUUIdPresentInS3(documentUUID)){
+      return getUniqueDocumentId()
+    }else{
+      return documentUUID
+    }  
+}
+
 /**
  * Upload files to S3. NOTE: Amplify does not allow you to upload multiple files
  * in a single call, which is why this function runs a loop to make a call for each file.
@@ -237,21 +255,23 @@ function uploadFiles({ fileNames = [], files = {}, onSuccess, onError, onProgres
       fileName,
       file,
     })
-
-    const key = [Date.now(), fileName].join('/')
-
-    return Storage.put(key, file, {
-      progressCallback(progress) {
-        onProgress({ progress, fileName, file })
-      },
-    })
-      .then(result => {
-        return onSuccess({ result, fileName, file })
-      })
-      .catch(error => {
-        onError({ error, fileName, file })
-        throw error
-      })
+ 
+    getUniqueDocumentId()
+      .then((result) => {   
+        const key = [result, fileName].join('/')
+        Storage.put(key, file, {
+          progressCallback(progress) {
+            onProgress({ progress, fileName, file })
+          },
+        })
+          .then(result => {
+            return onSuccess({ result, fileName, file })
+          })
+          .catch(error => {
+            onError({ error, fileName, file })
+            throw error
+          })
+      });
   })
 }
 

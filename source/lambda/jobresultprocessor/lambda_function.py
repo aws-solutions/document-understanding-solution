@@ -3,14 +3,13 @@ import os
 import boto3
 import time
 from helper import AwsHelper
-from og import OutputGenerator, DOCTEXT, KVPAIRS
+from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX,PUBLIC_PATH_S3_PREFIX
 import datastore
 from comprehendHelper import ComprehendHelper
 
-def generatePdf(documentId, bucketName, objectName, responseBucketName):
+def generatePdf(documentId, bucketName, objectName, responseBucketName,outputPath):
     
-    outputPath = "{}-analysis/{}/".format(objectName, documentId)
-    responseDocumentName = "{}response.json".format(outputPath)
+    responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
     outputDocumentName = "{}searchable-pdf.pdf".format(outputPath)
 
     data = {}
@@ -36,10 +35,7 @@ def getJobResults(api, jobId):
     pages = []
 
     client = AwsHelper().getClient('textract')
-    if(api == "StartDocumentTextDetection"):
-        response = client.get_document_text_detection(JobId=jobId)
-    else:
-        response = client.get_document_analysis(JobId=jobId)
+    response = client.get_document_analysis(JobId=jobId)
     pages.append(response)
     print("Resultset page recieved: {}".format(len(pages)))
     nextToken = None
@@ -78,7 +74,7 @@ def processRequest(request):
     print(request)
 
     jobId = request['jobId']
-    jobTag = request['jobTag']
+    documentId = request['jobTag']
     jobStatus = request['jobStatus']
     jobAPI = request['jobAPI']
     bucketName = request['bucketName']
@@ -104,20 +100,25 @@ def processRequest(request):
     dynamodb = AwsHelper().getResource('dynamodb')
     ddb = dynamodb.Table(outputTable)
 
-    opg = OutputGenerator(jobTag, pages, outputBucketName, objectName, detectForms, detectTables, ddb, elasticsearchDomain)
+    outputPath = '{}{}/{}'.format(PUBLIC_PATH_S3_PREFIX,documentId,SERVICE_OUTPUT_PATH_S3_PREFIX)
+    print("Generating output for DocumentId: {} and storing in {}".format(documentId,outputPath))
+
+    opg = OutputGenerator(documentId, pages, outputBucketName, objectName, detectForms, detectTables, ddb,outputPath, elasticsearchDomain)
     opg_output = opg.run()
 
-    generatePdf(jobTag, bucketName, objectName, outputBucketName)
+    generatePdf(documentId, bucketName, objectName, outputBucketName,outputPath)
 
     # generate Comprehend and ComprehendMedical entities
-    path = objectName + "-analysis" + "/"+ jobTag + "/"
-    print("path: " +  path)
+    comprehendOutputPath = "{}{}".format(outputPath,COMPREHEND_PATH_S3_PREFIX)
+    print("Comprehend output path: " + comprehendOutputPath)
     maxPages = 100
     comprehendClient = ComprehendHelper()
-    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, 'response.json', path, maxPages)
+    responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
+    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, maxPages)
 
-    print("DocumentId: {}".format(jobTag))
-    
+    print("DocumentId: {}".format(documentId))
+    print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))
+
     # index document once the comprehend entities and KVPairs have been extracted
     for key, val in opg_output[KVPAIRS].items():
         if key not in comprehendAndMedicalEntities:
@@ -127,9 +128,9 @@ def processRequest(request):
     opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTable, outputTable)
-    ds.markDocumentComplete(jobTag)
+    ds.markDocumentComplete(documentId)
 
-    output = "Processed -> Document: {}, Object: {}/{} processed.".format(jobTag, bucketName, objectName)
+    output = "Processed -> Document: {}, Object: {}/{} processed.".format(documentId, bucketName, objectName)
 
    
     return {
