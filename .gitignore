@@ -2,6 +2,9 @@
 source/node_modules/
 /.pnp
 .pnp.js
+.idea/
+.vscode/
+source/node_modules/
 node_modules/
 
 # testing
