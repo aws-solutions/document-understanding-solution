@@ -52,7 +52,7 @@ This solutions will create 6 S3 buckets that need to be manually deleted when th
 - 1 for the client bucket
 - 1 for CDK toolkit (if this is the customer's first try with CDK)
 
-The solution is set up to reserve lambda conccurency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
+The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
 
 ### Notes
 
@@ -96,7 +96,7 @@ This will create 3 or 4 S3 buckets that will have to be manually deleted when th
 - 1 for the client bucket
 - 1 for CDK toolkit (if this is your first time using CDK)
 
-The solution is set up to reserve lambda conccurency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
+The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
 
 ### Development Deploy Commands
 
