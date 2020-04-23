@@ -2,6 +2,7 @@ import { createAction } from "redux-actions";
 import { either, isEmpty, isNil, lensPath, reject, view } from "ramda";
 import { normalize } from "normalizr";
 import { API, Storage, Auth } from "aws-amplify";
+import uuid from "uuid/v4";
 
 import {
   SUBMIT_DOCUMENTS,
