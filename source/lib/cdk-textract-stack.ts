@@ -76,7 +76,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     //validate that we have atleast 10 concurrent request for the API
     if(API_CONCURRENT_REQUESTS<10){
-      throw Error("Concurrency limit ")
+      throw Error("Concurrency limit for Lambdas is too low. Please increase the value of API_CONCURRENT_REQUESTS")
     }
 
     // S3 buckets
