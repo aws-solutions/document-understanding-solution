@@ -2,6 +2,7 @@ import { createAction } from "redux-actions";
 import { either, isEmpty, isNil, lensPath, reject, view } from "ramda";
 import { normalize } from "normalizr";
 import { API, Storage, Auth } from "aws-amplify";
+import uuid from "uuid/v4";
 
 import {
   SUBMIT_DOCUMENTS,
@@ -128,17 +129,16 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
 
   const document = view(lensDocumentData, response);
   const { documentId, objectName, bucketName } = document;
+
   // Remove the last slash and everything before it
   const documentName = objectName.replace(/^.*\//, "");
 
   // Amplify prepends public/ to the path, so we have to strip it
   const documentPublicSubPath = objectName.replace("public/", "");
-  const resultDirectory = `${documentId}/output`;
-
-
-  const textractResponsePath = `${resultDirectory}/textract/response.json`;
-  const comprehendMedicalResponsePath = `${resultDirectory}/comprehend/comprehendMedicalEntities.json` 
-  const comprehendResponsePath = `${resultDirectory}/comprehend/comprehendEntities.json` 
+  const resultDirectory = `${documentPublicSubPath}-analysis/${documentId}/`;
+  const textractResponsePath = `${resultDirectory}response.json`;
+  const comprehendMedicalResponsePath = `${resultDirectory}comprehendMedicalEntities.json` 
+  const comprehendResponsePath = `${resultDirectory}comprehendEntities.json` 
   
   
   // Get a pre-signed URL for the original document upload
@@ -147,7 +147,7 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
       bucket: bucketName,
       download: true
     }),
-    Storage.get(`${resultDirectory}/searchable-pdf.pdf`, {
+    Storage.get(`${resultDirectory}searchable-pdf.pdf`, {
       download: true
     })
   ]);
