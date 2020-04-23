@@ -300,8 +300,8 @@ export class CdkTextractStack extends cdk.Stack {
       adminCreateUserConfig: {
         allowAdminCreateUserOnly: true,
         inviteMessageTemplate: {
-          emailSubject: "Your DUS Solution login",
-          emailMessage: `<p>You are invited to join the Doument Understanding Solution page. Your credentials are:</p> \
+          emailSubject: "Your DUS login",
+          emailMessage: `<p>You are invited to try the Document Understanding Solution. Your credentials are:</p> \
                 <p> \
                 Username: <strong>{username}</strong><br /> \
                 Password: <strong>{####}</strong> \

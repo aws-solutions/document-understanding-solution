@@ -145,7 +145,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document
-    const url = await Storage.get(`${resultDirectory}page-${currentPageNumber}-forms.csv`, {
+    const url = await Storage.get(`${resultDirectory}/textract/page-${currentPageNumber}-forms.csv`, {
       expires: 300,
     })
     window.open(url)
@@ -153,7 +153,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const downloadEntities = useCallback(async () => {
     const { resultDirectory } = document
-    const url = await Storage.get(`${resultDirectory}comprehendEntities.json`, {
+    const url = await Storage.get(`${resultDirectory}/comprehend/comprehendEntities.json`, {
       expires: 300,
     })
     window.open(url)
@@ -161,7 +161,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const downloadMedicalEntities = useCallback(async () => {
     const { resultDirectory } = document
-    const url = await Storage.get(`${resultDirectory}comprehendMedicalEntities.json`, {
+    const url = await Storage.get(`${resultDirectory}/comprehend/comprehendMedicalEntities.json`, {
       expires: 300,
     })
     window.open(url)
@@ -169,7 +169,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const downloadMedicalICD10Ontologies = useCallback(async () => {
     const { resultDirectory } = document
-    const url = await Storage.get(`${resultDirectory}comprehendMedicalICD10.json`, {
+    const url = await Storage.get(`${resultDirectory}/comprehend/comprehendMedicalICD10.json`, {
       expires: 300,
     })
     window.open(url)
