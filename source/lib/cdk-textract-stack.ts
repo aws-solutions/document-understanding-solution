@@ -443,10 +443,14 @@ export class CdkTextractStack extends cdk.Stack {
                 Username: <strong>{username}</strong><br /> \
                 Password: <strong>{####}</strong> \
                 </p> \
+                <p>\
+                Please wait until the deployent has completed for both DUS and DUSClient stacks before accessing the website \
+                </p>\
                 <p> \
                 Please sign in with the user name and your temporary password provided above at: <br /> \
                 https://${distribution.domainName} \
-                </p>`
+                </p>\
+                `
         }
       }
     });
