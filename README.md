@@ -1,5 +1,9 @@
 # Document Understanding Solution
 
+DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical and Amazon Elasticsearch to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capaibilities.
+
+Current document formats supported : **PDF,JPG,PNG**
+
 To run the solution, clone/download the project
 There are multiple options to deploy the solution. Please review them below-
 
@@ -53,6 +57,8 @@ This solutions will create 7 S3 buckets that need to be manually deleted when th
 - 1 for access logs
 - 1 for CDK toolkit (if this is the customer's first try with CDK)
 
+The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
+
 ### Notes
 
 - Do NOT change the `cicd` in package.json. This field is for the deployment system to use in CodePipeline
@@ -95,6 +101,8 @@ This will create 3 or 4 S3 buckets that will have to be manually deleted when th
 - 1 for the client bucket
 - 1 for CDK toolkit (if this is your first time using CDK)
 
+The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
+
 ### Development Deploy Commands
 
 - `yarn deploy:backend` : deploys or updates the backend stack
@@ -112,7 +120,7 @@ The `package.json` script node `stackname` sets the stackname for the deploy com
 Once deployed into the AWS account, you can also deploy locally for web development
 This application uses [next.js](https://github.com/zeit/next.js/) along with [next-scss](https://github.com/zeit/next-plugins/tree/master/packages/next-sass) — all documentation for those packages apply here. NOTE: This application uses the static export feature of next.js — be aware of the limited features available when using static export.
 
-### Start Dev Server
+#### Start Dev Server
 
 - Clone this repository
 - Run `yarn` to install/update packages
@@ -120,7 +128,7 @@ This application uses [next.js](https://github.com/zeit/next.js/) along with [ne
 - Navigate to http://localhost:3000
 - NOTE: The dev build is noticeably slower than the production build because pages are built/unbuilt on-demand. Also, the code in the dev build is uncompressed and includes extra code for debugging purposes.
 
-### Generate Production Build
+#### Generate Production Build
 
 - Run `yarn export` to create a static export of the application.
 - In a terminal go to the `app/out` directory and run `python -m SimpleHTTPServer`
@@ -162,6 +170,10 @@ http://www.apache.org/licenses/
 
 ## Additional Notes
 
+<<<<<<< HEAD
 The intended use is for users to use this application as a reference architecutre to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
+=======
+ The intended use is for users to use this application as a reference architecture to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
+>>>>>>> 06db6398b1d3fa6a7cf0accada665059b42b5d5f
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

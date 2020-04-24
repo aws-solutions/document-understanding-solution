@@ -33,6 +33,8 @@ import { BucketEncryption } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
 
+const API_CONCURRENT_REQUESTS = 20 //approximate number of 1-2 page documents to be processed parallelly
+
 export interface TextractStackProps {
   email: string;
   isCICDDeploy: boolean;
@@ -72,6 +74,11 @@ export class CdkTextractStack extends cdk.Stack {
       exposedHeaders: ["ETag"],
       allowedHeaders: ["*"]
     };
+
+    //validate that we have atleast 10 concurrent request for the API
+    if(API_CONCURRENT_REQUESTS<10){
+      throw Error("Concurrency limit for Lambdas is too low. Please increase the value of API_CONCURRENT_REQUESTS")
+    }
 
     // S3 buckets
     const logsS3Bucket = new s3.Bucket(
@@ -430,8 +437,8 @@ export class CdkTextractStack extends cdk.Stack {
       adminCreateUserConfig: {
         allowAdminCreateUserOnly: true,
         inviteMessageTemplate: {
-          emailSubject: "Your Textract Solution login",
-          emailMessage: `<p>You are invited to join the Textract Solution page. Your credentials are:</p> \
+          emailSubject: "Your DUS login",
+          emailMessage: `<p>You are invited to try the Document Understanding Solution. Your credentials are:</p> \
                 <p> \
                 Username: <strong>{username}</strong><br /> \
                 Password: <strong>{####}</strong> \
@@ -630,7 +637,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.fromAsset("lambda/documentprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 50,
+        reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(300),
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
@@ -662,7 +669,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.fromAsset("lambda/joberrorhandler"),
-        reservedConcurrentExecutions: 50,
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/4),
         handler: "lambda_function.lambda_handler",
         timeout: cdk.Duration.seconds(60),
         environment: {
@@ -690,7 +697,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         runtime: lambda.Runtime.JAVA_8,
         code: props.isCICDDeploy ? cicdPDFLoc : yarnPDFLoc,
-        reservedConcurrentExecutions: 50,
+        reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
         timeout: cdk.Duration.seconds(900)
@@ -710,7 +717,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 25,
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/2),
         timeout: cdk.Duration.seconds(900),
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
@@ -795,7 +802,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/asyncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 25,
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/2),
         timeout: cdk.Duration.seconds(120),
         environment: {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
@@ -846,7 +853,7 @@ export class CdkTextractStack extends cdk.Stack {
         code: lambda.Code.asset("lambda/jobresultprocessor"),
         handler: "lambda_function.lambda_handler",
         memorySize: 2000,
-        reservedConcurrentExecutions: 25,
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/2),
         timeout: cdk.Duration.seconds(900),
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
@@ -939,7 +946,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/apiprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: 100,
+        reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(60),
         environment: {
           CONTENT_BUCKET: documentsS3Bucket.bucketName,
