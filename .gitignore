@@ -2,7 +2,7 @@
 
 /.pnp
 .pnp.js
-ource/node_modules/
+source/node_modules/
 node_modules/
 
 # testing
