@@ -170,10 +170,6 @@ http://www.apache.org/licenses/
 
 ## Additional Notes
 
-<<<<<<< HEAD
-The intended use is for users to use this application as a reference architecutre to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
-=======
  The intended use is for users to use this application as a reference architecture to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
->>>>>>> 06db6398b1d3fa6a7cf0accada665059b42b5d5f
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
