@@ -1,20 +1,21 @@
 # dependencies
-source/node_modules/
+
 /.pnp
 .pnp.js
-.idea/
-.vscode/
 source/node_modules/
 node_modules/
 
 # testing
 /coverage
 
-# production
+# Build/Deployment 
 /build
 deployment/build-dist/
 deployment/global-s3-assets/
 deployment/regional-s3-assets/
+deployment/build-dist/
+deployment/build-dist/*
+
 
 # misc
 .DS_Store
@@ -29,9 +30,7 @@ source/app/node_modules/
 
 # CDK
 cdk.out/
-
-#deployment
-deployment/build-dist/
-deployment/build-dist/*
+source/lib/cdk-textract-stack.js
+source/lib/cdk-textract-client-stack.js
 
 
