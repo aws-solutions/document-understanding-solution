@@ -66,7 +66,7 @@ The solution is set up to reserve lambda concurrency quota. This is both to limi
 
 ## 2. Development Deploy
 
-There is also a deploy option for developers, and those wishing to modify the source code. This deploy does not involve creating any buckets, and allows for running the client-side code on a local server.
+There is also a deploy option for developers, and those wishing to modify the source code. This deploy allows for running the client-side code on a local server.
 
 ### Requirements
 
