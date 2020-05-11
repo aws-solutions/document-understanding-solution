@@ -7,78 +7,21 @@ Current document formats supported : **PDF,JPG,PNG**
 To run the solution, clone/download the project
 There are multiple options to deploy the solution. Please review them below-
 
-## 1. CICD Deploy
-
-### Requirements
-
-- aws cli
-
-### Getting Started with Full Deploy
-
-- Create a bucket to act as the target Amazon S3 distribution bucket
-
-_Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. 
-
-For example, you create a bucket called `my-solutions-bucket-us-east-1`,
-
-- Now build the distributable:
-
-```
-chmod +x ./deployment/build-s3-dist.sh
-./deployment/build-s3-dist.sh <bucket-name-minus-region> <solution-name> <version>
-```
-
-For example,
-
-```
-./deployment/build-s3-dist.sh my-solutions-bucket document-understanding-solution v1.0.0
-```
-
-- Deploy the distributable to an Amazon S3 bucket in your account. _Note:_ you must have the AWS Command Line Interface installed.
-
-```
-aws s3 cp ./deployment/global-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-```
-
-- Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
-- Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
-
-```
-aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
-```
-
-This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
-
-- 2 for CICD
-- 1 for solution specific CDK Toolkit
-- 2 for documents (sample and general documents)
-- 1 for the client bucket
-- 1 for access logs
-- 1 for CDK toolkit (if this is the customer's first try with CDK)
-
-The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
-
-### Notes
-
-- Do NOT change the `cicd` in package.json. This field is for the deployment system to use in CodePipeline
-- Due to limitations of CodeCommit, you cannot use this deploy approach if you add a file to the solution that is above 6MB (for good measure, stay below 5MB)
-
-## 2. Development Deploy
+## 1. Development Deploy
 
 There is also a deploy option for developers, and those wishing to modify the source code. This deploy allows for running the client-side code on a local server.
 
 ### Requirements
-
+Please ensure you install all requirements before beginning the deployment
 - yarn
 - node 10+
 - aws cli
 - tsc
 - jq
 
-To deploy using this approach, you must first set several values inside the `package.json` file in the `source` folder.
+To deploy using this approach, you must first set few values inside the `package.json` file in the `source` folder.
 
-- Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. Unlike the regular CICD deploy, this approach will not pull the AWS region from your current AWS profile.
+- Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile.
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
 
 Now switch to the source directory, and use yarn to deploy the solution:
@@ -143,6 +86,65 @@ This project also uses ESLint and sass-lint to help find bugs and enforce code q
 ### Generating License Report
 
 Run `yarn license-report` to generate a license report for all npm packages. See output in `license-report.txt`.
+
+
+## 2. CICD Deploy
+
+### Requirements
+
+- aws cli
+
+### Getting Started with Full Deploy
+
+- Create a bucket to act as the target Amazon S3 distribution bucket
+
+_Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. 
+
+For example, you create a bucket called `my-solutions-bucket-us-east-1`,
+
+- Now build the distributable:
+
+```
+chmod +x ./deployment/build-s3-dist.sh
+./deployment/build-s3-dist.sh <bucket-name-minus-region> <solution-name> <version>
+```
+
+For example,
+
+```
+./deployment/build-s3-dist.sh my-solutions-bucket document-understanding-solution v1.0.0
+```
+
+- Deploy the distributable to an Amazon S3 bucket in your account. _Note:_ you must have the AWS Command Line Interface installed.
+
+```
+aws s3 cp ./deployment/global-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
+aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
+```
+
+- Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
+- Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
+
+```
+aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+```
+
+This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
+
+- 2 for CICD
+- 1 for solution specific CDK Toolkit
+- 2 for documents (sample and general documents)
+- 1 for the client bucket
+- 1 for access logs
+- 1 for CDK toolkit (if this is the customer's first try with CDK)
+
+The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
+
+### Notes
+
+- Do NOT change the `cicd` in package.json. This field is for the deployment system to use in CodePipeline
+- Due to limitations of CodeCommit, you cannot use this deploy approach if you add a file to the solution that is above 6MB (for good measure, stay below 5MB)
+
 
 ## Cost
 
