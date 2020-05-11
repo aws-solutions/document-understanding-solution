@@ -156,13 +156,14 @@ The solution is set up to reserve lambda concurrency quota. This is both to limi
 
 ## Delete demo application
 
-1. Full CICD Deploy:
+1. Dev Deploy:
+
+Make sure you are in the `source` directory, and then run `yarn destroy`.
+
+2. Full CICD Deploy:
 
 Either run `aws cloudformation delete-stack --stack-name {CICD stack}`, or go to Cloudformation in the AWS Console and delete the stack that ends with "CICD". You will also have to go to CodeCommit in the console and manually delete the Repository that was created during the deploy.
 
-2. Dev Deploy:
-
-Make sure you are in the `source` directory, and then run `yarn destroy`.
 
 ## License
 
