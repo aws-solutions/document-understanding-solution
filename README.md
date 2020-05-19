@@ -8,7 +8,7 @@ The instructions below cover installation on Unix-based Operating systems like m
 You can use a Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
 To run the solution,first clone the project
 
-There are multiple options to deploy the solution. Please review them below and choose-
+There are multiple options to deploy the solution. Please review them below-
 
 ## 1. Development Deploy
 
