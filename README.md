@@ -4,7 +4,10 @@ DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehen
 
 Current document formats supported : **PDF,JPG,PNG**
 
-To run the solution, clone/download the project
+The instructions below cover installation on Unix-based Operating systems like macOS and Linux. 
+You can use a AWS Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
+To run the solution,first clone the project
+
 There are multiple options to deploy the solution. Please review them below-
 
 ## 1. Development Deploy
