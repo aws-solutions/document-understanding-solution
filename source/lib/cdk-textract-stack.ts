@@ -1,6 +1,5 @@
 import cdk = require("@aws-cdk/core");
 import ddb = require("@aws-cdk/aws-dynamodb");
-import ec2 = require("@aws-cdk/aws-ec2");
 import es = require("@aws-cdk/aws-elasticsearch");
 import iam = require("@aws-cdk/aws-iam");
 import lambda = require("@aws-cdk/aws-lambda");
@@ -29,7 +28,10 @@ import {
 } from "@aws-cdk/aws-cloudfront";
 import { CanonicalUserPrincipal } from "@aws-cdk/aws-iam";
 import uuid = require("short-uuid");
-import { BucketEncryption } from "@aws-cdk/aws-s3";
+import { 
+  BucketEncryption,
+  BlockPublicAccess
+ } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
 
@@ -88,7 +90,8 @@ export class CdkTextractStack extends cdk.Stack {
         bucketName: this.resourceName("logs-s3-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
-        encryption: BucketEncryption.S3_MANAGED
+        encryption: BucketEncryption.S3_MANAGED,
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
       }
     );
 
@@ -101,7 +104,8 @@ export class CdkTextractStack extends cdk.Stack {
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
-        serverAccessLogsPrefix: "document-s3-bucket"
+        serverAccessLogsPrefix: "document-s3-bucket",
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
       }
     );
 
@@ -114,7 +118,8 @@ export class CdkTextractStack extends cdk.Stack {
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
-        serverAccessLogsPrefix: "sample-s3-bucket"
+        serverAccessLogsPrefix: "sample-s3-bucket",
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
       }
     );
 
@@ -128,7 +133,8 @@ export class CdkTextractStack extends cdk.Stack {
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
-        serverAccessLogsPrefix: "clientapps3bucket"
+        serverAccessLogsPrefix: "clientapps3bucket",
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
       }
     );
 
@@ -177,7 +183,7 @@ export class CdkTextractStack extends cdk.Stack {
     });
 
     const cloudfrontSamplesBucketPolicyStatement = new iam.PolicyStatement({
-      actions: ["s3:*"],
+      actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
       resources: [samplesS3Bucket.bucketArn, `${samplesS3Bucket.bucketArn}/*`],
       principals: [
         new CanonicalUserPrincipal(
@@ -187,7 +193,7 @@ export class CdkTextractStack extends cdk.Stack {
     });
 
     const cloudfrontDocumentsBucketPolicyStatement = new iam.PolicyStatement({
-      actions: ["s3:*"],
+      actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*", "s3:PutObject"],
       resources: [
         documentsS3Bucket.bucketArn,
         `${documentsS3Bucket.bucketArn}/*`
@@ -302,8 +308,8 @@ export class CdkTextractStack extends cdk.Stack {
     textractServiceRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        resources: ["*"],
-        actions: ["sns:Publish", "kms:GenerateDataKey", "kms:Decrypt"]
+        actions: ["sns:Publish"],
+        resources: [jobCompletionTopic.topicArn]
       })
     );
 
@@ -517,17 +523,17 @@ export class CdkTextractStack extends cdk.Stack {
         path: "/"
       }
     );
+    
 
     const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy", {
       statements: [
         new iam.PolicyStatement({
           actions: ["cognito-identity:GetId"],
-          // TODO: Change to just identity pool
-          resources: ["*"],
+          resources: [`arn:aws:cognito-identity:${CdkTextractStack.of(this).region}:${CdkTextractStack.of(this).account}:identitypool/${textractIdentityPool.ref}`],
           effect: iam.Effect.ALLOW
         }),
         new iam.PolicyStatement({
-          actions: ["s3:PutObject", "s3:GetObject"],
+          actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
           resources: [
             samplesS3Bucket.bucketArn,
             `${samplesS3Bucket.bucketArn}/*`
@@ -535,7 +541,7 @@ export class CdkTextractStack extends cdk.Stack {
           effect: iam.Effect.ALLOW
         }),
         new iam.PolicyStatement({
-          actions: ["s3:*"],
+          actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*", "s3:PutObject"],
           resources: [
             documentsS3Bucket.bucketArn,
             `${documentsS3Bucket.bucketArn}/*`
@@ -756,7 +762,7 @@ export class CdkTextractStack extends cdk.Stack {
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ["textract:DetectDocumentText", "textract:AnalyzeDocument"],
-        resources: ["*"]
+        resources: ["*"] // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
 
@@ -766,7 +772,7 @@ export class CdkTextractStack extends cdk.Stack {
           "comprehend:BatchDetectEntities",
           "comprehend:DetectEntities"
         ],
-        resources: ["*"]
+        resources: ["*"] //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
       })
     );
 
@@ -776,7 +782,7 @@ export class CdkTextractStack extends cdk.Stack {
           "comprehendmedical:InferICD10CM",
           "comprehendmedical:DetectEntitiesV2"
         ],
-        resources: ["*"]
+        resources: ["*"] // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
       })
     );
 
@@ -842,7 +848,7 @@ export class CdkTextractStack extends cdk.Stack {
           "textract:StartDocumentTextDetection",
           "textract:StartDocumentAnalysis"
         ],
-        resources: ["*"]
+        resources: ["*"] // Currently, Textract does n'ot support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
 
@@ -894,7 +900,7 @@ export class CdkTextractStack extends cdk.Stack {
           "textract:GetDocumentTextDetection",
           "textract:GetDocumentAnalysis"
         ],
-        resources: ["*"]
+        resources: ["*"] // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
     jobResultProcessor.addToRolePolicy(
@@ -919,7 +925,7 @@ export class CdkTextractStack extends cdk.Stack {
           "comprehend:BatchDetectEntities",
           "comprehend:DetectEntities"
         ],
-        resources: ["*"]
+        resources: ["*"] //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
       })
     );
 
@@ -929,7 +935,7 @@ export class CdkTextractStack extends cdk.Stack {
           "comprehendmedical:InferICD10CM",
           "comprehendmedical:DetectEntitiesV2"
         ],
-        resources: ["*"]
+        resources: ["*"] // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
       })
     );
 
