@@ -170,7 +170,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     const cloudfrontPolicyStatement = new iam.PolicyStatement({
-      actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
+      actions: ["s3:GetObject*", "s3:List*"],
       resources: [
         clientAppS3Bucket.bucketArn,
         `${clientAppS3Bucket.bucketArn}/*`
@@ -183,7 +183,7 @@ export class CdkTextractStack extends cdk.Stack {
     });
 
     const cloudfrontSamplesBucketPolicyStatement = new iam.PolicyStatement({
-      actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
+      actions: ["s3:GetObject*", "s3:List*"],
       resources: [samplesS3Bucket.bucketArn, `${samplesS3Bucket.bucketArn}/*`],
       principals: [
         new CanonicalUserPrincipal(
@@ -193,7 +193,7 @@ export class CdkTextractStack extends cdk.Stack {
     });
 
     const cloudfrontDocumentsBucketPolicyStatement = new iam.PolicyStatement({
-      actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*", "s3:PutObject"],
+      actions: ["s3:GetObject*", "s3:List*", "s3:PutObject"],
       resources: [
         documentsS3Bucket.bucketArn,
         `${documentsS3Bucket.bucketArn}/*`
@@ -533,7 +533,7 @@ export class CdkTextractStack extends cdk.Stack {
           effect: iam.Effect.ALLOW
         }),
         new iam.PolicyStatement({
-          actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*"],
+          actions: ["s3:GetObject*", "s3:List*"],
           resources: [
             samplesS3Bucket.bucketArn,
             `${samplesS3Bucket.bucketArn}/*`
@@ -541,7 +541,7 @@ export class CdkTextractStack extends cdk.Stack {
           effect: iam.Effect.ALLOW
         }),
         new iam.PolicyStatement({
-          actions: ["s3:GetBucket*", "s3:GetObject*", "s3:List*", "s3:PutObject"],
+          actions: ["s3:GetObject*", "s3:List*", "s3:PutObject"],
           resources: [
             documentsS3Bucket.bucketArn,
             `${documentsS3Bucket.bucketArn}/*`
