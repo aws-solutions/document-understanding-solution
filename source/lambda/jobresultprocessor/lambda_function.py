@@ -122,7 +122,7 @@ def processRequest(request):
         kendraClient = KendraHelper()
         kendraClient.indexDocument(os.environ['KENDRA_REGION'],
                                    os.environ['KENDRA_INDEX_ID'],
-                                   os.environ['KENDRA_ROLE_ARN']
+                                   os.environ['KENDRA_ROLE_ARN'],
                                    bucketName,
                                    objectName,
                                    documentId)

@@ -36,7 +36,14 @@ class KendraHelper:
                                                 'S3Path': {
                                                     'Bucket': s3bucket,
                                                     'Key': s3key
-                                                },
+                                                        },
+                                                'AccessControlList': [
+                                                          {
+                                                          'Name': 'everybody',
+                                                          'Type': 'GROUP',
+                                                          'Access': 'ALLOW'
+                                                          }
+                                                ],
                                                 'ContentType': 'PDF'}])
         
         
