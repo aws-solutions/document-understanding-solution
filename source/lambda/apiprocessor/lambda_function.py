@@ -33,12 +33,19 @@ def lambda_handler(event, context):
         # search Kendra if available
         elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST'):
             if 'KENDRA_INDEX_ID' in os.environ :
-                #request['body'] = event['body']
                 kendraClient = KendraHelper()
                 result = kendraClient.search(os.environ['KENDRA_REGION'],
                                              os.environ['KENDRA_INDEX_ID'],
                                              event['body'])
-        
+    
+        # Kendra search result feedback for relevance boosting
+        elif(event['resource'] == '/feedbackkendra' and event['httpMethod'] == 'POST'):
+            if 'KENDRA_INDEX_ID' in os.environ :
+                kendraClient = KendraHelper()
+                result = kendraClient.feedback(os.environ['KENDRA_REGION'],
+                                             os.environ['KENDRA_INDEX_ID'],
+                                             event['body'])
+
         elif(event['resource'] == '/documents'):
             if('queryStringParameters' in event and event['queryStringParameters'] and 'nexttoken' in event['queryStringParameters']):
                 request["nextToken"] = event['queryStringParameters']['nexttoken']
