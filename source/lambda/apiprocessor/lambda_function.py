@@ -34,17 +34,15 @@ def lambda_handler(event, context):
         elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST'):
             if 'KENDRA_INDEX_ID' in os.environ :
                 kendraClient = KendraHelper()
-                result = kendraClient.search(os.environ['KENDRA_REGION'],
-                                             os.environ['KENDRA_INDEX_ID'],
+                result = kendraClient.search(os.environ['KENDRA_INDEX_ID'],
                                              event['body'])
     
         # Kendra search result feedback for relevance boosting
         elif(event['resource'] == '/feedbackkendra' and event['httpMethod'] == 'POST'):
             if 'KENDRA_INDEX_ID' in os.environ :
                 kendraClient = KendraHelper()
-                result = kendraClient.feedback(os.environ['KENDRA_REGION'],
-                                             os.environ['KENDRA_INDEX_ID'],
-                                             event['body'])
+                result = kendraClient.submitFeedback(os.environ['KENDRA_INDEX_ID'],
+                                                     event['body'])
 
         elif(event['resource'] == '/documents'):
             if('queryStringParameters' in event and event['queryStringParameters'] and 'nexttoken' in event['queryStringParameters']):
@@ -84,8 +82,7 @@ def lambda_handler(event, context):
                     # remove it from Kendra's index too if present
                     if 'KENDRA_INDEX_ID' in os.environ :
                         kendraClient = KendraHelper()
-                        kendraClient.deindexDocument(os.environ['KENDRA_REGION'],
-                                                     os.environ['KENDRA_INDEX_ID'],
+                        kendraClient.deindexDocument(os.environ['KENDRA_INDEX_ID'],
                                                      request["documentId"])
                         
         elif(event['resource'] == '/redact'):

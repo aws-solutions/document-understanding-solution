@@ -120,8 +120,7 @@ def processRequest(request):
     # if Kendra is available then let it index the document
     if 'KENDRA_INDEX_ID' in os.environ :
         kendraClient = KendraHelper()
-        kendraClient.indexDocument(os.environ['KENDRA_REGION'],
-                                   os.environ['KENDRA_INDEX_ID'],
+        kendraClient.indexDocument(os.environ['KENDRA_INDEX_ID'],
                                    os.environ['KENDRA_ROLE_ARN'],
                                    bucketName,
                                    objectName,
