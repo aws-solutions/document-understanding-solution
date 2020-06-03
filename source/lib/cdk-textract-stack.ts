@@ -11,31 +11,28 @@ import sqs = require("@aws-cdk/aws-sqs");
 import apigateway = require("@aws-cdk/aws-apigateway");
 import {
   DynamoEventSource,
-  SqsEventSource
+  SqsEventSource,
 } from "@aws-cdk/aws-lambda-event-sources";
 import {
   CfnUserPoolUser,
   CfnUserPoolClient,
   CfnUserPool,
   CfnIdentityPool,
-  CfnIdentityPoolRoleAttachment
+  CfnIdentityPoolRoleAttachment,
 } from "@aws-cdk/aws-cognito";
 import {
   CloudFrontWebDistribution,
   PriceClass,
   HttpVersion,
-  OriginAccessIdentity
+  OriginAccessIdentity,
 } from "@aws-cdk/aws-cloudfront";
 import { CanonicalUserPrincipal } from "@aws-cdk/aws-iam";
 import uuid = require("short-uuid");
-import { 
-  BucketEncryption,
-  BlockPublicAccess
- } from "@aws-cdk/aws-s3";
+import { BucketEncryption, BlockPublicAccess } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
 
-const API_CONCURRENT_REQUESTS = 20 //approximate number of 1-2 page documents to be processed parallelly
+const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed parallelly
 
 export interface TextractStackProps {
   email: string;
@@ -70,16 +67,18 @@ export class CdkTextractStack extends cdk.Stack {
         s3.HttpMethods.GET,
         s3.HttpMethods.PUT,
         s3.HttpMethods.POST,
-        s3.HttpMethods.DELETE
+        s3.HttpMethods.DELETE,
       ],
       maxAge: 3000,
       exposedHeaders: ["ETag"],
-      allowedHeaders: ["*"]
+      allowedHeaders: ["*"],
     };
 
     //validate that we have atleast 10 concurrent request for the API
-    if(API_CONCURRENT_REQUESTS<10){
-      throw Error("Concurrency limit for Lambdas is too low. Please increase the value of API_CONCURRENT_REQUESTS")
+    if (API_CONCURRENT_REQUESTS < 10) {
+      throw Error(
+        "Concurrency limit for Lambdas is too low. Please increase the value of API_CONCURRENT_REQUESTS"
+      );
     }
 
     // S3 buckets
@@ -91,7 +90,7 @@ export class CdkTextractStack extends cdk.Stack {
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
-        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       }
     );
 
@@ -105,7 +104,7 @@ export class CdkTextractStack extends cdk.Stack {
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
         serverAccessLogsPrefix: "document-s3-bucket",
-        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       }
     );
 
@@ -119,7 +118,7 @@ export class CdkTextractStack extends cdk.Stack {
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
         serverAccessLogsPrefix: "sample-s3-bucket",
-        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       }
     );
 
@@ -134,14 +133,14 @@ export class CdkTextractStack extends cdk.Stack {
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
         serverAccessLogsPrefix: "clientapps3bucket",
-        blockPublicAccess: BlockPublicAccess.BLOCK_ALL
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       }
     );
 
     // eslint-disable-next-line no-unused-vars
     const oai = new OriginAccessIdentity(this, "cdk-textract-oai", {
       comment:
-        "Origin Access Identity for Textract web stack bucket cloudfront distribution"
+        "Origin Access Identity for Textract web stack bucket cloudfront distribution",
     });
 
     const distribution = new CloudFrontWebDistribution(
@@ -152,10 +151,10 @@ export class CdkTextractStack extends cdk.Stack {
           {
             s3OriginSource: {
               s3BucketSource: clientAppS3Bucket,
-              originAccessIdentity: oai
+              originAccessIdentity: oai,
             },
-            behaviors: [{ isDefaultBehavior: true }]
-          }
+            behaviors: [{ isDefaultBehavior: true }],
+          },
         ],
         priceClass: PriceClass.PRICE_CLASS_100,
         httpVersion: HttpVersion.HTTP2,
@@ -164,8 +163,8 @@ export class CdkTextractStack extends cdk.Stack {
         loggingConfig: {
           bucket: logsS3Bucket,
           prefix: "cloudfrontDistributionLogs",
-          includeCookies: true
-        }
+          includeCookies: true,
+        },
       }
     );
 
@@ -173,13 +172,13 @@ export class CdkTextractStack extends cdk.Stack {
       actions: ["s3:GetObject*", "s3:List*"],
       resources: [
         clientAppS3Bucket.bucketArn,
-        `${clientAppS3Bucket.bucketArn}/*`
+        `${clientAppS3Bucket.bucketArn}/*`,
       ],
       principals: [
         new CanonicalUserPrincipal(
           oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
-        )
-      ]
+        ),
+      ],
     });
 
     const cloudfrontSamplesBucketPolicyStatement = new iam.PolicyStatement({
@@ -188,21 +187,21 @@ export class CdkTextractStack extends cdk.Stack {
       principals: [
         new CanonicalUserPrincipal(
           oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
-        )
-      ]
+        ),
+      ],
     });
 
     const cloudfrontDocumentsBucketPolicyStatement = new iam.PolicyStatement({
       actions: ["s3:GetObject*", "s3:List*", "s3:PutObject"],
       resources: [
         documentsS3Bucket.bucketArn,
-        `${documentsS3Bucket.bucketArn}/*`
+        `${documentsS3Bucket.bucketArn}/*`,
       ],
       principals: [
         new CanonicalUserPrincipal(
           oai.cloudFrontOriginAccessIdentityS3CanonicalUserId
-        )
-      ]
+        ),
+      ],
     });
 
     clientAppS3Bucket.addToResourcePolicy(cloudfrontPolicyStatement);
@@ -215,7 +214,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ElasticSearchLogGroup"),
       {
-        logGroupName: this.resourceName("ElasticSearchLogGroup")
+        logGroupName: this.resourceName("ElasticSearchLogGroup"),
       }
     );
 
@@ -223,7 +222,7 @@ export class CdkTextractStack extends cdk.Stack {
     let elasticSearch;
 
     const esEncryptionKey = new kms.Key(this, "esEncryptionKey", {
-      enableKeyRotation: true
+      enableKeyRotation: true,
     });
 
     if (!props.isCICDDeploy) {
@@ -233,17 +232,20 @@ export class CdkTextractStack extends cdk.Stack {
         {
           elasticsearchVersion: "6.5",
           elasticsearchClusterConfig: {
-            instanceType: "m5.large.elasticsearch"
+            instanceType: "m5.large.elasticsearch",
           },
           ebsOptions: {
             ebsEnabled: true,
             volumeSize: 20,
-            volumeType: "gp2"
+            volumeType: "gp2",
           },
           encryptionAtRestOptions: {
             enabled: true,
-            kmsKeyId: esEncryptionKey.keyId
-          }
+            kmsKeyId: esEncryptionKey.keyId,
+          },
+          nodeToNodeEncryptionOptions: {
+            enabled: true,
+          },
         }
       );
     } else {
@@ -258,31 +260,31 @@ export class CdkTextractStack extends cdk.Stack {
             dedicatedMasterEnabled: true,
             zoneAwarenessEnabled: true,
             zoneAwarenessConfig: {
-              availabilityZoneCount: 2
-            }
+              availabilityZoneCount: 2,
+            },
           },
           ebsOptions: {
             ebsEnabled: true,
             volumeSize: 20,
-            volumeType: "gp2"
+            volumeType: "gp2",
           },
           encryptionAtRestOptions: {
             enabled: true,
-            kmsKeyId: esEncryptionKey.keyId
+            kmsKeyId: esEncryptionKey.keyId,
           },
           nodeToNodeEncryptionOptions: {
-            enabled: true
+            enabled: true,
           },
           logPublishingOptions: {
             INDEX_SLOW_LOGS: {
               cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true
+              enabled: true,
             },
             SEARCH_SLOW_LOGS: {
               cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true
-            }
-          }
+              enabled: true,
+            },
+          },
         }
       );
     }
@@ -292,7 +294,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic"
+        displayName: "Job completion topic",
       }
     );
 
@@ -301,7 +303,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("TextractServiceRole"),
       {
-        assumedBy: new iam.ServicePrincipal("textract.amazonaws.com")
+        assumedBy: new iam.ServicePrincipal("textract.amazonaws.com"),
       }
     );
 
@@ -309,7 +311,7 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["sns:Publish"],
-        resources: [jobCompletionTopic.topicArn]
+        resources: [jobCompletionTopic.topicArn],
       })
     );
 
@@ -317,7 +319,7 @@ export class CdkTextractStack extends cdk.Stack {
     const outputTable = new ddb.Table(this, this.resourceName("OutputTable"), {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
       sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
-      serverSideEncryption: true
+      serverSideEncryption: true,
     });
 
     const documentsTable = new ddb.Table(
@@ -326,7 +328,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
         stream: ddb.StreamViewType.NEW_IMAGE,
-        serverSideEncryption: true
+        serverSideEncryption: true,
       }
     );
 
@@ -337,7 +339,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(120),
         retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption: QueueEncryption.KMS_MANAGED
+        encryption: QueueEncryption.KMS_MANAGED,
       }
     );
 
@@ -347,8 +349,8 @@ export class CdkTextractStack extends cdk.Stack {
       encryption: QueueEncryption.KMS_MANAGED,
       deadLetterQueue: {
         maxReceiveCount: 3,
-        queue: syncJobsDLQueue
-      }
+        queue: syncJobsDLQueue,
+      },
     });
 
     const asyncJobsDLQueue = new sqs.Queue(
@@ -357,7 +359,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(120),
         retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption: QueueEncryption.KMS_MANAGED
+        encryption: QueueEncryption.KMS_MANAGED,
       }
     );
 
@@ -367,8 +369,8 @@ export class CdkTextractStack extends cdk.Stack {
       encryption: QueueEncryption.KMS_MANAGED,
       deadLetterQueue: {
         maxReceiveCount: 3,
-        queue: asyncJobsDLQueue
-      }
+        queue: asyncJobsDLQueue,
+      },
     });
 
     const jobErrorHandlerDLQueue = new sqs.Queue(
@@ -377,7 +379,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(60),
         retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption: QueueEncryption.KMS_MANAGED
+        encryption: QueueEncryption.KMS_MANAGED,
       }
     );
 
@@ -390,8 +392,8 @@ export class CdkTextractStack extends cdk.Stack {
         encryption: QueueEncryption.KMS_MANAGED,
         deadLetterQueue: {
           maxReceiveCount: 3,
-          queue: jobErrorHandlerDLQueue
-        }
+          queue: jobErrorHandlerDLQueue,
+        },
       }
     );
 
@@ -400,7 +402,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("JobResultsDLQ"),
       {
         visibilityTimeout: cdk.Duration.seconds(900),
-        retentionPeriod: cdk.Duration.seconds(1209600)
+        retentionPeriod: cdk.Duration.seconds(1209600),
       }
     );
 
@@ -412,8 +414,8 @@ export class CdkTextractStack extends cdk.Stack {
         retentionPeriod: cdk.Duration.seconds(1209600),
         deadLetterQueue: {
           maxReceiveCount: 3,
-          queue: jobResultsDLQueue
-        }
+          queue: jobResultsDLQueue,
+        },
       }
     );
     // trigger
@@ -429,7 +431,7 @@ export class CdkTextractStack extends cdk.Stack {
       aliasAttributes: ["email"],
       mfaConfiguration: "OFF",
       userPoolAddOns: {
-        advancedSecurityMode: "ENFORCED"
+        advancedSecurityMode: "ENFORCED",
       },
       policies: {
         passwordPolicy: {
@@ -437,8 +439,8 @@ export class CdkTextractStack extends cdk.Stack {
           requireLowercase: true,
           requireNumbers: true,
           requireSymbols: true,
-          requireUppercase: true
-        }
+          requireUppercase: true,
+        },
       },
       adminCreateUserConfig: {
         allowAdminCreateUserOnly: true,
@@ -456,9 +458,9 @@ export class CdkTextractStack extends cdk.Stack {
                 Please sign in with the user name and your temporary password provided above at: <br /> \
                 https://${distribution.domainName} \
                 </p>\
-                `
-        }
-      }
+                `,
+        },
+      },
     });
 
     // Depends upon all other parts of the stack having been created.
@@ -472,10 +474,10 @@ export class CdkTextractStack extends cdk.Stack {
         userAttributes: [
           {
             name: "email",
-            value: props.email
-          }
+            value: props.email,
+          },
         ],
-        username: props.email.replace(/@/, ".")
+        username: props.email.replace(/@/, "."),
       }
     );
 
@@ -484,7 +486,7 @@ export class CdkTextractStack extends cdk.Stack {
       "textract-user-pool-client",
       {
         clientName: "textract_app",
-        userPoolId: textractUserPool.ref
+        userPoolId: textractUserPool.ref,
       }
     );
 
@@ -498,9 +500,9 @@ export class CdkTextractStack extends cdk.Stack {
           {
             clientId: textractUserPoolClient.ref,
             providerName: textractUserPool.attrProviderName,
-            serverSideTokenCheck: false
-          }
-        ]
+            serverSideTokenCheck: false,
+          },
+        ],
       }
     );
 
@@ -512,43 +514,46 @@ export class CdkTextractStack extends cdk.Stack {
           "cognito-identity.amazonaws.com",
           {
             StringEquals: {
-              "cognito-identity.amazonaws.com:aud": textractIdentityPool.ref
+              "cognito-identity.amazonaws.com:aud": textractIdentityPool.ref,
             },
             "ForAnyValue:StringLike": {
-              "cognito-identity.amazonaws.com:amr": "authenticated"
-            }
+              "cognito-identity.amazonaws.com:amr": "authenticated",
+            },
           },
           "sts:AssumeRoleWithWebIdentity"
         ),
-        path: "/"
+        path: "/",
       }
     );
-    
 
     const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy", {
       statements: [
         new iam.PolicyStatement({
           actions: ["cognito-identity:GetId"],
-          resources: [`arn:aws:cognito-identity:${CdkTextractStack.of(this).region}:${CdkTextractStack.of(this).account}:identitypool/${textractIdentityPool.ref}`],
-          effect: iam.Effect.ALLOW
+          resources: [
+            `arn:aws:cognito-identity:${CdkTextractStack.of(this).region}:${
+              CdkTextractStack.of(this).account
+            }:identitypool/${textractIdentityPool.ref}`,
+          ],
+          effect: iam.Effect.ALLOW,
         }),
         new iam.PolicyStatement({
           actions: ["s3:GetObject*", "s3:List*"],
           resources: [
             samplesS3Bucket.bucketArn,
-            `${samplesS3Bucket.bucketArn}/*`
+            `${samplesS3Bucket.bucketArn}/*`,
           ],
-          effect: iam.Effect.ALLOW
+          effect: iam.Effect.ALLOW,
         }),
         new iam.PolicyStatement({
           actions: ["s3:GetObject*", "s3:List*", "s3:PutObject"],
           resources: [
             documentsS3Bucket.bucketArn,
-            `${documentsS3Bucket.bucketArn}/*`
+            `${documentsS3Bucket.bucketArn}/*`,
           ],
-          effect: iam.Effect.ALLOW
-        })
-      ]
+          effect: iam.Effect.ALLOW,
+        }),
+      ],
     });
 
     const cognitoPolicyResource = cognitoPolicy.node.findChild(
@@ -560,10 +565,10 @@ export class CdkTextractStack extends cdk.Stack {
           {
             id: "W11",
             reason:
-              "The resources in the policy are created/managed by this solution."
-          }
-        ]
-      }
+              "The resources in the policy are created/managed by this solution.",
+          },
+        ],
+      },
     };
 
     cognitoPolicy.attachToRole(textractCognitoAuthenticatedRole);
@@ -574,8 +579,8 @@ export class CdkTextractStack extends cdk.Stack {
       {
         identityPoolId: textractIdentityPool.ref,
         roles: {
-          authenticated: textractCognitoAuthenticatedRole.roleArn
-        }
+          authenticated: textractCognitoAuthenticatedRole.roleArn,
+        },
       }
     );
 
@@ -605,7 +610,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         code: lambda.Code.fromAsset("lambda/helper"),
         compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
+        license: "Apache-2.0",
       }
     );
 
@@ -615,7 +620,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         code: lambda.Code.fromAsset("lambda/textractor"),
         compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
+        license: "Apache-2.0",
       }
     );
 
@@ -625,7 +630,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         code: props.isCICDDeploy ? cicdBotoLoc : yarnBotoLoc,
         compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
+        license: "Apache-2.0",
       }
     );
 
@@ -635,7 +640,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         code: lambda.Code.fromAsset("lambda/elasticsearch/es.zip"),
         compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
+        license: "Apache-2.0",
       }
     );
 
@@ -652,8 +657,8 @@ export class CdkTextractStack extends cdk.Stack {
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
-          ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl
-        }
+          ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
+        },
       }
     );
     documentProcessor.addLayers(helperLayer);
@@ -662,7 +667,7 @@ export class CdkTextractStack extends cdk.Stack {
     documentProcessor.addEventSource(
       new DynamoEventSource(documentsTable, {
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,
-        batchSize: 1
+        batchSize: 1,
       })
     );
 
@@ -679,12 +684,12 @@ export class CdkTextractStack extends cdk.Stack {
       {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.fromAsset("lambda/joberrorhandler"),
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/4),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 4),
         handler: "lambda_function.lambda_handler",
         timeout: cdk.Duration.seconds(60),
         environment: {
-          DOCUMENTS_TABLE: documentsTable.tableName
-        }
+          DOCUMENTS_TABLE: documentsTable.tableName,
+        },
       }
     );
     jobErrorHandler.addLayers(helperLayer);
@@ -692,7 +697,7 @@ export class CdkTextractStack extends cdk.Stack {
     //Trigger
     jobErrorHandler.addEventSource(
       new SqsEventSource(jobErrorHandlerQueue, {
-        batchSize: 1
+        batchSize: 1,
       })
     );
 
@@ -710,7 +715,7 @@ export class CdkTextractStack extends cdk.Stack {
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
-        timeout: cdk.Duration.seconds(900)
+        timeout: cdk.Duration.seconds(900),
       }
     );
 
@@ -727,15 +732,15 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(900),
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
-          PDF_LAMBDA: pdfGenerator.functionName
-        }
+          PDF_LAMBDA: pdfGenerator.functionName,
+        },
       }
     );
 
@@ -748,7 +753,7 @@ export class CdkTextractStack extends cdk.Stack {
     //Trigger
     syncProcessor.addEventSource(
       new SqsEventSource(syncJobsQueue, {
-        batchSize: 1
+        batchSize: 1,
       })
     );
 
@@ -762,7 +767,7 @@ export class CdkTextractStack extends cdk.Stack {
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ["textract:DetectDocumentText", "textract:AnalyzeDocument"],
-        resources: ["*"] // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        resources: ["*"], // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
 
@@ -770,9 +775,9 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: [
           "comprehend:BatchDetectEntities",
-          "comprehend:DetectEntities"
+          "comprehend:DetectEntities",
         ],
-        resources: ["*"] //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
+        resources: ["*"], //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
       })
     );
 
@@ -780,9 +785,9 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: [
           "comprehendmedical:InferICD10CM",
-          "comprehendmedical:DetectEntitiesV2"
+          "comprehendmedical:DetectEntitiesV2",
         ],
-        resources: ["*"] // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
+        resources: ["*"], // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
       })
     );
 
@@ -796,9 +801,9 @@ export class CdkTextractStack extends cdk.Stack {
           "es:ESHttpGet",
           "es:ESHttpDelete",
           "es:ESHttpPost",
-          "es:ESHttpPut"
+          "es:ESHttpPut",
         ],
-        resources: [`${elasticSearch.attrArn}/*`]
+        resources: [`${elasticSearch.attrArn}/*`],
       })
     );
 
@@ -812,13 +817,13 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_7,
         code: lambda.Code.asset("lambda/asyncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(120),
         environment: {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
-          SNS_ROLE_ARN: textractServiceRole.roleArn
-        }
+          SNS_ROLE_ARN: textractServiceRole.roleArn,
+        },
       }
     );
 
@@ -828,7 +833,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     asyncProcessor.addEventSource(
       new SqsEventSource(asyncJobsQueue, {
-        batchSize: 1
+        batchSize: 1,
       })
     );
 
@@ -839,16 +844,16 @@ export class CdkTextractStack extends cdk.Stack {
     asyncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ["iam:PassRole"],
-        resources: [textractServiceRole.roleArn]
+        resources: [textractServiceRole.roleArn],
       })
     );
     asyncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
         actions: [
           "textract:StartDocumentTextDetection",
-          "textract:StartDocumentAnalysis"
+          "textract:StartDocumentAnalysis",
         ],
-        resources: ["*"] // Currently, Textract does n'ot support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        resources: ["*"], // Currently, Textract does n'ot support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
 
@@ -863,15 +868,15 @@ export class CdkTextractStack extends cdk.Stack {
         code: lambda.Code.asset("lambda/jobresultprocessor"),
         handler: "lambda_function.lambda_handler",
         memorySize: 2000,
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS/2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(900),
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
-          PDF_LAMBDA: pdfGenerator.functionName
-        }
+          PDF_LAMBDA: pdfGenerator.functionName,
+        },
       }
     );
 
@@ -884,7 +889,7 @@ export class CdkTextractStack extends cdk.Stack {
     // Triggers
     jobResultProcessor.addEventSource(
       new SqsEventSource(jobResultsQueue, {
-        batchSize: 1
+        batchSize: 1,
       })
     );
 
@@ -898,9 +903,9 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: [
           "textract:GetDocumentTextDetection",
-          "textract:GetDocumentAnalysis"
+          "textract:GetDocumentAnalysis",
         ],
-        resources: ["*"] // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        resources: ["*"], // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
     jobResultProcessor.addToRolePolicy(
@@ -913,9 +918,9 @@ export class CdkTextractStack extends cdk.Stack {
           "es:ESHttpGet",
           "es:ESHttpDelete",
           "es:ESHttpPost",
-          "es:ESHttpPut"
+          "es:ESHttpPut",
         ],
-        resources: [`${elasticSearch.attrArn}/*`]
+        resources: [`${elasticSearch.attrArn}/*`],
       })
     );
 
@@ -923,9 +928,9 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: [
           "comprehend:BatchDetectEntities",
-          "comprehend:DetectEntities"
+          "comprehend:DetectEntities",
         ],
-        resources: ["*"] //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
+        resources: ["*"], //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
       })
     );
 
@@ -933,9 +938,9 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: [
           "comprehendmedical:InferICD10CM",
-          "comprehendmedical:DetectEntitiesV2"
+          "comprehendmedical:DetectEntitiesV2",
         ],
-        resources: ["*"] // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
+        resources: ["*"], // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
       })
     );
 
@@ -963,8 +968,8 @@ export class CdkTextractStack extends cdk.Stack {
           SAMPLE_BUCKET: samplesS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
-          ES_DOMAIN: elasticSearch.attrDomainEndpoint
-        }
+          ES_DOMAIN: elasticSearch.attrDomainEndpoint,
+        },
       }
     );
 
@@ -988,9 +993,9 @@ export class CdkTextractStack extends cdk.Stack {
           "es:ESHttpGet",
           "es:ESHttpDelete",
           "es:ESHttpPost",
-          "es:ESHttpPut"
+          "es:ESHttpPut",
         ],
-        resources: [`${elasticSearch.attrArn}/*`]
+        resources: [`${elasticSearch.attrArn}/*`],
       })
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
@@ -1004,8 +1009,8 @@ export class CdkTextractStack extends cdk.Stack {
         proxy: false,
         deployOptions: {
           loggingLevel: apigateway.MethodLoggingLevel.INFO,
-          dataTraceEnabled: true
-        }
+          dataTraceEnabled: true,
+        },
       }
     );
 
@@ -1015,7 +1020,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         restApi: api,
         validateRequestBody: true,
-        validateRequestParameters: true
+        validateRequestParameters: true,
       }
     );
 
@@ -1024,7 +1029,7 @@ export class CdkTextractStack extends cdk.Stack {
       name: "Authorization",
       type: "COGNITO_USER_POOLS",
       providerArns: [textractUserPool.attrArn],
-      restApiId: api.restApiId
+      restApiId: api.restApiId,
     });
 
     function addCorsOptionsAndMethods(
@@ -1044,14 +1049,14 @@ export class CdkTextractStack extends cdk.Stack {
                 "method.response.header.Access-Control-Allow-Credentials":
                   "'false'",
                 "method.response.header.Access-Control-Allow-Methods":
-                  "'OPTIONS,GET,PUT,POST,DELETE'"
-              }
-            }
+                  "'OPTIONS,GET,PUT,POST,DELETE'",
+              },
+            },
           ],
           passthroughBehavior: apigateway.PassthroughBehavior.NEVER,
           requestTemplates: {
-            "application/json": '{"statusCode": 200}'
-          }
+            "application/json": '{"statusCode": 200}',
+          },
         }),
         {
           methodResponses: [
@@ -1064,20 +1069,20 @@ export class CdkTextractStack extends cdk.Stack {
                 "method.response.header.Access-Control-Allow-Headers": true,
                 "method.response.header.Access-Control-Allow-Methods": true,
                 "method.response.header.Access-Control-Allow-Credentials": true,
-                "method.response.header.Access-Control-Allow-Origin": true
-              }
-            }
+                "method.response.header.Access-Control-Allow-Origin": true,
+              },
+            },
           ],
-          requestValidator: reqValidator
+          requestValidator: reqValidator,
         }
       );
 
-      methods.forEach(method => {
+      methods.forEach((method) => {
         apiResource.addMethod(method, undefined, {
           authorizationType: apigateway.AuthorizationType.COGNITO,
           authorizer: {
-            authorizerId: `${authorizer.ref}`
-          }
+            authorizerId: `${authorizer.ref}`,
+          },
         });
       });
     }
@@ -1100,7 +1105,7 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         actions: ["execute-api:Invoke"],
         resources: [api.arnForExecuteApi()],
-        effect: iam.Effect.ALLOW
+        effect: iam.Effect.ALLOW,
       })
     );
   }
