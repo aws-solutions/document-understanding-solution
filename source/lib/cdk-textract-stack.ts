@@ -5,6 +5,7 @@ import iam = require("@aws-cdk/aws-iam");
 import lambda = require("@aws-cdk/aws-lambda");
 import kms = require("@aws-cdk/aws-kms");
 import s3 = require("@aws-cdk/aws-s3");
+import s3deploy = require("@aws-cdk/aws-s3-deployment");
 import sns = require("@aws-cdk/aws-sns");
 import snsSubscriptions = require("@aws-cdk/aws-sns-subscriptions");
 import sqs = require("@aws-cdk/aws-sqs");
@@ -31,12 +32,16 @@ import uuid = require("short-uuid");
 import { BucketEncryption, BlockPublicAccess } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
+import { CustomResource, Duration } from '@aws-cdk/core';
+import * as cr from '@aws-cdk/custom-resources';
+import { Runtime } from "@aws-cdk/aws-lambda";
 
 const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed parallelly
 
 export interface TextractStackProps {
   email: string;
   isCICDDeploy: boolean;
+  enableKendra: boolean;
 }
 
 export class CdkTextractStack extends cdk.Stack {
@@ -121,6 +126,273 @@ export class CdkTextractStack extends cdk.Stack {
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       }
     );
+
+    // Layers for lambda functions
+    const cicdBotoLoc = lambda.Code.fromBucket(
+      s3.Bucket.fromBucketName(this, "solutionBucketBoto", "SOURCE_BUCKET"),
+      "SOLUTION_NAME/CODE_VERSION/boto3-layer.zip"
+    );
+
+    const cicdPDFLoc = lambda.Code.fromBucket(
+      s3.Bucket.fromBucketName(this, "solutionBucketPDF", "SOURCE_BUCKET"),
+      "SOLUTION_NAME/CODE_VERSION/searchable-pdf-1.0.jar"
+    );
+
+    // If a local yarn deploy is used, the two lambdas draw their code from a local directory.
+
+    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3/boto3-layer.zip");
+
+    const yarnPDFLoc = lambda.Code.fromAsset("lambda/pdfgenerator");
+
+    const helperLayer = new lambda.LayerVersion(
+      this,
+      this.resourceName("HelperLayer"),
+      {
+        code: lambda.Code.fromAsset("lambda/helper"),
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        license: "Apache-2.0"
+      }
+    );
+
+    const textractorLayer = new lambda.LayerVersion(
+      this,
+      this.resourceName("Textractor"),
+      {
+        code: lambda.Code.fromAsset("lambda/textractor"),
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        license: "Apache-2.0"
+      }
+    );
+
+    const boto3Layer = new lambda.LayerVersion(
+      this,
+      this.resourceName("Boto3"),
+      {
+        code: props.isCICDDeploy ? cicdBotoLoc : yarnBotoLoc,
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        license: "Apache-2.0"
+      }
+    );
+
+    const elasticSearchLayer = new lambda.LayerVersion(
+      this,
+      this.resourceName("ElasticSearchLayer"),
+      {
+        code: lambda.Code.fromAsset("lambda/elasticsearch/es.zip"),
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        license: "Apache-2.0"
+      }
+    );
+
+    // global 
+    let createKendraIndexCustomResource = null;
+    if(props.enableKendra){
+      const covidDataBucket = new s3.Bucket(
+        this,
+        this.resourceName("CovidDataBucket"),
+        {
+          bucketName: this.resourceName("covid-data-bucket"),
+          accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+          versioned: false,
+          encryption: BucketEncryption.S3_MANAGED,
+          serverAccessLogsBucket: logsS3Bucket,
+          serverAccessLogsPrefix: "covid-data-bucket",
+          blockPublicAccess: BlockPublicAccess.BLOCK_ALL
+        }
+      );
+  
+      new s3deploy.BucketDeployment(
+        this,
+        this.resourceName("CovidDataDeployment"),
+        {
+          sources: [s3deploy.Source.asset('samples/KendraPdfs')],
+          destinationBucket: covidDataBucket,
+        }
+      );
+      // Assets for Kendra Custom Resource
+      const kendraKMSKey = new kms.Key(
+        this,
+        this.resourceName("KendraIndexEncryptionKey"),
+        {
+          enableKeyRotation: true
+        }
+      );
+
+      const kendraRole = new iam.Role(
+        this,
+        this.resourceName("KendraRole"),
+        {
+          assumedBy: new iam.ServicePrincipal("kendra.amazonaws.com")
+        }
+      );
+
+      kendraRole.assumeRolePolicy?.addStatements( new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["sts:AssumeRole"],
+        principals: [ new iam.ServicePrincipal("kendra.amazonaws.com") ]
+      })
+      );
+
+      kendraRole.addToPolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["cloudwatch:PutMetricData"],
+          resources: ["*"],
+          conditions: {"StringEquals": {"cloudwatch:namespace": "AWS/Kendra"}} 
+        })
+      );
+        
+      kendraRole.addToPolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["logs:DescribeLogGroups"],
+          resources: ["*"]
+        })
+      );
+
+      kendraRole.addToPolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["logs:CreateLogGroup"],
+          resources: ["arn:aws:logs:"+this.region+":"+this.account+":log-group:/aws/kendra/*"]
+        })
+      );
+
+      kendraRole.addToPolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["logs:DescribeLogStreams", "logs:CreateLogStream", "logs:PutLogEvents"],
+          resources: ["arn:aws:logs:"+this.region+":"+this.account+":log-group:/aws/kendra/*:log-stream:*"]
+        })
+      );
+
+      kendraRole.addToPolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["s3:GetObject", "s3:ListBucket"],
+          resources: [
+            covidDataBucket.bucketArn,
+            `${covidDataBucket.bucketArn}/*`
+          ]
+        })
+      );
+
+      const onEventCreateKendraIndexLambda = new lambda.Function(this, this.resourceName('OnEventKendraIndexCreator'), {
+        code: lambda.Code.fromAsset('lambda/kendraIndexCreator'),
+        description: 'onEvent handler for creating Kendra index',
+        runtime: lambda.Runtime.PYTHON_3_7,
+        handler: 'lambda_function.lambda_handler',
+        timeout: Duration.minutes(15),
+        environment: {
+          KENDRA_ROLE_ARN: kendraRole.roleArn,
+          KMS_KEY_ID: kendraKMSKey.keyId,
+          KENDRA_INDEX_CLIENT_TOKEN: this.uuid.toLowerCase()
+        }
+      });
+
+      kendraKMSKey.grantEncryptDecrypt(onEventCreateKendraIndexLambda);
+      onEventCreateKendraIndexLambda.addLayers(boto3Layer);
+
+      onEventCreateKendraIndexLambda.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:CreateIndex","kendra:DeleteIndex","kendra:DescribeIndex","kendra:TagResource","kms:ListKeys",
+          "kms:ListAliases","kms:DescribeKey","kms:CreateGrant"],
+          resources: ["*"]
+        })
+      );
+
+      onEventCreateKendraIndexLambda.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRole.roleArn]
+        })
+      );
+
+      const isCompleteKendraIndexLambda = new lambda.Function(this, this.resourceName('isCompleteKendraIndexPoller'),{
+        code: lambda.Code.fromAsset('lambda/kendraIndexPoller'),
+        description: 'isComplete handler to check for Kendra Index creation',
+        runtime: lambda.Runtime.PYTHON_3_7,
+        handler: 'lambda_function.lambda_handler',
+        timeout: Duration.minutes(15),
+      });
+
+      isCompleteKendraIndexLambda.addLayers(boto3Layer);
+      //kendraKMSKey.grantEncryptDecrypt(isCompleteKendraIndexLambda);
+
+      isCompleteKendraIndexLambda.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:DescribeIndex"],
+          resources: ["*"]
+        })
+      );
+
+      isCompleteKendraIndexLambda.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRole.roleArn]
+        })
+      );
+
+      const kendraIndexProvider = new cr.Provider(this, this.resourceName('KendraIndexProvider'), {
+        onEventHandler: onEventCreateKendraIndexLambda,
+        isCompleteHandler: isCompleteKendraIndexLambda,
+        totalTimeout: Duration.hours(1),
+        queryInterval: Duration.minutes(1),
+      });
+
+      createKendraIndexCustomResource = new CustomResource(this, this.resourceName('CreateKendraIndexCustomResource'), { 
+        serviceToken: kendraIndexProvider.serviceToken,
+        properties: {"kendraKMSKeyId": kendraKMSKey.keyId}
+      });
+
+      const onEventCreateKendraDataSourceLambda = new lambda.Function(this, this.resourceName('OnEventDataSourceCreator'), {
+        code: lambda.Code.fromAsset('lambda/kendraDataSourceCreator/'),
+        description: 'onEvent handler for creating Kendra data source',
+        runtime: lambda.Runtime.PYTHON_3_7,
+        handler: 'lambda_function.lambda_handler',
+        timeout: Duration.minutes(15),
+        environment: {
+          KENDRA_ROLE_ARN: kendraRole.roleArn,
+          KMS_KEY_ID: kendraKMSKey.keyId,
+          KENDRA_INDEX_ID: createKendraIndexCustomResource.getAtt('KendraIndexId').toString(),
+          DATA_BUCKET_NAME: covidDataBucket.bucketName
+        }
+      });
+
+      onEventCreateKendraDataSourceLambda.addLayers(boto3Layer);
+      kendraKMSKey.grantEncryptDecrypt(onEventCreateKendraDataSourceLambda);
+
+      onEventCreateKendraDataSourceLambda.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:CreateDataSource","kendra:StartDataSourceSyncJob","kendra:TagResource"],
+          resources: ["*"]
+        })
+      );
+
+      onEventCreateKendraDataSourceLambda.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRole.roleArn]
+        })
+      );
+
+      const kendraDataSourceProvider = new cr.Provider(this, this.resourceName('KendraDataSourceProvider'), {
+        onEventHandler: onEventCreateKendraDataSourceLambda
+      });
+
+      const createDataSourceCustomResource = new CustomResource(this, this.resourceName('CreateDataSourceCustomResource'),{
+        serviceToken: kendraDataSourceProvider.serviceToken,
+        properties: {
+          "KENDRA_INDEX_ID": createKendraIndexCustomResource.getAtt('KendraIndexId').toString()
+        }
+      });
+  }
 
     // ### Client ###
 
@@ -587,63 +859,6 @@ export class CdkTextractStack extends cdk.Stack {
     /* ### Lambda ### */
 
     // If CICD deploy is used, the two largest lambdas draw their code from an S3 bucket.
-
-    const cicdBotoLoc = lambda.Code.fromBucket(
-      s3.Bucket.fromBucketName(this, "solutionBucketBoto", "SOURCE_BUCKET"),
-      "SOLUTION_NAME/CODE_VERSION/boto3-layer.zip"
-    );
-
-    const cicdPDFLoc = lambda.Code.fromBucket(
-      s3.Bucket.fromBucketName(this, "solutionBucketPDF", "SOURCE_BUCKET"),
-      "SOLUTION_NAME/CODE_VERSION/searchable-pdf-1.0.jar"
-    );
-
-    // If a local yarn deploy is used, the two lambdas draw their code from a local directory.
-
-    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3");
-
-    const yarnPDFLoc = lambda.Code.fromAsset("lambda/pdfgenerator");
-
-    const helperLayer = new lambda.LayerVersion(
-      this,
-      this.resourceName("HelperLayer"),
-      {
-        code: lambda.Code.fromAsset("lambda/helper"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0",
-      }
-    );
-
-    const textractorLayer = new lambda.LayerVersion(
-      this,
-      this.resourceName("Textractor"),
-      {
-        code: lambda.Code.fromAsset("lambda/textractor"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0",
-      }
-    );
-
-    const boto3Layer = new lambda.LayerVersion(
-      this,
-      this.resourceName("Boto3"),
-      {
-        code: props.isCICDDeploy ? cicdBotoLoc : yarnBotoLoc,
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0",
-      }
-    );
-
-    const elasticSearchLayer = new lambda.LayerVersion(
-      this,
-      this.resourceName("ElasticSearchLayer"),
-      {
-        code: lambda.Code.fromAsset("lambda/elasticsearch/es.zip"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0",
-      }
-    );
-
     // Lambdas
     const documentProcessor = new lambda.Function(
       this,
@@ -973,6 +1188,12 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+    // add kendra index id to lambda environment in case of DUS+Kendra mode
+    if(props.enableKendra && createKendraIndexCustomResource!=null){
+      apiProcessor.addEnvironment("KENDRA_INDEX_ID",createKendraIndexCustomResource.getAtt('KendraIndexId').toString())
+      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID",createKendraIndexCustomResource.getAtt('KendraIndexId').toString())
+      syncProcessor.addEnvironment("KENDRA_INDEX_ID",createKendraIndexCustomResource.getAtt('KendraIndexId').toString())
+    }
     // Layer
     apiProcessor.addLayers(elasticSearchLayer);
     apiProcessor.addLayers(helperLayer);
