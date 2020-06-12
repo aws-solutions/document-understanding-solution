@@ -245,10 +245,22 @@ export class CdkTextractStack extends cdk.Stack {
           },
           nodeToNodeEncryptionOptions: {
             enabled: true,
-          },
+          }
         }
       );
     } else {
+      const serviceLinkedRole = new cdk.CfnResource(
+        this,
+        this.resourceName("es-service-linked-role"),
+        {
+          type: "AWS::IAM::ServiceLinkedRole",
+          properties: {
+            AWSServiceName: "es.amazonaws.com",
+            Description: "Role for ES to access resources in my VPC",
+          },
+        }
+      );
+
       elasticSearch = new es.CfnDomain(
         this,
         this.resourceName("ElasticSearchCluster"),
@@ -287,6 +299,8 @@ export class CdkTextractStack extends cdk.Stack {
           },
         }
       );
+
+      elasticSearch.node.addDependency(serviceLinkedRole);
     }
 
     // SNS Topic
