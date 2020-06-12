@@ -184,8 +184,7 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    // global 
-    let createKendraIndexCustomResource = null;
+    let kendraIndexCustomResource = null;
     let kendraRoleArn = null;
     if(props.enableKendra){
       const covidDataBucket = new s3.Bucket(
@@ -322,7 +321,6 @@ export class CdkTextractStack extends cdk.Stack {
       });
 
       isCompleteKendraIndexLambda.addLayers(boto3Layer);
-      //kendraKMSKey.grantEncryptDecrypt(isCompleteKendraIndexLambda);
 
       isCompleteKendraIndexLambda.addToRolePolicy(
         new iam.PolicyStatement({
@@ -347,7 +345,7 @@ export class CdkTextractStack extends cdk.Stack {
         queryInterval: Duration.minutes(1),
       });
 
-      createKendraIndexCustomResource = new CustomResource(this, this.resourceName('CreateKendraIndexCustomResource'), { 
+      kendraIndexCustomResource = new CustomResource(this, this.resourceName('kendraIndexCustomResource'), { 
         serviceToken: kendraIndexProvider.serviceToken,
         properties: {"kendraKMSKeyId": kendraKMSKey.keyId}
       });
@@ -361,7 +359,7 @@ export class CdkTextractStack extends cdk.Stack {
         environment: {
           KENDRA_ROLE_ARN: kendraRole.roleArn,
           KMS_KEY_ID: kendraKMSKey.keyId,
-          KENDRA_INDEX_ID: createKendraIndexCustomResource.getAtt('KendraIndexId').toString(),
+          KENDRA_INDEX_ID: kendraIndexCustomResource.getAtt('KendraIndexId').toString(),
           DATA_BUCKET_NAME: covidDataBucket.bucketName
         }
       });
@@ -392,7 +390,7 @@ export class CdkTextractStack extends cdk.Stack {
       const createDataSourceCustomResource = new CustomResource(this, this.resourceName('CreateDataSourceCustomResource'),{
         serviceToken: kendraDataSourceProvider.serviceToken,
         properties: {
-          "KENDRA_INDEX_ID": createKendraIndexCustomResource.getAtt('KendraIndexId').toString()
+          "KENDRA_INDEX_ID": kendraIndexCustomResource.getAtt('KendraIndexId').toString()
         }
       });
   }
@@ -1192,12 +1190,12 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     // add kendra index id to lambda environment in case of DUS+Kendra mode
-    if(props.enableKendra && createKendraIndexCustomResource!=null){
-      apiProcessor.addEnvironment("KENDRA_INDEX_ID",createKendraIndexCustomResource.getAtt('KendraIndexId').toString())
+    if(props.enableKendra && kendraIndexCustomResource!=null){
+      apiProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexCustomResource.getAtt('KendraIndexId').toString())
       apiProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
-      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID",createKendraIndexCustomResource.getAtt('KendraIndexId').toString())
+      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexCustomResource.getAtt('KendraIndexId').toString())
       jobResultProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
-      syncProcessor.addEnvironment("KENDRA_INDEX_ID",createKendraIndexCustomResource.getAtt('KendraIndexId').toString())
+      syncProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexCustomResource.getAtt('KendraIndexId').toString())
       syncProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
     }
     // Layer

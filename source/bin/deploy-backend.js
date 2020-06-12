@@ -13,7 +13,7 @@ const userEmail =
 
 const isCICDDeploy = process.env.ISCICD == "false" ? false : true;
 const enableKendra = process.env.ENABLE_KENDRA == "true"? true : false;
-// // eslint-disable-next-line no-new
+// eslint-disable-next-line no-new
 new CdkTextractStack.CdkTextractStack(app, stackName, {
   email: userEmail,
   isCICDDeploy: isCICDDeploy,
