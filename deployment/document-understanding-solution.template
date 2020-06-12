@@ -303,7 +303,7 @@ Resources:
       Path: "/"
 
   CICDHelperPolicy:
-    Type: "AWS::IAM::ManagedPolicy"
+    Type: "AWS::IAM::Policy"
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -312,7 +312,7 @@ Resources:
           - id: F5
             reason: "Reviewed, need permissions to delete various IAM resources"
     Properties:
-      Description: "Policy for the Document Understanding CICD Lambda function."
+      PolicyName: cicdhelperpolicy
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -321,6 +321,7 @@ Resources:
               - "logs:CreateLogGroup"
               - "logs:CreateLogStream"
               - "logs:PutLogEvents"
+              - "logs:DescribeLogGroups"
             Resource:
               - !Join [
                   "",
@@ -528,16 +529,44 @@ Resources:
                 "Statement": [
                     {
                         "Effect": "Allow",
-                        "Resource": [ "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*" ],
+                        "Resource": [ "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*" ],
                         "Action": "*"
                     },
                     {
                         "Effect": "Allow",
                         "Resource": [
-                            "arn:aws:s3:::${ArtifactS3Bucket}/*",
-                            "arn:aws:s3:::${DevOutputBucket}/*"
+                            "arn:aws:s3:::*"
                         ],
-                        "Action": "*"
+                        "Action": [
+                          "s3:DeleteBucket",
+                          "s3:CreateBucket",
+                          "s3:DeleteBucketPolicy",
+                          "s3:CreateBucketPolicy",
+                          "s3:GetBucketPolicy",
+                          "s3:PutBucketPolicy",
+                          "s3:DeleteObject",
+                          "s3:PutObject",
+                          "s3:GetObject",
+                          "s3:GetObjectAcl",
+                          "s3:ListBucket",
+                          "s3:PutBucketLogging",
+                          "s3:GetBucketLocation",
+                          "s3:SetBucketEncryption",
+                          "s3:GetBucketAcl",
+                          "s3:PutBucketAcl",
+                          "s3:GetEncryptionConfiguration",
+                          "s3:PutEncryptionConfiguration",
+                          "s3:PutPublicAccessBlock",
+                          "s3:GetPublicAccessBlock",
+                          "s3:GetAccountPublicAccessBlock",
+                          "s3:GetBucketPublicAccessBlock",
+                          "s3:PutAccountPublicAccessBlock",
+                          "s3:PutBucketPublicAccessBlock",
+                          "s3:GetBucketCORS",
+                          "s3:PutBucketCORS",
+                          "s3:GetBucketWebsite",
+                          "s3:PutBucketWebsite"
+                          ]
                     },
                     {
                         "Effect": "Allow",
@@ -546,10 +575,12 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:cloudfront::${AWS::AccountId}:origin-access-identity/*",
+                        "Resource": "*",
                         "Action": [
                             "cloudfront:CreateCloudFrontOriginAccessIdentity",
-                            "cloudfront:DeleteCloudFrontOriginAccessIdentity"
+                            "cloudfront:DeleteCloudFrontOriginAccessIdentity",
+                            "cloudfront:GetCloudFrontOriginAccessIdentityConfig",
+                            "cloudfront:GetCloudFrontOriginAccessIdentity"
                         ]
                     },
                     {
@@ -557,7 +588,10 @@ Resources:
                         "Resource": "arn:aws:cloudfront::${AWS::AccountId}:distribution/*",
                         "Action": [
                             "cloudfront:CreateDistribution",
-                            "cloudfront:DeleteDistribution"
+                            "cloudfront:DeleteDistribution",
+                            "cloudfront:TagResource",
+                            "cloudfront:GetDistribution",
+                            "cloudfront:UpdateDistribution"
                         ]
                     },
                     {
@@ -567,50 +601,128 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:*",
-                        "Action": "*"
+                        "Resource": "*",
+                        "Action": [
+                          "cognito-idp:AdminCreateUser",
+                          "cognito-idp:AdminDeleteUser",
+                          "cognito-idp:CreateUserPool",
+                          "cognito-idp:CreateUserPoolClient",
+                          "cognito-idp:DeleteIdentityProvider",
+                          "cognito-idp:DeleteUser",
+                          "cognito-idp:DeleteUserPool",
+                          "cognito-idp:DeleteUserPoolClient",
+                          "cognito-idp:Describe*",
+                          "cognito-idp:Get*",
+                          "cognito-idp:List*",
+                          "cognito-identity:CreateIdentityPool",
+                          "cognito-identity:DeleteIdentityPool",
+                          "cognito-identity:SetIdentityPoolRoles"
+                        ]
                     },
                     {
                         "Effect": "Allow",
                         "Resource": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:*",
-                        "Action": "*"
+                        "Action": [
+                          "dynamodb:CreateTable",
+                          "dynamodb:DeleteTable",
+                          "dynamodb:DescribeTable",
+                          "dynamodb:DescribeLimits",
+                          "dynamodb:ListTables",
+                          "dynamodb:ListStreams",
+                          "dynamodb:DescribeStream"
+                        ]
                     },
                     {
                         "Effect": "Allow",
                         "Resource": "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*",
-                        "Action": "*"
+                        "Action": [
+                          "es:Describe*",
+                          "es:CreateElasticsearchDomain",
+                          "es:CreateElasticsearchServiceRole",
+                          "es:DeleteElasticsearchDomain",
+                          "es:DeleteElasticsearchServiceRole",
+                          "es:List*"
+                        ]
                     },
                     {
                         "Effect": "Allow",
                         "Resource": "arn:aws:iam::${AWS::AccountId}:*",
-                        "Action": "*"
-                    },
-                    {
-                        "Effect": "Allow",
-                        "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*",
-                        "Action": "*"
-                    },
-                    {
-                        "Effect": "Allow",
-                        "Resource": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*",
-                        "Action": "*"
-                    },
-                    {
-                        "Action": "*",
-                        "Resource": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*",
-                        "Effect": "Allow"
-                    },
-                    {
-                        "Effect": "Allow",
-                        "Resource": [
-                            "arn:aws:s3:::*"
-                        ],
-                        "Action": "*"
+                        "Action": [
+                          "iam:PassRole",
+                          "iam:CreateRole",
+                          "iam:DeleteRole",
+                          "iam:List*",
+                          "iam:Get*",
+                          "iam:AttachRolePolicy",
+                          "iam:PutRolePolicy"
+                        ]
                     },
                     {
                         "Effect": "Allow",
                         "Resource": "*",
-                        "Action": "*"
+                        "Action": [
+                          "kms:CreateKey",
+                          "kms:DisableKey",
+                          "kms:EnableKeyRotation",
+                          "kms:DisableKeyRotation",
+                          "kms:Encrypt",
+                          "kms:Decrypt",
+                          "kms:GenerateDataKey",
+                          "kms:Describe*",
+                          "kms:GetKeyPolicy",
+                          "kms:PutKeyPolicy",
+                          "kms:CreateGrant",
+                          "kms:RetireGrant",
+                          "kms:RevokeGrant"
+                        ]
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "*",
+                        "Action": [
+                          "lambda:CreateEventSourceMapping",
+                          "lambda:AddPermission",
+                          "lambda:CreateFunction",
+                          "lambda:DeleteEventSourceMapping",
+                          "lambda:DeleteFunction",
+                          "lambda:AddLayerVersionPermission",
+                          "lambda:DeleteLayerVersion",
+                          "lambda:PublishLayerVersion",
+                          "lambda:Get*",
+                          "lambda:List*",
+                          "lambda:PutFunctionConcurrency",
+                          "lambda:InvokeFunction"
+                        ]
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*",
+                        "Action": [
+                          "sns:AddPermission",
+                          "sns:CreateTopic",
+                          "sns:DeleteTopic",
+                          "sns:GetTopicAttributes",
+                          "sns:ListSubscriptions",
+                          "sns:ListTopics",
+                          "sns:RemovePermission",
+                          "sns:SetTopicAttributes",
+                          "sns:SetSubscriptionAttributes",
+                          "sns:Subscribe",
+                          "sns:Unsubscribe"
+                        ]
+                    },
+                    {
+                        "Action": [
+                          "sqs:AddPermission",
+                          "sqs:CreateQueue",
+                          "sqs:DeleteQueue",
+                          "sqs:GetQueueAttributes",
+                          "sqs:GetQueueUrl",
+                          "sqs:ListQueues",
+                          "sqs:SetQueueAttributes"
+                        ],
+                        "Resource": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*",
+                        "Effect": "Allow"
                     }
                 ]
             }
