@@ -524,13 +524,20 @@ Resources:
         }
       Policies:
         - PolicyName: !Sub ${CodeCommitRepository}-codebuild
-          PolicyDocument: !Sub |
+          PolicyDocument:
+            !Sub | # Cognito, cloudfront, kms, lambda permissions do not work without access to "*" resources
             {
                 "Statement": [
                     {
                         "Effect": "Allow",
                         "Resource": [ "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*" ],
-                        "Action": "*"
+                        "Action": [
+                          "logs:CreateLogGroup",
+                          "logs:CreateLogStream",
+                          "logs:PutLogEvents",
+                          "logs:Describe*",
+                          "logs:PutRetentionPolicy"
+                        ]
                     },
                     {
                         "Effect": "Allow",
@@ -571,7 +578,14 @@ Resources:
                     {
                         "Effect": "Allow",
                         "Resource": "arn:aws:apigateway:${AWS::Region}::*",
-                        "Action": "*"
+                        "Action": [
+                          "apigateway:Post",
+                          "apigateway:Get*",
+                          "apigateway:Put",
+                          "apigateway:Patch",
+                          "apigateway:Create",
+                          "apigateway:Delete"
+                        ]
                     },
                     {
                         "Effect": "Allow",
@@ -597,7 +611,17 @@ Resources:
                     {
                         "Effect": "Allow",
                         "Resource": "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*",
-                        "Action": "*"
+                        "Action": [
+                            "cloudformation:GetTemplate",
+                            "cloudformation:DescribeStacks",
+                            "cloudformation:DescribeStackEvents",
+                            "cloudformation:CreateChangeSet",
+                            "cloudformation:ExecuteChangeSet",
+                            "cloudformation:DescribeChangeSet",
+                            "cloudformation:CreateStack",
+                            "cloudformation:Delete*",
+                            "cloudformation:List*"
+                        ]
                     },
                     {
                         "Effect": "Allow",
@@ -654,7 +678,8 @@ Resources:
                           "iam:List*",
                           "iam:Get*",
                           "iam:AttachRolePolicy",
-                          "iam:PutRolePolicy"
+                          "iam:PutRolePolicy",
+                          "iam:CreateServiceLinkedRole"
                         ]
                     },
                     {
