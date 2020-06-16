@@ -37,6 +37,7 @@ const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents t
 export interface TextractStackProps {
   email: string;
   isCICDDeploy: boolean;
+  description: string;
 }
 
 export class CdkTextractStack extends cdk.Stack {
@@ -53,11 +54,11 @@ export class CdkTextractStack extends cdk.Stack {
     id: string | undefined,
     props: TextractStackProps
   ) {
-    super(scope, id);
+    super(scope, id , props);
 
     this.resourceName = (name: any) =>
       `${id}-${name}-${this.uuid}`.toLowerCase();
-
+  
     this.uuid = uuid.generate();
 
     const corsRule = {
@@ -539,7 +540,7 @@ export class CdkTextractStack extends cdk.Stack {
         path: "/",
       }
     );
-
+    
     const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy", {
       statements: [
         new iam.PolicyStatement({
@@ -959,7 +960,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
-
+    
     //------------------------------------------------------------
 
     pdfGenerator.grantInvoke(syncProcessor);
