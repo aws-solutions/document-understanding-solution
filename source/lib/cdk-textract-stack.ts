@@ -245,7 +245,7 @@ export class CdkTextractStack extends cdk.Stack {
           },
           nodeToNodeEncryptionOptions: {
             enabled: true,
-          }
+          },
         }
       );
     } else {
@@ -474,6 +474,7 @@ export class CdkTextractStack extends cdk.Stack {
                 </p>\
                 `,
         },
+        unusedAccountValidityDays: 60,
       },
     });
 
@@ -867,7 +868,7 @@ export class CdkTextractStack extends cdk.Stack {
           "textract:StartDocumentTextDetection",
           "textract:StartDocumentAnalysis",
         ],
-        resources: ["*"], // Currently, Textract does n'ot support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        resources: ["*"], // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
 
@@ -1117,10 +1118,10 @@ export class CdkTextractStack extends cdk.Stack {
 
     const feedbackKendraResource = api.root.addResource("feedbackkendra");
     addCorsOptionsAndMethods(feedbackKendraResource, ["POST"]);
-                        
+
     const searchKendraResource = api.root.addResource("searchkendra");
     addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
-                                              
+
     cognitoPolicy.addStatements(
       new iam.PolicyStatement({
         actions: ["execute-api:Invoke"],

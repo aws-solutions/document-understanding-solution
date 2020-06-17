@@ -11,7 +11,7 @@ const listFullStack = (stackName, callback) => {
   const cf = new aws.CloudFormation();
   cf.listStackResources(
     {
-      StackName: stackName
+      StackName: stackName,
     },
     (err, resp) => {
       if (err) {
@@ -21,7 +21,7 @@ const listFullStack = (stackName, callback) => {
       cf.listStackResources(
         {
           StackName: stackName,
-          NextToken: resp.NextToken
+          NextToken: resp.NextToken,
         },
         (err, resp2) => {
           callback(
@@ -44,34 +44,34 @@ const GetResources = new Promise((resolve, reject) => {
     const ResourceTypesEncodes = [
       {
         type: "AWS::Cognito::IdentityPool",
-        key: "IdentityPoolId"
+        key: "IdentityPoolId",
       },
       {
         type: "AWS::Cognito::UserPool",
-        key: "UserPoolId"
+        key: "UserPoolId",
       },
       {
         type: "AWS::S3::Bucket",
-        key: "FileBucketName"
+        key: "FileBucketName",
       },
       {
         type: "AWS::Cognito::UserPoolClient",
-        key: "UserPoolClientId"
+        key: "UserPoolClientId",
       },
       {
         type: "AWS::ApiGateway::RestApi",
-        key: "APIGateway"
+        key: "APIGateway",
       },
       {
         type: "AWS::Lambda::Function",
-        key: "PdfGenLambda"
-      }
+        key: "PdfGenLambda",
+      },
     ];
     const resources = stackDescriptionObj
-      .filter(resource => resource && resource.ResourceType)
+      .filter((resource) => resource && resource.ResourceType)
       .map(({ PhysicalResourceId, ResourceType }) => ({
         PhysicalResourceId,
-        ResourceType
+        ResourceType,
       }))
       .reduce((acc, { PhysicalResourceId, ResourceType }) => {
         const index = ResourceTypesEncodes.map(({ type }) => type).indexOf(
@@ -82,7 +82,7 @@ const GetResources = new Promise((resolve, reject) => {
             ...acc,
             [ResourceTypesEncodes.map(({ key }) => key)[
               index
-            ]]: PhysicalResourceId
+            ]]: PhysicalResourceId,
           };
         }
         if (acc.UserPoolId && !acc.region) {
@@ -91,16 +91,16 @@ const GetResources = new Promise((resolve, reject) => {
         return acc;
       }, {});
 
-    resources.FileBucketName = stackDescriptionObj.find(x =>
+    resources.FileBucketName = stackDescriptionObj.find((x) =>
       /DocumentsS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
-    resources.SampleBucketName = stackDescriptionObj.find(x =>
+    resources.SampleBucketName = stackDescriptionObj.find((x) =>
       /SamplesS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
-    resources.ClientAppBucketName = stackDescriptionObj.find(x =>
+    resources.ClientAppBucketName = stackDescriptionObj.find((x) =>
       /ClientAppS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
-    resources.PdfGenLambda = stackDescriptionObj.find(x =>
+    resources.PdfGenLambda = stackDescriptionObj.find((x) =>
       /pdfgenerator/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
 
@@ -111,7 +111,7 @@ const GetResources = new Promise((resolve, reject) => {
 const setEnv = async () => {
   const data = await GetResources;
   const outputArray = [];
-  Object.keys(data).forEach(key => {
+  Object.keys(data).forEach((key) => {
     outputArray.push(`${key}=${data[key]}`);
   });
   fs.writeFileSync(".env", outputArray.join("\n"));
