@@ -26,7 +26,7 @@ Parameters:
   Version:
     Description: Solution Version
     Type: String
-    Default: "v0.0.1"
+    Default: "v1.0.0"
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -401,7 +401,7 @@ Resources:
             Action:
               - "lambda:GetEventSourceMapping"
               - "lambda:DeleteEventSourceMapping"
-            Resource: "*"
+            Resource: "*" # lambda permissions do not work without access to "*" resources
           - Effect: "Allow"
             Action:
               - "sns:DeleteTopic"
@@ -427,7 +427,7 @@ Resources:
               - "cloudfront:GetCloudFrontOriginAccessIdentityConfig"
               - "cloudfront:Delete*"
               - "cloudfront:UpdateDistribution"
-            Resource:
+            Resource: # Cloudfront permissions do not work without access to "*" resources
               - "*"
           - Effect: "Allow"
             Action:
