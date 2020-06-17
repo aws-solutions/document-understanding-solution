@@ -5,7 +5,6 @@ from documents import getDocuments
 from document import getDocument, createDocument, deleteDocument
 from redact import redact
 from search import search, deleteESItem
-from kendraHelper import KendraHelper
 
 def lambda_handler(event, context):
 
@@ -30,20 +29,6 @@ def lambda_handler(event, context):
                     request["documentId"] = event['queryStringParameters']['documentId']
                 result = search(request)
     
-        # search Kendra if available
-        elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST'):
-            if 'KENDRA_INDEX_ID' in os.environ :
-                kendraClient = KendraHelper()
-                result = kendraClient.search(os.environ['KENDRA_INDEX_ID'],
-                                             event['body'])
-    
-        # Kendra search result feedback for relevance boosting
-        elif(event['resource'] == '/feedbackkendra' and event['httpMethod'] == 'POST'):
-            if 'KENDRA_INDEX_ID' in os.environ :
-                kendraClient = KendraHelper()
-                result = kendraClient.submitFeedback(os.environ['KENDRA_INDEX_ID'],
-                                                     event['body'])
-
         elif(event['resource'] == '/documents'):
             if('queryStringParameters' in event and event['queryStringParameters'] and 'nexttoken' in event['queryStringParameters']):
                 request["nextToken"] = event['queryStringParameters']['nexttoken']
@@ -78,12 +63,6 @@ def lambda_handler(event, context):
                     request["documentId"] = event['queryStringParameters']['documentid']
                     result = deleteDocument(request)
                     deleteESItem(request["elasticsearchDomain"], request["documentId"])
-
-                    # remove it from Kendra's index too if present
-                    if 'KENDRA_INDEX_ID' in os.environ :
-                        kendraClient = KendraHelper()
-                        kendraClient.deindexDocument(os.environ['KENDRA_INDEX_ID'],
-                                                     request["documentId"])
                         
         elif(event['resource'] == '/redact'):
             params = event['queryStringParameters'] if 'queryStringParameters' in event else {}
