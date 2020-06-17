@@ -1115,12 +1115,6 @@ export class CdkTextractStack extends cdk.Stack {
     const redactResource = api.root.addResource("redact");
     addCorsOptionsAndMethods(redactResource, ["GET", "POST"]);
 
-    const feedbackKendraResource = api.root.addResource("feedbackkendra");
-    addCorsOptionsAndMethods(feedbackKendraResource, ["POST"]);
-                        
-    const searchKendraResource = api.root.addResource("searchkendra");
-    addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
-                                              
     cognitoPolicy.addStatements(
       new iam.PolicyStatement({
         actions: ["execute-api:Invoke"],

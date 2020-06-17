@@ -6,7 +6,6 @@ from helper import AwsHelper, S3Helper, DynamoDBHelper
 from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX,PUBLIC_PATH_S3_PREFIX
 import datastore
 from comprehendHelper import ComprehendHelper
-from kendraHelper import KendraHelper
 
 def generatePdf(documentId, bucketName, objectName, responseBucketName, outputPath):
 
@@ -92,15 +91,6 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     comprehendClient = ComprehendHelper()
     responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
     comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, maxPages)
-
-    # if Kendra is available then let it index the document
-    if 'KENDRA_INDEX_ID' in os.environ :
-        kendraClient = KendraHelper()
-        kendraClient.indexDocument(os.environ['KENDRA_INDEX_ID'],
-                                   os.environ['KENDRA_ROLE_ARN'],
-                                   outputBucketName,
-                                   objectName,
-                                   documentId)
 
     print("DocumentId: {}".format(documentId))
     print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))
