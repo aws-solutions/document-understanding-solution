@@ -30,7 +30,6 @@ def on_delete(event, context):
     DUSkendraIndexId = event['PhysicalResourceId']
     # check if the list_indices has the index id, if yes, then check status
     kendra_indices = kendra_client.list_indices()
-    # convert the response to valid dict object
     kendra_indices = json.loads(json.dumps(kendra_indices,default = convert_datetime_to_string))
     kendra_index_ids = []
     for index in kendra_indices['IndexConfigurationSummaryItems']:

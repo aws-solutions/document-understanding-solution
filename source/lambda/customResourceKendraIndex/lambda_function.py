@@ -45,7 +45,6 @@ def on_update(event, context):
     kendra_client = boto3.client('kendra')
     DUSKendraIndexId = event['PhysicalResourceId']
     roleArn = os.environ['KENDRA_ROLE_ARN']
-    # check if the resource properties give accurate result else use this
     new_kms_id = os.environ['KMS_KEY_ID']
     kendraIndexClientToken = os.environ['KENDRA_INDEX_CLIENT_TOKEN']
     old_kms_id = event['OldResourceProperties']['kendraKMSKeyId']
