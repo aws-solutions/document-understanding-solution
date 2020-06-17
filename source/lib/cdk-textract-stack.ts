@@ -41,6 +41,7 @@ const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents t
 export interface TextractStackProps {
   email: string;
   isCICDDeploy: boolean;
+  enableKendra: boolean;
 }
 
 export class CdkTextractStack extends cdk.Stack {

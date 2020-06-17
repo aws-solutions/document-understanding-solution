@@ -16,5 +16,6 @@ const enableKendra = process.env.ENABLE_KENDRA == "true"? true : false;
 // // eslint-disable-next-line no-new
 new CdkTextractStack.CdkTextractStack(app, stackName, {
   email: userEmail,
-  isCICDDeploy: isCICDDeploy
+  isCICDDeploy: isCICDDeploy,
+  enableKendra: enableKendra
 });
