@@ -155,9 +155,8 @@ class ComprehendHelper:
 
             # service limit is 10tps, sdk implements 3 retries with backoff
             # if that's not enough then fail
-            # response = client.infer_icd10_cm(Text=rawPages[index])
-            response = client.detect_entities_v2(Text=rawPages[index])
-
+            response = client.infer_icd10_cm(Text=rawPages[index])
+            
             # save results for later processing
             if 'Entities' not in response:
                 return
