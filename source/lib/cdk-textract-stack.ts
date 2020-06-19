@@ -625,7 +625,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("HelperLayer"),
       {
         code: lambda.Code.fromAsset("lambda/helper"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
         license: "Apache-2.0",
       }
     );
@@ -635,7 +635,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("Textractor"),
       {
         code: lambda.Code.fromAsset("lambda/textractor"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
         license: "Apache-2.0",
       }
     );
@@ -645,7 +645,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("Boto3"),
       {
         code: props.isCICDDeploy ? cicdBotoLoc : yarnBotoLoc,
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
         license: "Apache-2.0",
       }
     );
@@ -655,7 +655,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("ElasticSearchLayer"),
       {
         code: lambda.Code.fromAsset("lambda/elasticsearch/es.zip"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
         license: "Apache-2.0",
       }
     );
@@ -665,7 +665,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("TaskProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.fromAsset("lambda/documentprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
@@ -698,7 +698,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobErrorHandlerLambda"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.fromAsset("lambda/joberrorhandler"),
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 4),
         handler: "lambda_function.lambda_handler",
@@ -745,7 +745,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("SyncProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
@@ -830,7 +830,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ASyncProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/asyncprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
@@ -880,7 +880,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobResultProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/jobresultprocessor"),
         handler: "lambda_function.lambda_handler",
         memorySize: 2000,
@@ -974,7 +974,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ApiProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/apiprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
