@@ -38,17 +38,16 @@ def on_delete(event, context):
     if DUSkendraIndexId not in kendra_index_ids:
         print("Kendra index with id {} deleted".format(DUSkendraIndexId))
         return {'IsComplete': True}
-    if len(kendra_index_ids) > 0:
-        for indexId in kendra_index_ids:
-            if indexId == DUSkendraIndexId:
-                response = kendra_client.describe_index(Id=DUSkendraIndexId)
-                if response['Status'] == "DELETING":
-                    print("DUSKendraIndex still deleting")
-                    return {'IsComplete':False}
-                if response['Status'] == "FAILED":
-                    # send the response as data to aws cloudformation
-                    print("Delete of Kendra index with id {} failed with response {}".format(DUSkendraIndexId,response))
-                    return {'IsComplete':True,'Data':response}
+    for indexId in kendra_index_ids:
+        if indexId == DUSkendraIndexId:
+            response = kendra_client.describe_index(Id=DUSkendraIndexId)
+            if response['Status'] == "DELETING":
+                print("DUSKendraIndex still deleting")
+                return {'IsComplete':False}
+            if response['Status'] == "FAILED":
+                # send the response as data to aws cloudformation
+                print("Delete of Kendra index with id {} failed with response {}".format(DUSkendraIndexId,response))
+                return {'IsComplete':True,'Data':response}
 
 def on_update(event, context):
     kendra_client = boto3.client('kendra')
