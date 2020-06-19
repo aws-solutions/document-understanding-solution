@@ -57,7 +57,7 @@ export class CdkTextractStack extends cdk.Stack {
     super(scope, id , props);
 
     this.resourceName = (name: any) =>
-      `${id}-${name}-${this.uuid}`.toLowerCase();
+      `${id}-${name}`.toLowerCase();
   
     this.uuid = uuid.generate();
 
@@ -87,7 +87,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("LogsS3Bucket"),
       {
-        bucketName: this.resourceName("logs-s3-bucket"),
+        //bucketName: this.resourceName("logs-s3-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
@@ -99,7 +99,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("DocumentsS3Bucket"),
       {
-        bucketName: this.resourceName("document-s3-bucket"),
+        //bucketName: this.resourceName("document-s3-bucket"),
         versioned: false,
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
@@ -113,7 +113,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("SamplesS3Bucket"),
       {
-        bucketName: this.resourceName("sample-s3-bucket"),
+        //bucketName: this.resourceName("sample-s3-bucket"),
         versioned: false,
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
@@ -215,7 +215,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ElasticSearchLogGroup"),
       {
-        logGroupName: this.resourceName("ElasticSearchLogGroup"),
+        //logGroupName: this.resourceName("ElasticSearchLogGroup"),
       }
     );
 
@@ -309,7 +309,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic",
+       // displayName: "Job completion topic",
       }
     );
 
@@ -441,7 +441,7 @@ export class CdkTextractStack extends cdk.Stack {
     // ####### Cognito User Authentication #######
 
     const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
-      userPoolName: "textract-user-pool",
+      //userPoolName: "textract-user-pool",
       autoVerifiedAttributes: ["email"],
       aliasAttributes: ["email"],
       mfaConfiguration: "OFF",
@@ -501,7 +501,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-user-pool-client",
       {
-        clientName: "textract_app",
+        //clientName: "textract_app",
         userPoolId: textractUserPool.ref,
       }
     );
@@ -510,7 +510,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-identity-pool",
       {
-        identityPoolName: "textractUserIdentityPool",
+        //identityPoolName: "textractUserIdentityPool",
         allowUnauthenticatedIdentities: false,
         cognitoIdentityProviders: [
           {
@@ -670,6 +670,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(300),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
@@ -703,6 +704,7 @@ export class CdkTextractStack extends cdk.Stack {
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 4),
         handler: "lambda_function.lambda_handler",
         timeout: cdk.Duration.seconds(60),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           DOCUMENTS_TABLE: documentsTable.tableName,
         },
@@ -732,6 +734,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
       }
     );
 
@@ -750,6 +753,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
@@ -835,6 +839,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(120),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
@@ -886,6 +891,7 @@ export class CdkTextractStack extends cdk.Stack {
         memorySize: 2000,
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
@@ -979,6 +985,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(60),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           CONTENT_BUCKET: documentsS3Bucket.bucketName,
           SAMPLE_BUCKET: samplesS3Bucket.bucketName,
