@@ -167,6 +167,10 @@ Make sure you are in the `source` directory, and then run `yarn destroy`.
 
 Either run `aws cloudformation delete-stack --stack-name {CICD stack}`, or go to Cloudformation in the AWS Console and delete the stack that ends with "CICD". You will also have to go to CodeCommit in the console and manually delete the Repository that was created during the deploy.
 
+## Demonstration Mode
+
+This solution can be deployed in Demonstration(Demo) Mode. In order to enable the Demo mode, set ``` demomode: "true"``` in package.json. By default, this mode is disabled.
+* In this mode you will not be able to add your own documents or use the camera capture feature. You will still be able to upload the same documents provided. 
 
 ## License
 
