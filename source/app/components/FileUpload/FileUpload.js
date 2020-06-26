@@ -5,8 +5,12 @@ import { Storage } from 'aws-amplify'
 import { useDropzone } from 'react-dropzone'
 import { format } from 'date-fns'
 import uuid from "uuid/v4";
+import getConfig from "next/config";
 
 import Button from '../Button/Button'
+import Modal from '../Modal/Modal'
+import { useContext } from 'react';
+import ModalContext from '../ModalContext/ModalContext'
 import CameraCapture from '../CameraCapture/CameraCapture'
 
 import { submitDocument } from '../../store/entities/documents/actions'
@@ -14,12 +18,19 @@ import { clearSearchQuery } from '../../store/entities/meta/actions'
 
 import css from './FileUpload.scss'
 
+const {
+  publicRuntimeConfig:{
+    DEMOMODE
+  }
+} = getConfig();
+
 function FileUpload({ dispatch }) {
   const [canUseCamera, setCanUseCamera] = useState({})
   const [cameraCapturing, setCameraCapturing] = useState(false)
   const [fileStatus, setFileStatus] = useState({})
   const [uploadStatus, setUploadStatus] = useState('')
   const [files, setFiles] = useState({})
+  const {modal, setModal} = DEMOMODE==="true"? useContext(ModalContext): useState('')
   const fileNames = Object.keys(files)
 
   // Aggregate upload statuses
@@ -41,12 +52,17 @@ function FileUpload({ dispatch }) {
 
   // Configure dropzone
   const onDrop = useCallback(acceptedFiles => {
+    if(DEMOMODE === 'true'){
+      setModal(true)
+    } 
+    else{
     const fileMap = {}
     setUploadStatus('')
     acceptedFiles.forEach(file => {
       fileMap[file.name] = file
     })
     setFiles(files => ({ ...files, ...fileMap }))
+  }
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -54,6 +70,11 @@ function FileUpload({ dispatch }) {
     disabled: !isReadyToUpload,
   })
 
+  /**
+ * Handle clicks on the select documents CTA when the mode is Demonstration Mode
+ *
+ */
+  const handleSelectDocumentsClickDemoOnly = useCallback(() => {setModal(true) },[])
   // Dynamic class names
   const fileUploadClassNames = classNames(css.fileUpload, {
     [css.dragActive]: isDragActive,
@@ -128,6 +149,44 @@ function FileUpload({ dispatch }) {
     setFiles(files => ({ ...files, [filename]: blob }))
   }, [])
 
+if (DEMOMODE==="true"){
+  return (
+    <div>
+    <div
+      {...getRootProps({
+        className: fileUploadClassNames,
+        onClick: handleSelectDocumentsClickDemoOnly,
+        tabIndex: -1,
+      })}
+    >
+      <input {...getInputProps({
+        disabled: true
+      })} />
+      <img src="/static/images/icon_file-upload.svg" alt="File Upload Icon" />
+      {isDragActive && <p className={css.instructions}>Drop the documents here...</p>}
+      {!isDragActive && isReadyToUpload && (
+        <>
+          <p className={css.instructions}>
+            Drag and drop files or <em tabIndex="0">Choose documents</em>
+          </p>
+          {isReadyToUpload && (
+            <p className={css.limits}>
+              Accepts JPG/PNG (max 5MB) and PDF (max 150 MB, max 200 pages)
+            </p>
+          )}
+
+          {canUseCamera && (
+            <p className={css.instructions}>
+              or <Button onClick={() => setModal(true)}>use your camera</Button>
+            </p>
+          )}
+        </>
+      )}
+      </div>
+    </div>
+  )
+}
+else {
   return (
     <div
       {...getRootProps({
@@ -212,7 +271,7 @@ function FileUpload({ dispatch }) {
         <CameraCapture onCapture={cameraCaptured} onCancel={() => setCameraCapturing(false)} />
       )}
     </div>
-  )
+  )}
 }
 
 export default connect()(FileUpload)

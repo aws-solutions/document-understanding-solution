@@ -4,15 +4,46 @@ import { connect } from 'react-redux'
 
 import FileUpload from '../components/FileUpload/FileUpload'
 import Button from '../components/Button/Button'
+import getConfig from 'next/config'
 
 import css from './select.scss'
+import Modal from '../components/Modal/Modal'
+import ModalContext from '../components/ModalContext/ModalContext'
 import SampleCollections from '../components/SampleCollections/SampleCollections'
 
 Select.propTypes = {
   dispatch: PropTypes.func,
 }
-
+const {
+  publicRuntimeConfig:{
+    DEMOMODE
+  }
+} = getConfig();
 function Select({ dispatch }) {
+  if(DEMOMODE === 'true'){
+    const [modal, setModal] = React.useState(false)
+    return (
+      <ModalContext.Provider value={{modal:modal, setModal:setModal}}>
+        <Modal onClose={() => setModal(false)} show={modal}>
+            For security reasons, uploading your own documents is a feature not enabled in this version of DUS. If you'd like to 
+            use this demo using your own documents, you need to deploy your own instance in your account. <a href="https://github.com/awslabs/document-understanding-solution">Instructions to deploy your own instance
+            are available here</a>.
+          </Modal>
+          <div className={css.select}>
+          <p>
+            <Button inverted link={{ href: '/documents' }}>
+              View Existing Documents
+            </Button>
+          </p>
+          <h2>Add some example documents</h2>
+          <SampleCollections />
+          <h2>Or Upload your own documents</h2>
+          <FileUpload />
+        </div>
+      </ModalContext.Provider>   
+    )
+  }
+else {
   return (
     <div className={css.select}>
       <p>
@@ -27,6 +58,7 @@ function Select({ dispatch }) {
       <SampleCollections />
     </div>
   )
+  }
 }
 
 Select.getInitialProps = function() {
