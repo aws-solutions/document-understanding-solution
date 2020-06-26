@@ -1025,7 +1025,7 @@ export class CdkTextractStack extends cdk.Stack {
         proxy: false,
         deployOptions: {
           loggingLevel: apigateway.MethodLoggingLevel.INFO,
-          dataTraceEnabled: true,
+          dataTraceEnabled: false,
         },
       }
     );
