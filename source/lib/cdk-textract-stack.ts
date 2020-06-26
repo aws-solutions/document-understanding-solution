@@ -47,7 +47,7 @@ export interface TextractStackProps {
 export class CdkTextractStack extends cdk.Stack {
   uuid: string;
   resourceName: (name: any) => string;
-  createandGetKendraRelatedResources(boto3Layer: lambda.LayerVersion, logsS3Bucket: s3.Bucket) {
+  createandGetKendraRelatedResources(boto3Layer: lambda.LayerVersion, logsS3Bucket: s3.Bucket, documentsS3Bucket: s3.Bucket, samplesS3Bucket: s3.Bucket) {
     const covidDataBucket = new s3.Bucket(
       this,
       this.resourceName("CovidDataBucket"),
@@ -133,7 +133,11 @@ export class CdkTextractStack extends cdk.Stack {
         actions: ["s3:GetObject", "s3:ListBucket"],
         resources: [
           covidDataBucket.bucketArn,
-          `${covidDataBucket.bucketArn}/*`
+          `${covidDataBucket.bucketArn}/*`,
+          documentsS3Bucket.bucketArn,
+          `${documentsS3Bucket.bucketArn}/*`,
+          samplesS3Bucket.bucketArn,
+          `${samplesS3Bucket.bucketArn}/*`
         ]
       })
     );  
@@ -1226,7 +1230,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     // add kendra index id to lambda environment in case of DUS+Kendra mode
     if(props.enableKendra){
-      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket);
+      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket, documentsS3Bucket, samplesS3Bucket);
       const kendraRoleArn = kendraResources['KENDRA_ROLE_ARN'];
       const kendraIndexId = kendraResources['KENDRA_INDEX_ID'];
       apiProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId)
