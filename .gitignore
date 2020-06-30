@@ -32,5 +32,6 @@ source/app/node_modules/
 cdk.out/
 source/lib/cdk-textract-stack.js
 source/lib/cdk-textract-client-stack.js
+source/lib/cdk-textract-client-stack.js-e
 
 
