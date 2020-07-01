@@ -18,8 +18,8 @@
     "region": "%%REGION%%"
   },
   "cicd": "false",
-  "demomode": "false",
-  "email": "%%USER_EMAIL",
+  "isROMode": "true",
+  "email": "%%USER_EMAIL%%",
   "scripts": {
     "bootstrap": "AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk bootstrap --toolkit-stack-name DocumentUnderstandingCDKToolkit",
     "compile-ts-stacks": "yarn compile-ts-backend-stack && yarn compile-ts-client-stack",
@@ -38,7 +38,7 @@
     "dev": "next app",
     "build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region yarn pre-build && next build app",
     "export": "yarn build && next export app",
-    "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region DEMOMODE=$npm_package_demomode node ./bin/pre-build.js",
+    "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region isROMode=$npm_package_isROMode node ./bin/pre-build.js",
     "license-report": "legally --plain > license-report.txt && echo \"$(tail -n +4 license-report.txt)\" > license-report.txt",
     "prettier": "prettier --write '**/*.{js,md,yaml}'",
     "lint": "yarn lint:js && yarn lint:css",

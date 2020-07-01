@@ -6,14 +6,15 @@ import css from "./Modal.scss";
 Modal.propTypes = {
     children: PropTypes.node.isRequired,
     onClose: PropTypes.func.isRequired,
-    show: PropTypes.bool.isRequired
+    show: PropTypes.bool.isRequired,
+    modalTitle: PropTypes.content.isRequired
 };
 export default function Modal({
     children,
     onClose,
-    show
+    show,
+    modalTitle
 }) {
-    // console.log("show"+show);
     const modalClassNames = classNames(css.modal)
     if (!show) {
     return null;
@@ -21,7 +22,7 @@ export default function Modal({
     return show && (
         <div className={css.modal} id="modal">
             <div className={css.modal__content}>
-                <h4>Cannot upload your own documents- Demonstration Mode</h4>
+                <h4>{modalTitle}</h4>
                 <div className={css.content}><p>{children}</p></div>
                 <div className={css.actions}>
                 <button className="toggle-button" onClick={onClose}>

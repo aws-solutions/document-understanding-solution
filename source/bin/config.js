@@ -8,7 +8,7 @@ const config = () => {
       FileBucketName,
       IdentityPoolId,
       APIGateway,
-      DEMOMODE
+      isROMode
     }
   } = process;
   return {
@@ -18,7 +18,7 @@ const config = () => {
     FileBucketName,
     IdentityPoolId,
     APIGateway,
-    DEMOMODE
+    isROMode
   };
 };
 module.exports = config;

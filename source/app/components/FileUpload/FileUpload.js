@@ -20,7 +20,7 @@ import css from './FileUpload.scss'
 
 const {
   publicRuntimeConfig:{
-    DEMOMODE
+    isROMode
   }
 } = getConfig();
 
@@ -30,7 +30,7 @@ function FileUpload({ dispatch }) {
   const [fileStatus, setFileStatus] = useState({})
   const [uploadStatus, setUploadStatus] = useState('')
   const [files, setFiles] = useState({})
-  const {modal, setModal} = DEMOMODE==="true"? useContext(ModalContext): useState('')
+  const {modal, setModal} = isROMode==="true"? useContext(ModalContext): useState('')
   const fileNames = Object.keys(files)
 
   // Aggregate upload statuses
@@ -52,7 +52,7 @@ function FileUpload({ dispatch }) {
 
   // Configure dropzone
   const onDrop = useCallback(acceptedFiles => {
-    if(DEMOMODE === 'true'){
+    if(isROMode === 'true'){
       setModal(true)
     } 
     else{
@@ -149,7 +149,7 @@ function FileUpload({ dispatch }) {
     setFiles(files => ({ ...files, [filename]: blob }))
   }, [])
 
-if (DEMOMODE==="true"){
+if (isROMode==="true"){
   return (
     <div>
     <div

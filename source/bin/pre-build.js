@@ -5,7 +5,7 @@ const _ = require("lodash");
 const stackName = `${process.env.STACKNAME}Stack`;
 const region = process.env.AWS_REGION;
 aws.config.region = region;
-const demomode = process.env.DEMOMODE;
+const isROMode = process.env.isROMode;
 
 // listStackResources needs to be called twice in order to get the full stack.
 const listFullStack = (stackName, callback) => {
@@ -116,6 +116,6 @@ const setEnv = async () => {
     outputArray.push(`${key}=${data[key]}`);
   });
   fs.writeFileSync(".env", outputArray.join("\n"));
-  fs.appendFileSync(".env","\nDEMOMODE="+demomode);
+  fs.appendFileSync(".env","\nisROMode="+isROMode);
 };
 setEnv();

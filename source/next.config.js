@@ -9,7 +9,7 @@ const {
     region,
     UserPoolClientId: userPoolWebClientId,
     UserPoolId: userPoolId,
-    DEMOMODE
+    isROMode
   },
 } = require('dotenv').config()
 
@@ -22,7 +22,7 @@ module.exports = withSass({
     region,
     userPoolWebClientId,
     userPoolId,
-    DEMOMODE
+    isROMode
   },
   cssModules: true,
   cssLoaderOptions: {

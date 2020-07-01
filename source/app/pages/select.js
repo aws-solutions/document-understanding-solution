@@ -16,18 +16,18 @@ Select.propTypes = {
 }
 const {
   publicRuntimeConfig:{
-    DEMOMODE
+    isROMode
   }
 } = getConfig();
 function Select({ dispatch }) {
-  if(DEMOMODE === 'true'){
+  if(isROMode === 'true'){
     const [modal, setModal] = React.useState(false)
     return (
       <ModalContext.Provider value={{modal:modal, setModal:setModal}}>
-        <Modal onClose={() => setModal(false)} show={modal}>
-            For security reasons, uploading your own documents is a feature not enabled in this version of DUS. If you'd like to 
-            use this demo using your own documents, you need to deploy your own instance in your account. <a href="https://github.com/awslabs/document-understanding-solution">Instructions to deploy your own instance
-            are available here</a>.
+        <Modal onClose={() => setModal(false)} show={modal} modalTitle={"Cannot Upload Your Own Documents - Read Only Mode"}>
+        This DUS instance is running in Read-Only Mode which does not support uploading your own documents. 
+        To use all the features of DUS, please deploy your own instance following the instructions
+         <a href="https://github.com/awslabs/document-understanding-solution"> here.</a>
           </Modal>
           <div className={css.select}>
           <p>
