@@ -29,15 +29,17 @@ export default function DocumentPreview({
            <h5>Name : {document.documentName}</h5>
            <h5>Total Page: {pageCount}</h5>
           </Fragment>
-      
-    
+
+
       </ul>
-    
+
         <footer className={css.actions}>
             {track === 'search' ? (
                   <div className={css.downloadButtons}>
-                  <Button link={{ download: 'searchable-pdf.pdf' }} 
-                  href={document.searchablePdfURL}>
+                  <Button
+                  download="searchable-pdf.pdf"
+                  href={document.searchablePdfURL}
+                  >
                     ⬇ Searchable PDF
                   </Button>
                 </div>) : null}
@@ -45,9 +47,8 @@ export default function DocumentPreview({
                 <div className={css.downloadButtons}>
               <Button
                 inverted
-                link={{ download: document.documentName.split('/').pop()  } } 
+                download={document.documentName.split('/').pop()}
                 href={document.documentURL}
-                
               >
                 ⬇ Original Doc
               </Button>

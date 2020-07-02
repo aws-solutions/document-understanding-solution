@@ -91,46 +91,44 @@ class AppLayout extends App {
 
     // Don't render the app unless the user is logged in or this is a public route.
     return (
-      <Container>
-        <Provider store={store}>
-          <Head>
-            <title>{pageTitle ? `${pageTitle} | DUS ` : `DUS`}</title>
-            <link
-              rel="icon"
-              type="image/ico"
-              href="/static/images/favicon.ico"
-            />
-            <link
-              rel="shortcut icon"
-              type="image/ico"
-              href="/static/images/favicon.ico"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="57x57"
-              href="/static/images/touch-icon-iphone-114-smile.png"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="72x72"
-              href="/static/images/touch-icon-ipad-144-smile.png"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="114x114"
-              href="/static/images/touch-icon-iphone-114-smile.png"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="144x144"
-              href="/static/images/touch-icon-ipad-144-smile.png"
-            />
-          </Head>
-          <Page pathname={pathname} pageProps={pageProps}>
-            <Component {...pageProps} />
-          </Page>
-        </Provider>
-      </Container>
+      <Provider store={store}>
+        <Head>
+          <title>{pageTitle ? `${pageTitle} | DUS ` : `DUS`}</title>
+          <link
+            rel="icon"
+            type="image/ico"
+            href="/static/images/favicon.ico"
+          />
+          <link
+            rel="shortcut icon"
+            type="image/ico"
+            href="/static/images/favicon.ico"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="57x57"
+            href="/static/images/touch-icon-iphone-114-smile.png"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="72x72"
+            href="/static/images/touch-icon-ipad-144-smile.png"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="114x114"
+            href="/static/images/touch-icon-iphone-114-smile.png"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="144x144"
+            href="/static/images/touch-icon-ipad-144-smile.png"
+          />
+        </Head>
+        <Page pathname={pathname} pageProps={pageProps}>
+          <Component {...pageProps} />
+        </Page>
+      </Provider>
     );
   }
 }
