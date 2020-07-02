@@ -7,7 +7,8 @@ const config = () => {
       UserPoolId,
       FileBucketName,
       IdentityPoolId,
-      APIGateway
+      APIGateway,
+      isROMode
     }
   } = process;
   return {
@@ -16,7 +17,8 @@ const config = () => {
     UserPoolId,
     FileBucketName,
     IdentityPoolId,
-    APIGateway
+    APIGateway,
+    isROMode
   };
 };
 module.exports = config;
