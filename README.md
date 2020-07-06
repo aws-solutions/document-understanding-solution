@@ -167,6 +167,9 @@ Make sure you are in the `source` directory, and then run `yarn destroy`.
 
 Either run `aws cloudformation delete-stack --stack-name {CICD stack}`, or go to Cloudformation in the AWS Console and delete the stack that ends with "CICD". You will also have to go to CodeCommit in the console and manually delete the Repository that was created during the deploy.
 
+## Read-Only Mode
+
+In this mode, DUS will only be available in Read-Only mode and you will only be able to analyze the pre-loaded documents. You will not be able to upload documents from your device or use the camera capture feature. In order to enable the Read-Only mode, set ``` isROMode: "true"``` in package.json. By default, this mode is disabled.
 
 ## License
 
