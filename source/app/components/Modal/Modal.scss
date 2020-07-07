@@ -17,7 +17,7 @@
   box-shadow: -2rem 2rem 2rem rgba(0, 0, 0, 0.2);
   filter: blur(0);
   transform: scale(1);
-  z-index: 1;
+  z-index: 1000;
   visibility: visible;
 }
 .modal .modal__content{
