@@ -31,7 +31,7 @@ export default function Button({
   simple = false,
   ...otherProps
 }) {
-  const { target, download, ...linkProps } = link || {}
+  const { target, ...linkProps } = link || {}
   const buttonClassNames = classNames(css.button, css[palette], className, {
     [css.disabled]: disabled,
     [css.inverted]: inverted && !simple,
@@ -39,12 +39,24 @@ export default function Button({
   })
   onClick = disabled ? () => false : onClick
 
+  if (otherProps.href) {
+    return (
+      <a
+        className={buttonClassNames}
+        target={target || null}
+        tabIndex={disabled ? -1 : null}
+        {...otherProps}
+      >
+        {children}
+      </a>
+    )
+  }
+
   return !disabled && link ? (
     <Link {...linkProps}>
       <a
         className={buttonClassNames}
         target={target || null}
-        download={download}
         tabIndex={disabled ? -1 : null}
         {...otherProps}
       >
