@@ -31,6 +31,7 @@ import uuid = require("short-uuid");
 import { BucketEncryption, BlockPublicAccess } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
+import { LogGroupLogDestination } from "@aws-cdk/aws-apigateway";
 
 const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed parallelly
 
@@ -335,6 +336,7 @@ export class CdkTextractStack extends cdk.Stack {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
       sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
       serverSideEncryption: true,
+      billingMode: ddb.BillingMode.PAY_PER_REQUEST
     });
 
     const documentsTable = new ddb.Table(
@@ -344,6 +346,7 @@ export class CdkTextractStack extends cdk.Stack {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
         stream: ddb.StreamViewType.NEW_IMAGE,
         serverSideEncryption: true,
+        billingMode: ddb.BillingMode.PAY_PER_REQUEST
       }
     );
 
@@ -1016,6 +1019,14 @@ export class CdkTextractStack extends cdk.Stack {
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
 
+    // Log group for API logs
+    const DUSApiLogGroup = new LogGroup(
+      this,
+      this.resourceName("DUSApiLogGroup"),
+      {
+        logGroupName: this.resourceName("DUSApiLogGroup"),
+      },
+    );
     // API
     const api = new apigateway.LambdaRestApi(
       this,
@@ -1026,6 +1037,8 @@ export class CdkTextractStack extends cdk.Stack {
         deployOptions: {
           loggingLevel: apigateway.MethodLoggingLevel.INFO,
           dataTraceEnabled: false,
+          accessLogDestination: new LogGroupLogDestination(DUSApiLogGroup),
+          accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields()
         },
       }
     );
