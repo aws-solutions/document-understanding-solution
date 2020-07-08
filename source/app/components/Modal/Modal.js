@@ -7,7 +7,7 @@ Modal.propTypes = {
     children: PropTypes.node.isRequired,
     onClose: PropTypes.func.isRequired,
     show: PropTypes.bool.isRequired,
-    modalTitle: PropTypes.content.isRequired
+    modalTitle: PropTypes.string.isRequired
 };
 export default function Modal({
     children,
