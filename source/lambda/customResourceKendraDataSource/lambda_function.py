@@ -8,6 +8,19 @@ def on_create(event, context):
     dataBucketName = os.environ['DATA_BUCKET_NAME']
     roleArn = os.environ['KENDRA_ROLE_ARN']
 
+    create_faq_response = kendra_client.create_faq(
+        IndexId=kendraIndexId,
+        Name="DUSCovidFAQ",
+        Description='covid-19 questions and answers',
+        S3Path={
+           'Bucket': dataBucketName,
+           'Key': 'covid_faq.csv'
+        },
+        RoleArn=roleArn
+    )
+    
+    print("covid FAQ created")
+                                            
     create_data_source_response = kendra_client.create_data_source(
         Name='DUSCovidDataset',
         IndexId= kendraIndexId,

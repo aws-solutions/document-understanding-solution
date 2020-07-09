@@ -256,7 +256,7 @@ export class CdkTextractStack extends cdk.Stack {
     onEventKendraDataSourceLambda.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["kendra:CreateDataSource","kendra:StartDataSourceSyncJob","kendra:TagResource"],
+        actions: ["kendra:CreateDataSource","kendra:StartDataSourceSyncJob","kendra:TagResource","kendra:CreateFaq"],
         resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
       })
     );
