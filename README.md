@@ -21,6 +21,7 @@ Please ensure you install all requirements before beginning the deployment
 - aws cli
 - tsc
 - jq
+- zip
 
 To deploy using this approach, you must first set few values inside the `package.json` file in the `source` folder.
 
