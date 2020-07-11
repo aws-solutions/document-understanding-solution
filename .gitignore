@@ -27,6 +27,7 @@ deployment/build-dist/*
 source/app/.next/
 source/app/out/
 source/app/node_modules/
+source/app/static/pdf.worker.min.js
 
 # CDK
 source/cdk.out/
