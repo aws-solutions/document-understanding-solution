@@ -74,7 +74,7 @@
     "inquirer": "^6.4.1",
     "lodash": "^4.17.15",
     "minimist": "^1.2.3",
-    "next": "8.1.0",
+    "next": "^9.4.4",
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-sass": "^4.12.0",
     "normalizr": "^3.4.0",
@@ -114,9 +114,6 @@
   },
   "resolutions": {
     "@aws-amplify/analytics": "1.2.16",
-    "@aws-amplify/ui": "1.0.19",
-    "minimist": "^1.2.3",
-    "acorn": "^7.1.1",
-    "kind-of": "^6.0.3"
+    "@aws-amplify/ui": "1.0.19"
   }
 }

@@ -1,3 +1,17 @@
+
+/**********************************************************************************************************************
+ *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
+ *                                                                                                                    *
+ *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
+ *  with the License. A copy of the License is located at                                                             *
+ *                                                                                                                    *
+ *      http://www.apache.org/licenses/LICENSE-2.0                                                                    *
+ *                                                                                                                    *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES *
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
+ *  and limitations under the License.                                                                                *
+ *********************************************************************************************************************/
+
 import cdk = require("@aws-cdk/core");
 import ddb = require("@aws-cdk/aws-dynamodb");
 import es = require("@aws-cdk/aws-elasticsearch");
@@ -31,6 +45,7 @@ import uuid = require("short-uuid");
 import { BucketEncryption, BlockPublicAccess } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
+import { LogGroupLogDestination } from "@aws-cdk/aws-apigateway";
 
 const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed parallelly
 
@@ -335,6 +350,7 @@ export class CdkTextractStack extends cdk.Stack {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
       sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
       serverSideEncryption: true,
+      billingMode: ddb.BillingMode.PAY_PER_REQUEST
     });
 
     const documentsTable = new ddb.Table(
@@ -344,6 +360,7 @@ export class CdkTextractStack extends cdk.Stack {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
         stream: ddb.StreamViewType.NEW_IMAGE,
         serverSideEncryption: true,
+        billingMode: ddb.BillingMode.PAY_PER_REQUEST
       }
     );
 
@@ -1016,6 +1033,14 @@ export class CdkTextractStack extends cdk.Stack {
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
 
+    // Log group for API logs
+    const DUSApiLogGroup = new LogGroup(
+      this,
+      this.resourceName("DUSApiLogGroup"),
+      {
+        logGroupName: this.resourceName("DUSApiLogGroup"),
+      },
+    );
     // API
     const api = new apigateway.LambdaRestApi(
       this,
@@ -1026,6 +1051,8 @@ export class CdkTextractStack extends cdk.Stack {
         deployOptions: {
           loggingLevel: apigateway.MethodLoggingLevel.INFO,
           dataTraceEnabled: false,
+          accessLogDestination: new LogGroupLogDestination(DUSApiLogGroup),
+          accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields()
         },
       }
     );

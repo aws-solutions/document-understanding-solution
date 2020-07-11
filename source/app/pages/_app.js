@@ -1,3 +1,17 @@
+
+/**********************************************************************************************************************
+ *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
+ *                                                                                                                    *
+ *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
+ *  with the License. A copy of the License is located at                                                             *
+ *                                                                                                                    *
+ *      http://www.apache.org/licenses/LICENSE-2.0                                                                    *
+ *                                                                                                                    *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES *
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
+ *  and limitations under the License.                                                                                *
+ *********************************************************************************************************************/
+
 import React, { Fragment, useEffect, useState, useCallback } from "react";
 import App, { Container } from "next/app";
 import getConfig from "next/config";
@@ -91,46 +105,44 @@ class AppLayout extends App {
 
     // Don't render the app unless the user is logged in or this is a public route.
     return (
-      <Container>
-        <Provider store={store}>
-          <Head>
-            <title>{pageTitle ? `${pageTitle} | DUS ` : `DUS`}</title>
-            <link
-              rel="icon"
-              type="image/ico"
-              href="/static/images/favicon.ico"
-            />
-            <link
-              rel="shortcut icon"
-              type="image/ico"
-              href="/static/images/favicon.ico"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="57x57"
-              href="/static/images/touch-icon-iphone-114-smile.png"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="72x72"
-              href="/static/images/touch-icon-ipad-144-smile.png"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="114x114"
-              href="/static/images/touch-icon-iphone-114-smile.png"
-            />
-            <link
-              rel="apple-touch-icon"
-              sizes="144x144"
-              href="/static/images/touch-icon-ipad-144-smile.png"
-            />
-          </Head>
-          <Page pathname={pathname} pageProps={pageProps}>
-            <Component {...pageProps} />
-          </Page>
-        </Provider>
-      </Container>
+      <Provider store={store}>
+        <Head>
+          <title>{pageTitle ? `${pageTitle} | DUS ` : `DUS`}</title>
+          <link
+            rel="icon"
+            type="image/ico"
+            href="/static/images/favicon.ico"
+          />
+          <link
+            rel="shortcut icon"
+            type="image/ico"
+            href="/static/images/favicon.ico"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="57x57"
+            href="/static/images/touch-icon-iphone-114-smile.png"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="72x72"
+            href="/static/images/touch-icon-ipad-144-smile.png"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="114x114"
+            href="/static/images/touch-icon-iphone-114-smile.png"
+          />
+          <link
+            rel="apple-touch-icon"
+            sizes="144x144"
+            href="/static/images/touch-icon-ipad-144-smile.png"
+          />
+        </Head>
+        <Page pathname={pathname} pageProps={pageProps}>
+          <Component {...pageProps} />
+        </Page>
+      </Provider>
     );
   }
 }

@@ -1,3 +1,17 @@
+
+/**********************************************************************************************************************
+ *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
+ *                                                                                                                    *
+ *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
+ *  with the License. A copy of the License is located at                                                             *
+ *                                                                                                                    *
+ *      http://www.apache.org/licenses/LICENSE-2.0                                                                    *
+ *                                                                                                                    *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES *
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
+ *  and limitations under the License.                                                                                *
+ *********************************************************************************************************************/
+
 import React from 'react'
 import classNames from 'classnames'
 import Link from 'next/link'
@@ -31,7 +45,7 @@ export default function Button({
   simple = false,
   ...otherProps
 }) {
-  const { target, download, ...linkProps } = link || {}
+  const { target, ...linkProps } = link || {}
   const buttonClassNames = classNames(css.button, css[palette], className, {
     [css.disabled]: disabled,
     [css.inverted]: inverted && !simple,
@@ -39,12 +53,24 @@ export default function Button({
   })
   onClick = disabled ? () => false : onClick
 
+  if (otherProps.href) {
+    return (
+      <a
+        className={buttonClassNames}
+        target={target || null}
+        tabIndex={disabled ? -1 : null}
+        {...otherProps}
+      >
+        {children}
+      </a>
+    )
+  }
+
   return !disabled && link ? (
     <Link {...linkProps}>
       <a
         className={buttonClassNames}
         target={target || null}
-        download={download}
         tabIndex={disabled ? -1 : null}
         {...otherProps}
       >
