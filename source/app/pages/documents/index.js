@@ -20,10 +20,14 @@ import { useInView } from 'react-intersection-observer'
 import { distanceInWordsToNow, distanceInWords } from 'date-fns'
 import Router from "next/router";
 
+import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA } from '../../constants/configs'
+
 import DocumentList from '../../components/DocumentList/DocumentList'
 import Loading from '../../components/Loading/Loading'
 import Button from '../../components/Button/Button'
 import SearchResults from '../../components/SearchResults/SearchResults'
+import KendraResults from '../../components/KendraResults/KendraResults'
+import SearchTypeTabs from '../../components/SearchTypeTabs/SearchTypeTabs'
 
 import { fetchDocuments } from '../../store/entities/documents/actions'
 import { setDocumentsNextToken } from '../../store/entities/meta/actions'
@@ -34,10 +38,11 @@ import {
   getSearchStatus,
   getSearchTotalDocuments,
   getSearchTotalMatches,
+  getKendraQueryId,
 } from '../../store/entities/meta/selectors'
 import { getDocuments } from '../../store/entities/documents/selectors'
-import { getSearchResults } from '../../store/entities/searchResults/selectors'
-import { getSelectedTrackId } from '../../store/ui/selectors'
+import { getSearchResults, getKendraResults } from '../../store/entities/searchResults/selectors'
+import { getSelectedTrackId, getSelectedSearch } from '../../store/ui/selectors'
 
 import { makeDocumentLink } from '../../utils/link-generators'
 
@@ -74,10 +79,13 @@ function Documents({
   dispatch,
   searchQuery,
   searchResults,
+  kendraResults,
   searchStatus,
   searchTotalDocuments,
   searchTotalMatches,
+  kendraQueryId,
   track,
+  selectedSearch
 }) {
   const [sentinelRef, isSentinelVisible] = useInView({ threshold: 1 })
   const { status } = useFetchDocuments({
@@ -116,6 +124,8 @@ function Documents({
     )
   }
 
+  const isQueryLongEnough = searchQuery && searchQuery.length >= MIN_SEARCH_QUERY_LENGTH
+
   return (
     <div className={css.documents}>
       <div className={introClassNames}>
@@ -147,13 +157,37 @@ function Documents({
         <p className="noContent">Something went wrong, please refresh the page to try again.</p>
       )}
 
-      <SearchResults
-        results={searchResults}
-        searchStatus={searchStatus}
-        searchQuery={searchQuery}
-        searchTotalDocuments={searchTotalDocuments}
-        searchTotalMatches={searchTotalMatches}
-      />
+      {searchQuery && <>
+
+        <div>
+          { ENABLE_KENDRA ?
+            <SearchTypeTabs />
+          : null }
+          <div className={css.searchResultContainer}>
+
+            {searchStatus === 'pending' && isQueryLongEnough && <Loading />}
+
+            { !ENABLE_KENDRA || selectedSearch === 'es' || selectedSearch === 'both' ?
+              <SearchResults
+                results={searchResults}
+                searchStatus={searchStatus}
+                searchQuery={searchQuery}
+                searchTotalDocuments={searchTotalDocuments}
+                searchTotalMatches={searchTotalMatches}
+              />
+            : null }
+
+            { ENABLE_KENDRA && (selectedSearch === 'kendra' || selectedSearch === 'both') ?
+              <KendraResults
+                results={kendraResults}
+                searchStatus={searchStatus}
+                searchQuery={searchQuery}
+                kendraQueryId={kendraQueryId}
+              />
+            : null }
+          </div>
+        </div>
+      </> }
     </div>
   )
 }
@@ -166,9 +200,12 @@ export default connect(function mapStateToProps(state) {
     searchQuery: getCleanSearchQuery(state),
     searchStatus: getSearchStatus(state),
     searchResults: getSearchResults(state),
+    kendraResults: getKendraResults(state),
     searchTotalDocuments: getSearchTotalDocuments(state),
     searchTotalMatches: getSearchTotalMatches(state),
+    kendraQueryId: getKendraQueryId(state),
     track: getSelectedTrackId(state),
+    selectedSearch: getSelectedSearch(state)
   }
 })(Documents)
 

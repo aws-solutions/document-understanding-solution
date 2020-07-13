@@ -1,0 +1,12 @@
+@import '../../styles/shared/index';
+
+.searchResults {
+  position: relative;
+  width: span(8);
+  min-height: 300px;
+  margin: 0 auto;
+
+  pre {
+    color: #000;
+  }
+}

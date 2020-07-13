@@ -3,7 +3,6 @@
 .documents {
   position: relative;
   min-height: rem(320);
-  padding-top: rem(32);
   padding-bottom: rem(32);
 }
 
@@ -19,9 +18,9 @@
 }
 
 .intro {
-  width: span(8);
+  @include full-bleed;
+  background: color(gray, 90);
   padding-bottom: 2em;
-  margin: 0 auto;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -106,5 +105,21 @@
   a:focus &,
   a:hover & {
     color: color(orange, 40);
+  }
+}
+
+.searchResultContainer {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  padding-top: rem(32);
+
+  > * {
+    flex: 0 1 rem(800);
+    overflow: hidden;
+  }
+
+  > * + * {
+    margin-left: rem(16);
   }
 }

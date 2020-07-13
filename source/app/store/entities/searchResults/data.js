@@ -25,9 +25,20 @@ export const searchResultSchema = new schema.Entity(
 )
 export const searchResultsSchema = new schema.Array(searchResultSchema)
 
+export const kendraResultSchema = new schema.Entity(
+  'kendraResults',
+  {},
+  {
+    idAttribute: 'Id',
+  }
+)
+export const kendraResultsSchema = new schema.Array(kendraResultSchema)
+
 // Search Result Lenses
 export const lensSearchResults = lensPath(['entities', 'searchResults'])
 export const lensSearchResult = id => lensPath(['entities', 'searchResults', id])
+export const lensKendraResults = lensPath(['entities', 'kendraResults'])
+
 
 // Initial Data
 export default {}

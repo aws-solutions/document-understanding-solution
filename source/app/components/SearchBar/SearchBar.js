@@ -106,7 +106,8 @@ function useSearchCallback(dispatch) {
           .then(() => {
             isMounted.current && dispatch(setSearchStatus('success'))
           })
-          .catch(() => {
+          .catch((err) => {
+            console.log(err);
             isMounted.current && dispatch(setSearchStatus('error'))
           })
       },

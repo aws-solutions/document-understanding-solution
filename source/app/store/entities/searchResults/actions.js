@@ -16,26 +16,43 @@ import { createAction } from "redux-actions";
 import { normalize } from "normalizr";
 import { API, Auth } from "aws-amplify";
 
-import { SEARCH, CLEAR_SEARCH_RESULTS } from "../../../constants/action-types";
-import { searchResultsSchema } from "./data";
+import { ENABLE_KENDRA } from '../../../constants/configs'
+import { SEARCH, CLEAR_SEARCH_RESULTS, SUBMIT_FEEDBACK } from "../../../constants/action-types";
+import { searchResultsSchema, kendraResultsSchema } from "./data";
 
 /**
  * Get documents from TextractDemoTextractAPI
  */
 export const search = createAction(SEARCH, async params => {
-  const { data } = await API.get("TextractDemoTextractAPI", "search", {
-    headers: {
-      Authorization: `Bearer ${(await Auth.currentSession())
-        .getIdToken()
-        .getJwtToken()}`
-    },
-    response: true,
-    queryStringParameters: { ...params }
-  });
+  const headers = {
+    Authorization: `Bearer ${(await Auth.currentSession())
+      .getIdToken()
+      .getJwtToken()}`
+  }
 
+  const [ esResponse, kendraResponse ] = await Promise.all([
+    API.get("TextractDemoTextractAPI", "search", {
+      headers,
+      response: true,
+      queryStringParameters: { ...params }
+    }),
+
+    ENABLE_KENDRA ? API.post("TextractDemoTextractAPI", "searchkendra", {
+      headers,
+      response: true,
+      queryStringParameters: {},
+      body: {
+        query: params.k,
+        pageNumber: 1,
+        pageSize: 100
+      }
+    }) : null
+  ]);
+
+  const data = Array.isArray(esResponse.data) ? esResponse.data : [];
   let searchTotalMatches = 0;
   let searchTotalDocuments = 0;
-  const results = data.map(result => {
+  const esResults = data.map(result => {
     searchTotalMatches += result.count;
     if (result.count) searchTotalDocuments++;
     return {
@@ -44,17 +61,45 @@ export const search = createAction(SEARCH, async params => {
     };
   });
 
-  const { entities } = normalize(results, searchResultsSchema);
-  return { ...entities, meta: { searchTotalMatches, searchTotalDocuments } };
+  const QueryId = ENABLE_KENDRA ? kendraResponse.data.QueryId : null;
+  const kendraData = ENABLE_KENDRA ? normalize(kendraResponse.data.ResultItems, kendraResultsSchema).entities : {}
+
+  return {
+    ...(normalize(esResults, searchResultsSchema).entities),
+    ...kendraData,
+    meta: {
+      searchTotalMatches,
+      searchTotalDocuments,
+      kendraQueryId: QueryId
+    }
+  };
 });
+
+export const submitKendraFeedback = createAction(SUBMIT_FEEDBACK, async ({ relevance, queryId, resultId }) => {
+  const response = await API.post("TextractDemoTextractAPI", "feedbackkendra", {
+    headers: {
+      Authorization: `Bearer ${(await Auth.currentSession())
+        .getIdToken()
+        .getJwtToken()}`
+    },
+    response: true,
+    body: {
+      relevance,
+      queryId,
+      resultId
+    }
+  });
+})
 
 /**
  * Clear search results
  */
 export const clearSearchResults = createAction(CLEAR_SEARCH_RESULTS, () => ({
   searchResults: [],
+  kendraResults: [],
   meta: {
     searchTotalMatches: 0,
-    searchTotalDocuments: 0
+    searchTotalDocuments: 0,
+    kendraQueryId: null
   }
 }));

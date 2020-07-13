@@ -54,6 +54,8 @@ export default function SearchResults({
 
   return (
     <nav className={searchResultsClassNames} {...rest}>
+      <h2>Elasticsearch Results</h2>
+
       {!isQueryLongEnough && (
         <p className={css.noContent}>
           Enter a search query longer than {MIN_SEARCH_QUERY_LENGTH - 1} characters to initiate a
@@ -74,8 +76,6 @@ export default function SearchResults({
           }`}
         </div>
       )}
-
-      {searchStatus === 'pending' && isQueryLongEnough && <Loading />}
 
       {searchStatus === 'success' && isQueryLongEnough && (
         <ul>

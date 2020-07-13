@@ -16,8 +16,10 @@ import { lensPath } from 'ramda'
 
 export default {
   selectedTrack: 'search',
+  selectedSearch: 'es',
   headerProps: {},
 }
 
 export const lensSelectedTrack = lensPath(['ui', 'selectedTrack'])
 export const lensHeaderProps = lensPath(['ui', 'headerProps'])
+export const lensSelectedSearch = lensPath(['ui', 'selectedSearch'])

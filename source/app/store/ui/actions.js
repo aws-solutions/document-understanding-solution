@@ -15,8 +15,8 @@
 import { createAction } from 'redux-actions'
 import { set } from 'ramda'
 
-import { SET_SELECTED_TRACK, SET_HEADER_PROPS } from '../../constants/action-types.js'
-import { lensSelectedTrack, lensHeaderProps } from './data'
+import { SET_SELECTED_TRACK, SET_HEADER_PROPS, SET_SELECTED_SEARCH } from '../../constants/action-types.js'
+import { lensSelectedTrack, lensHeaderProps, lensSelectedSearch } from './data'
 
 export const setSelectedTrack = createAction(SET_SELECTED_TRACK, selectedTrack => {
   localStorage.setItem('track', selectedTrack)
@@ -25,4 +25,8 @@ export const setSelectedTrack = createAction(SET_SELECTED_TRACK, selectedTrack =
 
 export const setHeaderProps = createAction(SET_HEADER_PROPS, props =>
   set(lensHeaderProps, props, {})
+)
+
+export const setSelectedSearch = createAction(SET_SELECTED_SEARCH, searchType =>
+  set(lensSelectedSearch, searchType, {})
 )
