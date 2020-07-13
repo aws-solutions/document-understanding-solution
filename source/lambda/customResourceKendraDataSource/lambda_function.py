@@ -14,7 +14,7 @@ def on_create(event, context):
         Description='covid-19 questions and answers',
         S3Path={
            'Bucket': dataBucketName,
-           'Key': 'covid_faq.csv'
+           'Key': 'faqs/covid_faq.csv'
         },
         RoleArn=roleArn
     )
@@ -28,6 +28,9 @@ def on_create(event, context):
         Configuration={
             'S3Configuration': {
                 'BucketName': dataBucketName,
+                'InclusionPrefixes': [
+                    'documents/'
+                ]
             }
         },
         Description='Covid pdfs data',
