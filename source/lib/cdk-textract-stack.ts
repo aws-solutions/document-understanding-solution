@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -69,11 +68,11 @@ export class CdkTextractStack extends cdk.Stack {
     id: string | undefined,
     props: TextractStackProps
   ) {
-    super(scope, id , props);
+    super(scope, id, props);
 
     this.resourceName = (name: any) =>
       `${id}-${name}-${this.uuid}`.toLowerCase();
-  
+
     this.uuid = uuid.generate();
 
     const corsRule = {
@@ -350,7 +349,7 @@ export class CdkTextractStack extends cdk.Stack {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
       sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
       serverSideEncryption: true,
-      billingMode: ddb.BillingMode.PAY_PER_REQUEST
+      billingMode: ddb.BillingMode.PAY_PER_REQUEST,
     });
 
     const documentsTable = new ddb.Table(
@@ -360,7 +359,7 @@ export class CdkTextractStack extends cdk.Stack {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
         stream: ddb.StreamViewType.NEW_IMAGE,
         serverSideEncryption: true,
-        billingMode: ddb.BillingMode.PAY_PER_REQUEST
+        billingMode: ddb.BillingMode.PAY_PER_REQUEST,
       }
     );
 
@@ -496,6 +495,17 @@ export class CdkTextractStack extends cdk.Stack {
       },
     });
 
+    textractUserPool.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "F78",
+            reason: "MFA Configuration is not required for this solution",
+          },
+        ],
+      },
+    };
+
     // Depends upon all other parts of the stack having been created.
     const textractUserPoolUser = new CfnUserPoolUser(
       this,
@@ -558,7 +568,7 @@ export class CdkTextractStack extends cdk.Stack {
         path: "/",
       }
     );
-    
+
     const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy", {
       statements: [
         new iam.PolicyStatement({
@@ -978,7 +988,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
-    
+
     //------------------------------------------------------------
 
     pdfGenerator.grantInvoke(syncProcessor);
@@ -1039,7 +1049,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("DUSApiLogGroup"),
       {
         logGroupName: this.resourceName("DUSApiLogGroup"),
-      },
+      }
     );
     // API
     const api = new apigateway.LambdaRestApi(
@@ -1052,7 +1062,7 @@ export class CdkTextractStack extends cdk.Stack {
           loggingLevel: apigateway.MethodLoggingLevel.INFO,
           dataTraceEnabled: false,
           accessLogDestination: new LogGroupLogDestination(DUSApiLogGroup),
-          accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields()
+          accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields(),
         },
       }
     );
