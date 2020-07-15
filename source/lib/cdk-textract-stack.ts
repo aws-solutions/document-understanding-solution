@@ -905,15 +905,45 @@ export class CdkTextractStack extends cdk.Stack {
     pdfGenerator.grantInvoke(syncProcessor);
     pdfGenerator.grantInvoke(jobResultProcessor);
 
-    const textractPolicy = new iam.Policy(this, "textractPolicy", {
+    const textractSyncPolicy = new iam.Policy(this, "textractSyncPolicy", {
       statements: [
         new iam.PolicyStatement({
           actions: ["textract:DetectDocumentText", "textract:AnalyzeDocument"],
           resources: ["*"], // Currently, Textract does not support resource level permissions https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
         }),
       ],
-      roles: [syncProcessor.role, asyncProcessor.role, jobResultProcessor.role],
+      roles: [syncProcessor.role],
     });
+
+    const textractAsyncPolicy = new iam.Policy(this, "textractAsyncPolicy", {
+      statements: [
+        new iam.PolicyStatement({
+          actions: [
+            "textract:StartDocumentTextDetection",
+            "textract:StartDocumentAnalysis",
+          ],
+          resources: ["*"], // Currently, Textract does not support resource level permissions https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        }),
+      ],
+      roles: [asyncProcessor.role],
+    });
+
+    const textractJobResultsPolicy = new iam.Policy(
+      this,
+      "textractJobResultsPolicy",
+      {
+        statements: [
+          new iam.PolicyStatement({
+            actions: [
+              "textract:GetDocumentTextDetection",
+              "textract:GetDocumentAnalysis",
+            ],
+            resources: ["*"], // Currently, Textract does not support resource level permissions https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+          }),
+        ],
+        roles: [jobResultProcessor.role],
+      }
+    );
 
     const comprehendPolicy = new iam.Policy(this, "comprehendPolicy", {
       statements: [
@@ -1157,8 +1187,37 @@ export class CdkTextractStack extends cdk.Stack {
       },
     };
 
-    const cfnTextractPolicy = textractPolicy.node.defaultChild as iam.CfnPolicy;
-    cfnTextractPolicy.cfnOptions.metadata = {
+    const cfnTextractSyncPolicy = textractSyncPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfnTextractSyncPolicy.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W12",
+            reason:
+              "Currently, some AI services does not support resource level permissions",
+          },
+        ],
+      },
+    };
+
+    const cfnTextractAsyncPolicy = textractAsyncPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfnTextractAsyncPolicy.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W12",
+            reason:
+              "Currently, some AI services does not support resource level permissions",
+          },
+        ],
+      },
+    };
+
+    const cfnTextractJobResultsPolicy = textractJobResultsPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfnTextractJobResultsPolicy.cfnOptions.metadata = {
       cfn_nag: {
         rules_to_suppress: [
           {
