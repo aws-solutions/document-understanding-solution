@@ -917,6 +917,7 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+
     // Lambdas
     const documentProcessor = new lambda.Function(
       this,
@@ -1253,6 +1254,53 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+    // add kendra index id to lambda environment in case of DUS+Kendra mode
+    if(props.enableKendra){
+      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket, documentsS3Bucket, samplesS3Bucket);
+      const kendraRoleArn = kendraResources['KENDRA_ROLE_ARN'];
+      const kendraIndexId = kendraResources['KENDRA_INDEX_ID'];
+      apiProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId)
+      apiProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      apiProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+        })
+      );
+      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
+      jobResultProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+       })
+      );
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn]
+        })
+      );
+      syncProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
+      syncProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+        })
+      );
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn]
+        })
+      );
+    }
     // Layer
     apiProcessor.addLayers(elasticSearchLayer);
     apiProcessor.addLayers(helperLayer);
