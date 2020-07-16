@@ -12,12 +12,8 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import { view } from 'ramda'
-import { lensSelectedTrack, lensHeaderProps } from './data'
+import { createContext } from 'react';
 
-import { getTrackById } from '../../store/entities/tracks/selectors'
+const ModalContext = createContext();
 
-export const getSelectedTrackId = state => view(lensSelectedTrack, state)
-export const getSelectedTrack = state => getTrackById(state, getSelectedTrackId(state))
-
-export const getHeaderProps = state => view(lensHeaderProps, state)
+export default ModalContext;

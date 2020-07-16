@@ -1,6 +1,6 @@
 {
   "name": "document-understanding-solution-demo",
-  "version": "0.6.0",
+  "version": "1.0.0",
   "description": "A web app and Cloud Formation template that demonstrates the capabilities of the Amazon Textract, Comprehend and Comprehend Medical.",
   "main": "handler.js",
   "repository": {
@@ -18,6 +18,7 @@
     "region": "%%REGION%%"
   },
   "cicd": "false",
+  "isROMode": "false",
   "email": "%%USER_EMAIL%%",
   "scripts": {
     "bootstrap": "AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk bootstrap --toolkit-stack-name DocumentUnderstandingCDKToolkit",
@@ -37,7 +38,7 @@
     "dev": "next app",
     "build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region yarn pre-build && next build app",
     "export": "yarn build && next export app",
-    "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region node ./bin/pre-build.js",
+    "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region isROMode=$npm_package_isROMode node ./bin/pre-build.js",
     "license-report": "legally --plain > license-report.txt && echo \"$(tail -n +4 license-report.txt)\" > license-report.txt",
     "prettier": "prettier --write '**/*.{js,md,yaml}'",
     "lint": "yarn lint:js && yarn lint:css",
@@ -73,7 +74,7 @@
     "inquirer": "^6.4.1",
     "lodash": "^4.17.15",
     "minimist": "^1.2.3",
-    "next": "8.1.0",
+    "next": "^9.4.4",
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-sass": "^4.12.0",
     "normalizr": "^3.4.0",
@@ -113,9 +114,6 @@
   },
   "resolutions": {
     "@aws-amplify/analytics": "1.2.16",
-    "@aws-amplify/ui": "1.0.19",
-    "minimist": "^1.2.3",
-    "acorn": "^7.1.1",
-    "kind-of": "^6.0.3"
+    "@aws-amplify/ui": "1.0.19"
   }
 }
