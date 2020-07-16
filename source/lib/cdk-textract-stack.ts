@@ -123,7 +123,8 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["logs:DescribeLogGroups"],
-        resources: ["*"]
+        resources: ["*"],
+        conditions: {"StringEquals": {"cloudwatch:namespace": "AWS/Kendra"}}
       })
     );
 
@@ -160,7 +161,7 @@ export class CdkTextractStack extends cdk.Stack {
     const onEventKendraIndexLambda = new lambda.Function(this, this.resourceName('OnEventKendraIndexHandler'), {
       code: lambda.Code.fromAsset('lambda/customResourceKendraIndex/'),
       description: 'onEvent handler for creating Kendra index',
-      runtime: lambda.Runtime.PYTHON_3_7,
+      runtime: lambda.Runtime.PYTHON_3_8,
       handler: 'lambda_function.lambda_handler',
       timeout: Duration.minutes(15),
       environment: {
@@ -206,7 +207,7 @@ export class CdkTextractStack extends cdk.Stack {
     const isCompleteKendraIndexLambda = new lambda.Function(this, this.resourceName('isCompleteKendraIndexPoller'),{
       code: lambda.Code.fromAsset('lambda/kendraIndexPoller'),
       description: 'isComplete handler to check for Kendra Index creation',
-      runtime: lambda.Runtime.PYTHON_3_7,
+      runtime: lambda.Runtime.PYTHON_3_8,
       handler: 'lambda_function.lambda_handler',
       timeout: Duration.minutes(15),
     });
@@ -255,7 +256,7 @@ export class CdkTextractStack extends cdk.Stack {
     const onEventKendraDataSourceLambda = new lambda.Function(this, this.resourceName('OnEventDataSourceCreator'), {
       code: lambda.Code.fromAsset('lambda/customResourceKendraDataSource/'),
       description: 'onEvent handler for creating Kendra data source',
-      runtime: lambda.Runtime.PYTHON_3_7,
+      runtime: lambda.Runtime.PYTHON_3_8,
       handler: 'lambda_function.lambda_handler',
       timeout: Duration.minutes(15),
       environment: {
@@ -567,7 +568,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobCompletion"),
       {
-       // displayName: "Job completion topic",
       }
     );
 
@@ -701,7 +701,6 @@ export class CdkTextractStack extends cdk.Stack {
     // ####### Cognito User Authentication #######
 
     const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
-      //userPoolName: "textract-user-pool",
       autoVerifiedAttributes: ["email"],
       aliasAttributes: ["email"],
       mfaConfiguration: "OFF",
@@ -761,7 +760,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-user-pool-client",
       {
-        //clientName: "textract_app",
         userPoolId: textractUserPool.ref,
       }
     );
@@ -770,7 +768,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-identity-pool",
       {
-        //identityPoolName: "textractUserIdentityPool",
         allowUnauthenticatedIdentities: false,
         cognitoIdentityProviders: [
           {
@@ -1256,53 +1253,6 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    // add kendra index id to lambda environment in case of DUS+Kendra mode
-    if(props.enableKendra){
-      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket, documentsS3Bucket, samplesS3Bucket);
-      const kendraRoleArn = kendraResources['KENDRA_ROLE_ARN'];
-      const kendraIndexId = kendraResources['KENDRA_INDEX_ID'];
-      apiProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId)
-      apiProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
-      apiProcessor.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
-          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
-        })
-      );
-      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
-      jobResultProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
-      jobResultProcessor.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
-          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
-       })
-      );
-      jobResultProcessor.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ["iam:PassRole"],
-          resources: [kendraRoleArn]
-        })
-      );
-      syncProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
-      syncProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
-      syncProcessor.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
-          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
-        })
-      );
-      syncProcessor.addToRolePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: ["iam:PassRole"],
-          resources: [kendraRoleArn]
-        })
-      );
-    }
     // Layer
     apiProcessor.addLayers(elasticSearchLayer);
     apiProcessor.addLayers(helperLayer);
@@ -1448,5 +1398,60 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
       })
     );
+
+
+    // add kendra index id to lambda environment in case of DUS+Kendra mode
+    if(props.enableKendra){
+      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket, documentsS3Bucket, samplesS3Bucket);
+      const kendraRoleArn = kendraResources['KENDRA_ROLE_ARN'];
+      const kendraIndexId = kendraResources['KENDRA_INDEX_ID'];
+      apiProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId)
+      apiProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      apiProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+        })
+      );
+      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
+      jobResultProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+       })
+      );
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn]
+        })
+      );
+      syncProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
+      syncProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+        })
+      );
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn]
+        })
+      );
+
+      const feedbackKendraResource = api.root.addResource("feedbackkendra");
+      addCorsOptionsAndMethods(feedbackKendraResource, ["POST"]);
+
+      const searchKendraResource = api.root.addResource("searchkendra");
+      addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
+    }
   }
 }
