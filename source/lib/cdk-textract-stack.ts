@@ -68,7 +68,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("CovidDataBucket"),
       {
-        bucketName: this.resourceName("covid-data-bucket"),
+        //bucketName: this.resourceName("covid-data-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
@@ -873,7 +873,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     // If a local yarn deploy is used, the two lambdas draw their code from a local directory.
 
-    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3");
+    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3/boto3-layer.zip");
 
     const yarnPDFLoc = lambda.Code.fromAsset("lambda/pdfgenerator");
 
@@ -1285,7 +1285,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("DUSApiLogGroup"),
       {
-        logGroupName: this.resourceName("DUSApiLogGroup"),
+       // logGroupName: this.resourceName("DUSApiLogGroup"),
       },
     );
     // API
