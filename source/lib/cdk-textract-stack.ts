@@ -1,3 +1,17 @@
+
+/**********************************************************************************************************************
+ *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
+ *                                                                                                                    *
+ *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
+ *  with the License. A copy of the License is located at                                                             *
+ *                                                                                                                    *
+ *      http://www.apache.org/licenses/LICENSE-2.0                                                                    *
+ *                                                                                                                    *
+ *  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES *
+ *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
+ *  and limitations under the License.                                                                                *
+ *********************************************************************************************************************/
+
 import cdk = require("@aws-cdk/core");
 import ddb = require("@aws-cdk/aws-dynamodb");
 import es = require("@aws-cdk/aws-elasticsearch");
@@ -32,6 +46,7 @@ import uuid = require("short-uuid");
 import { BucketEncryption, BlockPublicAccess } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
+import { LogGroupLogDestination } from "@aws-cdk/aws-apigateway";
 import { CustomResource, Duration } from '@aws-cdk/core';
 import * as cr from '@aws-cdk/custom-resources';
 import { Runtime } from "@aws-cdk/aws-lambda";
@@ -41,6 +56,7 @@ const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents t
 export interface TextractStackProps {
   email: string;
   isCICDDeploy: boolean;
+  description: string;
   enableKendra: boolean;
 }
 
@@ -52,7 +68,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("CovidDataBucket"),
       {
-        bucketName: this.resourceName("covid-data-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
@@ -107,7 +122,8 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["logs:DescribeLogGroups"],
-        resources: ["*"]
+        resources: ["*"],
+        conditions: {"StringEquals": {"cloudwatch:namespace": "AWS/Kendra"}}
       })
     );
 
@@ -144,7 +160,7 @@ export class CdkTextractStack extends cdk.Stack {
     const onEventKendraIndexLambda = new lambda.Function(this, this.resourceName('OnEventKendraIndexHandler'), {
       code: lambda.Code.fromAsset('lambda/customResourceKendraIndex/'),
       description: 'onEvent handler for creating Kendra index',
-      runtime: lambda.Runtime.PYTHON_3_7,
+      runtime: lambda.Runtime.PYTHON_3_8,
       handler: 'lambda_function.lambda_handler',
       timeout: Duration.minutes(15),
       environment: {
@@ -190,7 +206,7 @@ export class CdkTextractStack extends cdk.Stack {
     const isCompleteKendraIndexLambda = new lambda.Function(this, this.resourceName('isCompleteKendraIndexPoller'),{
       code: lambda.Code.fromAsset('lambda/kendraIndexPoller'),
       description: 'isComplete handler to check for Kendra Index creation',
-      runtime: lambda.Runtime.PYTHON_3_7,
+      runtime: lambda.Runtime.PYTHON_3_8,
       handler: 'lambda_function.lambda_handler',
       timeout: Duration.minutes(15),
     });
@@ -239,7 +255,7 @@ export class CdkTextractStack extends cdk.Stack {
     const onEventKendraDataSourceLambda = new lambda.Function(this, this.resourceName('OnEventDataSourceCreator'), {
       code: lambda.Code.fromAsset('lambda/customResourceKendraDataSource/'),
       description: 'onEvent handler for creating Kendra data source',
-      runtime: lambda.Runtime.PYTHON_3_7,
+      runtime: lambda.Runtime.PYTHON_3_8,
       handler: 'lambda_function.lambda_handler',
       timeout: Duration.minutes(15),
       environment: {
@@ -295,11 +311,11 @@ export class CdkTextractStack extends cdk.Stack {
     id: string | undefined,
     props: TextractStackProps
   ) {
-    super(scope, id);
+    super(scope, id , props);
 
     this.resourceName = (name: any) =>
-      `${id}-${name}-${this.uuid}`.toLowerCase();
-
+      `${id}-${name}`.toLowerCase();
+  
     this.uuid = uuid.generate();
 
     const corsRule = {
@@ -328,7 +344,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("LogsS3Bucket"),
       {
-        bucketName: this.resourceName("logs-s3-bucket"),
+        //bucketName: this.resourceName("logs-s3-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
@@ -340,7 +356,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("DocumentsS3Bucket"),
       {
-        bucketName: this.resourceName("document-s3-bucket"),
+        //bucketName: this.resourceName("document-s3-bucket"),
         versioned: false,
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
@@ -354,7 +370,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("SamplesS3Bucket"),
       {
-        bucketName: this.resourceName("sample-s3-bucket"),
+        //bucketName: this.resourceName("sample-s3-bucket"),
         versioned: false,
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
@@ -364,62 +380,7 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    // Layers for lambda functions
-    const cicdBotoLoc = lambda.Code.fromBucket(
-      s3.Bucket.fromBucketName(this, "solutionBucketBoto", "SOURCE_BUCKET"),
-      "SOLUTION_NAME/CODE_VERSION/boto3-layer.zip"
-    );
 
-    const cicdPDFLoc = lambda.Code.fromBucket(
-      s3.Bucket.fromBucketName(this, "solutionBucketPDF", "SOURCE_BUCKET"),
-      "SOLUTION_NAME/CODE_VERSION/searchable-pdf-1.0.jar"
-    );
-
-    // If a local yarn deploy is used, the two lambdas draw their code from a local directory.
-
-    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3/boto3-layer.zip");
-
-    const yarnPDFLoc = lambda.Code.fromAsset("lambda/pdfgenerator");
-
-    const helperLayer = new lambda.LayerVersion(
-      this,
-      this.resourceName("HelperLayer"),
-      {
-        code: lambda.Code.fromAsset("lambda/helper"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
-      }
-    );
-
-    const textractorLayer = new lambda.LayerVersion(
-      this,
-      this.resourceName("Textractor"),
-      {
-        code: lambda.Code.fromAsset("lambda/textractor"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
-      }
-    );
-
-    const boto3Layer = new lambda.LayerVersion(
-      this,
-      this.resourceName("Boto3"),
-      {
-        code: props.isCICDDeploy ? cicdBotoLoc : yarnBotoLoc,
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
-      }
-    );
-
-    const elasticSearchLayer = new lambda.LayerVersion(
-      this,
-      this.resourceName("ElasticSearchLayer"),
-      {
-        code: lambda.Code.fromAsset("lambda/elasticsearch/es.zip"),
-        compatibleRuntimes: [lambda.Runtime.PYTHON_3_7],
-        license: "Apache-2.0"
-      }
-    );
     // ### Client ###
 
     const clientAppS3Bucket = new s3.Bucket(
@@ -512,7 +473,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ElasticSearchLogGroup"),
       {
-        logGroupName: this.resourceName("ElasticSearchLogGroup"),
+        //logGroupName: this.resourceName("ElasticSearchLogGroup"),
       }
     );
 
@@ -543,7 +504,7 @@ export class CdkTextractStack extends cdk.Stack {
           },
           nodeToNodeEncryptionOptions: {
             enabled: true,
-          }
+          },
         }
       );
     } else {
@@ -606,7 +567,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobCompletion"),
       {
-        displayName: "Job completion topic",
       }
     );
 
@@ -632,6 +592,7 @@ export class CdkTextractStack extends cdk.Stack {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
       sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
       serverSideEncryption: true,
+      billingMode: ddb.BillingMode.PAY_PER_REQUEST
     });
 
     const documentsTable = new ddb.Table(
@@ -641,6 +602,7 @@ export class CdkTextractStack extends cdk.Stack {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
         stream: ddb.StreamViewType.NEW_IMAGE,
         serverSideEncryption: true,
+        billingMode: ddb.BillingMode.PAY_PER_REQUEST
       }
     );
 
@@ -738,7 +700,6 @@ export class CdkTextractStack extends cdk.Stack {
     // ####### Cognito User Authentication #######
 
     const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
-      userPoolName: "textract-user-pool",
       autoVerifiedAttributes: ["email"],
       aliasAttributes: ["email"],
       mfaConfiguration: "OFF",
@@ -772,6 +733,7 @@ export class CdkTextractStack extends cdk.Stack {
                 </p>\
                 `,
         },
+        unusedAccountValidityDays: 60,
       },
     });
 
@@ -797,7 +759,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-user-pool-client",
       {
-        clientName: "textract_app",
         userPoolId: textractUserPool.ref,
       }
     );
@@ -806,7 +767,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-identity-pool",
       {
-        identityPoolName: "textractUserIdentityPool",
         allowUnauthenticatedIdentities: false,
         cognitoIdentityProviders: [
           {
@@ -837,7 +797,7 @@ export class CdkTextractStack extends cdk.Stack {
         path: "/",
       }
     );
-
+    
     const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy", {
       statements: [
         new iam.PolicyStatement({
@@ -899,16 +859,75 @@ export class CdkTextractStack extends cdk.Stack {
     /* ### Lambda ### */
 
     // If CICD deploy is used, the two largest lambdas draw their code from an S3 bucket.
+
+    const cicdBotoLoc = lambda.Code.fromBucket(
+      s3.Bucket.fromBucketName(this, "solutionBucketBoto", "SOURCE_BUCKET"),
+      "SOLUTION_NAME/CODE_VERSION/boto3-layer.zip"
+    );
+
+    const cicdPDFLoc = lambda.Code.fromBucket(
+      s3.Bucket.fromBucketName(this, "solutionBucketPDF", "SOURCE_BUCKET"),
+      "SOLUTION_NAME/CODE_VERSION/searchable-pdf-1.0.jar"
+    );
+
+    // If a local yarn deploy is used, the two lambdas draw their code from a local directory.
+
+    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3/boto3-layer.zip");
+
+    const yarnPDFLoc = lambda.Code.fromAsset("lambda/pdfgenerator");
+
+    const helperLayer = new lambda.LayerVersion(
+      this,
+      this.resourceName("HelperLayer"),
+      {
+        code: lambda.Code.fromAsset("lambda/helper"),
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
+        license: "Apache-2.0",
+      }
+    );
+
+    const textractorLayer = new lambda.LayerVersion(
+      this,
+      this.resourceName("Textractor"),
+      {
+        code: lambda.Code.fromAsset("lambda/textractor"),
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
+        license: "Apache-2.0",
+      }
+    );
+
+    const boto3Layer = new lambda.LayerVersion(
+      this,
+      this.resourceName("Boto3"),
+      {
+        code: props.isCICDDeploy ? cicdBotoLoc : yarnBotoLoc,
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
+        license: "Apache-2.0",
+      }
+    );
+
+    const elasticSearchLayer = new lambda.LayerVersion(
+      this,
+      this.resourceName("ElasticSearchLayer"),
+      {
+        code: lambda.Code.fromAsset("lambda/elasticsearch/es.zip"),
+        compatibleRuntimes: [lambda.Runtime.PYTHON_3_8],
+        license: "Apache-2.0",
+      }
+    );
+
+
     // Lambdas
     const documentProcessor = new lambda.Function(
       this,
       this.resourceName("TaskProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.fromAsset("lambda/documentprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(300),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
@@ -937,11 +956,12 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobErrorHandlerLambda"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.fromAsset("lambda/joberrorhandler"),
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 4),
         handler: "lambda_function.lambda_handler",
         timeout: cdk.Duration.seconds(60),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           DOCUMENTS_TABLE: documentsTable.tableName,
         },
@@ -971,6 +991,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
       }
     );
 
@@ -984,11 +1005,12 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("SyncProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
@@ -1069,11 +1091,12 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ASyncProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/asyncprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(120),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
@@ -1108,7 +1131,7 @@ export class CdkTextractStack extends cdk.Stack {
           "textract:StartDocumentTextDetection",
           "textract:StartDocumentAnalysis",
         ],
-        resources: ["*"], // Currently, Textract does n'ot support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        resources: ["*"], // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
       })
     );
 
@@ -1119,12 +1142,13 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobResultProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/jobresultprocessor"),
         handler: "lambda_function.lambda_handler",
         memorySize: 2000,
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
@@ -1200,7 +1224,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
-
+    
     //------------------------------------------------------------
 
     pdfGenerator.grantInvoke(syncProcessor);
@@ -1213,11 +1237,12 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ApiProcessor"),
       {
-        runtime: lambda.Runtime.PYTHON_3_7,
+        runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/apiprocessor"),
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(60),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           CONTENT_BUCKET: documentsS3Bucket.bucketName,
           SAMPLE_BUCKET: samplesS3Bucket.bucketName,
@@ -1302,6 +1327,13 @@ export class CdkTextractStack extends cdk.Stack {
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
 
+    // Log group for API logs
+    const DUSApiLogGroup = new LogGroup(
+      this,
+      this.resourceName("DUSApiLogGroup"),
+      {
+      },
+    );
     // API
     const api = new apigateway.LambdaRestApi(
       this,
@@ -1311,7 +1343,9 @@ export class CdkTextractStack extends cdk.Stack {
         proxy: false,
         deployOptions: {
           loggingLevel: apigateway.MethodLoggingLevel.INFO,
-          dataTraceEnabled: true,
+          dataTraceEnabled: false,
+          accessLogDestination: new LogGroupLogDestination(DUSApiLogGroup),
+          accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields()
         },
       }
     );
@@ -1403,12 +1437,6 @@ export class CdkTextractStack extends cdk.Stack {
     const redactResource = api.root.addResource("redact");
     addCorsOptionsAndMethods(redactResource, ["GET", "POST"]);
 
-    const feedbackKendraResource = api.root.addResource("feedbackkendra");
-    addCorsOptionsAndMethods(feedbackKendraResource, ["POST"]);
-                        
-    const searchKendraResource = api.root.addResource("searchkendra");
-    addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
-                                              
     cognitoPolicy.addStatements(
       new iam.PolicyStatement({
         actions: ["execute-api:Invoke"],
@@ -1416,5 +1444,60 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
       })
     );
+
+
+    // add kendra index id to lambda environment in case of DUS+Kendra mode
+    if(props.enableKendra){
+      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket, documentsS3Bucket, samplesS3Bucket);
+      const kendraRoleArn = kendraResources['KENDRA_ROLE_ARN'];
+      const kendraIndexId = kendraResources['KENDRA_INDEX_ID'];
+      apiProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId)
+      apiProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      apiProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+        })
+      );
+      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
+      jobResultProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+       })
+      );
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn]
+        })
+      );
+      syncProcessor.addEnvironment("KENDRA_INDEX_ID",kendraIndexId)
+      syncProcessor.addEnvironment("KENDRA_ROLE_ARN",kendraRoleArn)
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["kendra:BatchPutDocument","kendra:SubmitFeedback","kendra:BatchDeleteDocument","kendra:Query"],
+          resources: ["arn:aws:kendra:"+this.region+":"+this.account+":index/*"]
+        })
+      );
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn]
+        })
+      );
+
+      const feedbackKendraResource = api.root.addResource("feedbackkendra");
+      addCorsOptionsAndMethods(feedbackKendraResource, ["POST"]);
+
+      const searchKendraResource = api.root.addResource("searchkendra");
+      addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
+    }
   }
 }

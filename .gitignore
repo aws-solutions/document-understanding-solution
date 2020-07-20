@@ -29,8 +29,9 @@ source/app/out/
 source/app/node_modules/
 
 # CDK
-cdk.out/
+source/cdk.out/
 source/lib/cdk-textract-stack.js
 source/lib/cdk-textract-client-stack.js
+source/lib/cdk-textract-client-stack.js-e
 
 

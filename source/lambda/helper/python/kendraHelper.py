@@ -6,7 +6,7 @@ from helper import S3Helper
 
 
 class KendraHelper:
-    
+
 
     #
     #   This function instruct Kendra to index a pdf document in s3
@@ -26,10 +26,10 @@ class KendraHelper:
                       s3key,
                       documentId,
                       tag = 'everybody'):
-        
-        
+
+
         kendraclient = client = boto3.client('kendra', region_name=os.environ['AWS_REGION'])
-        
+
         response = client.batch_put_document(IndexId=kendraIndexId,
                                              RoleArn=kendraRoleArn,
                                              Documents=[
@@ -47,7 +47,7 @@ class KendraHelper:
                                                           }
                                                 ],
                                                 'ContentType': 'PDF'}])
-        
+
         return
 
     #
@@ -60,12 +60,12 @@ class KendraHelper:
     def deindexDocument(self,
                         kendraIndexId,
                         documentId):
-        
+
         kendraclient = client = boto3.client('kendra', region_name=os.environ['AWS_REGION'])
 
         response = client.batch_delete_document(IndexId=kendraIndexId,
                                                 DocumentIdList=[documentId])
-                                                
+
         return
 
     #
@@ -137,16 +137,16 @@ class KendraHelper:
     def submitFeedback(self,
                        kendraIndexId,
                        requestBody):
-        
+
         feedback = json.loads(requestBody)
-        
+
         client = client = boto3.client('kendra', region_name=os.environ['AWS_REGION'])
 
         relevance = 'RELEVANT'
-        
+
         if feedback['relevance'] == False:
             relevance = 'NOT_RELEVANT'
-        
+
         response = client.submit_feedback(IndexId=kendraIndexId,
                                           QueryId=feedback['queryId'],
                                           RelevanceFeedbackItems=[
@@ -155,5 +155,5 @@ class KendraHelper:
                                                   'RelevanceValue': relevance
                                               }
                                           ])
-        
+
         return
