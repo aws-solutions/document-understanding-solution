@@ -1332,7 +1332,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("DUSApiLogGroup"),
       {
-       // logGroupName: this.resourceName("DUSApiLogGroup"),
       },
     );
     // API
