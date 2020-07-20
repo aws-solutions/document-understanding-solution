@@ -11,8 +11,3 @@ if [ ! -f es.zip ]
 then
     zip -r es.zip python
 fi
-cd $current_dir/../deployment
-if [ ! -f document-understanding-cicd.zip ]
-then
-    zip -r document-understanding-cicd.zip document-understanding-cicd
-fi

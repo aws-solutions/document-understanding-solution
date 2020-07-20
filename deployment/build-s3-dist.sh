@@ -73,9 +73,20 @@ else
     sed -i -e $replace $template_dist_dir/document-understanding-solution.template
 fi
 
+echo "Creating a zip file of document-understanding cicd..."
+if [ ! -f ./deployment/document-understanding-cicd.zip ]
+then
+    zip -r ./deployment/document-understanding-cicd.zip ./deployment/document-understanding-cicd
+fi
+echo "Created document-understanding-cicd.zip"
+if [ ! -f $template_dir/source/lambda/elasticsearch/es.zip ]
+then
+    zip -r $template_dir/source/lambda/elasticsearch/es.zip $template_dir/source/lambda/elasticsearch/python
+fi
 echo "Creating zip file of project source..."
 zip -r $build_dist_dir/document-understanding-solution.zip ./* -x "*pdfgenerator*" \
 -x "*boto3*" \
+-x "source/lambda/elasticsearch/python/*" \
 -x "*.git*" \
 -x "*node_modules*" \
 -x "*cdk.out*" \
@@ -86,6 +97,10 @@ echo "Created document-understanding-solution.zip"
 
 echo "Copying lambda code that is too large to add to CodeCommit (6MB limit)"
 cp $template_dir/source/lambda/pdfgenerator/searchable-pdf-1.0.jar $build_dist_dir/searchable-pdf-1.0.jar
+if [ ! -f $template_dir/source/lambda/boto3/boto3-layer.zip ]
+then
+    zip -r $template_dir/source/lambda/boto3/boto3-layer.zip $template_dir/source/lambda/boto3/python
+fi
 cp $template_dir/source/lambda/boto3/boto3-layer.zip $build_dist_dir/boto3-layer.zip
 
 echo "Copying CloudFormation template and deployment helper lambda code"
