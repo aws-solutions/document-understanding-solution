@@ -68,7 +68,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("CovidDataBucket"),
       {
-        //bucketName: this.resourceName("covid-data-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
