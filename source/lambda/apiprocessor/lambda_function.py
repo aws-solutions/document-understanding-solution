@@ -1,3 +1,17 @@
+
+######################################################################################################################
+ #  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+ #                                                                                                                    #
+ #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
+ #  with the License. A copy of the License is located at                                                             #
+ #                                                                                                                    #
+ #      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
+ #                                                                                                                    #
+ #  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
+ #  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
+ #  and limitations under the License.                                                                                #
+ #####################################################################################################################
+
 import os
 import json
 
@@ -29,14 +43,14 @@ def lambda_handler(event, context):
                 if('documentId' in event['queryStringParameters']):
                     request["documentId"] = event['queryStringParameters']['documentId']
                 result = search(request)
-    
+
         # search Kendra if available
         elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST'):
             if 'KENDRA_INDEX_ID' in os.environ :
                 kendraClient = KendraHelper()
                 result = kendraClient.search(os.environ['KENDRA_INDEX_ID'],
                                              event['body'])
-    
+
         # Kendra search result feedback for relevance boosting
         elif(event['resource'] == '/feedbackkendra' and event['httpMethod'] == 'POST'):
             if 'KENDRA_INDEX_ID' in os.environ :
@@ -78,12 +92,12 @@ def lambda_handler(event, context):
                     request["documentId"] = event['queryStringParameters']['documentid']
                     result = deleteDocument(request)
                     deleteESItem(request["elasticsearchDomain"], request["documentId"])
-
                     # remove it from Kendra's index too if present
-                    if 'KENDRA_INDEX_ID' in os.environ :
+                    if 'KENDRA_INDEX_ID' in os.environ:
                         kendraClient = KendraHelper()
                         kendraClient.deindexDocument(os.environ['KENDRA_INDEX_ID'],
                                                      request["documentId"])
+
                         
         elif(event['resource'] == '/redact'):
             params = event['queryStringParameters'] if 'queryStringParameters' in event else {}
