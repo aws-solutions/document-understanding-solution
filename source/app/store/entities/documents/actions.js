@@ -146,7 +146,7 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
 
   // Remove the last slash and everything before it
   const documentName = objectName.replace(/^.*\//, "");
-
+  const fileNameWithoutExtension = documentName.split(".")[0]
   // Amplify prepends public/ to the path, so we have to strip it
   const documentPublicSubPath = objectName.replace("public/", "");
   const resultDirectory = `${documentId}/output`;
@@ -161,7 +161,7 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
       bucket: bucketName,
       download: true
     }),
-    Storage.get(`${resultDirectory}/searchable-pdf.pdf`, {
+    Storage.get(`${resultDirectory}/${fileNameWithoutExtension}-searchable.pdf`, {
       download: true
     })
   ]);

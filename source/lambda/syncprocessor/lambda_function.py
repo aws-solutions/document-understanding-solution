@@ -25,7 +25,8 @@ from kendraHelper import KendraHelper
 def generatePdf(documentId, bucketName, objectName, responseBucketName, outputPath):
 
     responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
-    outputDocumentName = "{}searchable-pdf.pdf".format(outputPath)
+    fileName = os.path.basename(objectName).split(".")[0]
+    outputDocumentName = "{}{}-searchable.pdf".format(outputPath,fileName)
 
     data = {}
     data["bucketName"] = bucketName
@@ -108,12 +109,15 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, maxPages)
 
     # if Kendra is available then let it index the document
+    # index the searchable pdf in Kendra
     if 'KENDRA_INDEX_ID' in os.environ :
         kendraClient = KendraHelper()
+        fileName = os.path.basename(objectName).split(".")[0]
+        outputDocumentName = "{}{}-searchable.pdf".format(outputPath, fileName)
         kendraClient.indexDocument(os.environ['KENDRA_INDEX_ID'],
                                    os.environ['KENDRA_ROLE_ARN'],
                                    outputBucketName,
-                                   objectName,
+                                   outputDocumentName,
                                    documentId)
 
     print("DocumentId: {}".format(documentId))

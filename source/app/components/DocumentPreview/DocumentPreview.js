@@ -51,7 +51,7 @@ export default function DocumentPreview({
             {track === 'search' ? (
                   <div className={css.downloadButtons}>
                   <Button
-                  download="searchable-pdf.pdf"
+                  download={document.documentName.split('.')[0]+"-searchable.pdf"}
                   href={document.searchablePdfURL}
                   >
                     ⬇ Searchable PDF
