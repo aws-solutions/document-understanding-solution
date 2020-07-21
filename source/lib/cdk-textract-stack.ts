@@ -483,7 +483,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("ElasticSearchLogGroup"),
       {
-        //logGroupName: this.resourceName("ElasticSearchLogGroup"),
       }
     );
 
@@ -578,7 +577,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("JobCompletion"),
       {
-        //displayName: "Job completion topic",
       }
     );
 
@@ -639,11 +637,11 @@ export class CdkTextractStack extends cdk.Stack {
         }
     );
     bulkProcessingKey.addToResourcePolicy(new iam.PolicyStatement({
-      actions: ["kms:*"],
+      actions: ["kms:GenerateDataKey","kms:Decrypt"],
       resources: [
         `*`,
       ],
-      principals: [ new iam.AccountPrincipal(this.account), new iam.ServicePrincipal("s3.amazonaws.com")]
+      principals: [ new iam.ServicePrincipal("s3.amazonaws.com")]
     }));
     const documentBulkProcessingQueue = new sqs.Queue(
       this,
@@ -660,7 +658,7 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
     documentBulkProcessingQueue.addToResourcePolicy(new iam.PolicyStatement({
-      actions: ["sqs:*"],
+      actions: ["sqs:SendMessage","sqs:Get*"],
       resources: [
         `*`,
       ],
@@ -766,7 +764,6 @@ export class CdkTextractStack extends cdk.Stack {
     // ####### Cognito User Authentication #######
 
     const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
-      //userPoolName: "textract-user-pool",
       autoVerifiedAttributes: ["email"],
       aliasAttributes: ["email"],
       mfaConfiguration: "OFF",
@@ -826,7 +823,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-user-pool-client",
       {
-        //clientName: "textract_app",
         userPoolId: textractUserPool.ref,
       }
     );
@@ -835,7 +831,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-identity-pool",
       {
-        //identityPoolName: "textractUserIdentityPool",
         allowUnauthenticatedIdentities: false,
         cognitoIdentityProviders: [
           {
