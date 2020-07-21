@@ -11,6 +11,7 @@ $input-color-focus: color(gray, 10);
 $input-color-disabled: color(gray, 40);
 
 $input-background-default: color(gray, 90);
+$input-background-light: color(gray, 80);
 $input-background-disabled: color(gray, 30);
 $input-background-error: rgba($input-border-error, 0.05);
 
@@ -55,6 +56,10 @@ $input-background-error: rgba($input-border-error, 0.05);
 
   &.hasLabel {
     margin-top: 0.5em;
+  }
+
+  &.light {
+    background-color: $input-background-light;
   }
 
   &.error {

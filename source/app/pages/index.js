@@ -24,7 +24,7 @@ import css from "./login.scss";
 
 Login.getInitialProps = function() {
   return {
-    pageTitle: "Document Understanding Solution"
+    // pageTitle: "Document Understanding Solution"
   };
 };
 

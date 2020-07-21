@@ -1,12 +1,24 @@
 @import '../../styles/shared/index';
 
-.searchResults {
-  position: relative;
-  width: span(8);
-  min-height: 300px;
-  margin: 0 auto;
+.base {
+  max-width: rem(800);
+}
 
-  pre {
-    color: #000;
+.doubleWidth {
+  max-width: rem(1600);
+}
+
+.resultContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  > * {
+    flex: 0 1 rem(800);
+    overflow: hidden;
+  }
+
+  > * + * {
+    margin-left: rem(16);
   }
 }

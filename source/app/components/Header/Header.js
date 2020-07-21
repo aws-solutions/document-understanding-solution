@@ -36,7 +36,7 @@ function Header({ backHref, backTitle, heading }) {
       <div>
         <Link href="/home">
           <a className={css.logoLink}>
-            <img className={css.logo} src="/static/images/logo_aws.svg" alt="AWS" />
+            <img className={css.logo} src="/static/images/DUS_DEMO_logo_WhiteBG.svg" alt="AWS" />
           </a>
         </Link>
 
@@ -49,9 +49,9 @@ function Header({ backHref, backTitle, heading }) {
         )}
       </div>
 
-      <h1>{heading}</h1>
-       
-      
+      {/* <h1>{heading}</h1> */}
+
+
 
       <div className={css.logoutlink}>
         <Button className={css.borderlessButton} inverted onClick={handleLogoutClick}>Log Out</Button>

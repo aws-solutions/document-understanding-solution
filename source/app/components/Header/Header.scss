@@ -28,6 +28,10 @@ $header-bg-color: color(gray, 90);
   .logoLink {
     line-height: 0;
     z-index: 3;
+
+    img {
+      height: 38px;
+    }
   }
 
   // Primary Heading

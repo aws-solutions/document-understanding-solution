@@ -77,7 +77,7 @@ else {
 
 Select.getInitialProps = function() {
   return {
-    pageTitle: 'Upload documents',
+    // pageTitle: 'Upload documents',
   }
 }
 

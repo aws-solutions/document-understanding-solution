@@ -31,7 +31,7 @@ import {
   clearRedactions,
   addHighlights,
   clearHighlights
-  
+
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
 import { setHeaderProps , setSelectedTrack} from '../../store/ui/actions'
@@ -70,7 +70,7 @@ Document.propTypes = {
   dispatch: PropTypes.func,
   document: PropTypes.object,
   id: PropTypes.string,
-  pageTitle: PropTypes.string,
+  // pageTitle: PropTypes.string,
   searchQuery: PropTypes.string,
   track: PropTypes.string,
 }
@@ -112,10 +112,10 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     }
   }, [dispatch, id])
 
-  
 
-  
-  
+
+
+
   // Set search results data
   const wordsMatchingSearch = useMemo(() => {
     return getPageWordsBySearch(document, currentPageNumber, searchQuery)
@@ -129,7 +129,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     const medicalEntities = getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE)
     return { pairs, tables, lines, entities , medicalEntities }
     // eslint-disable-next-line
-    
+
   }, [document, document.textractResponse ,document.medicalComprehendResponse, document.comprehendResponse])
 
   // Set the paged content for each tab
@@ -147,15 +147,15 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const [trackTab, selectTrack] = useState('search')
   // Update header props when we get a document response
-  useEffect(() => {
-    dispatch(
-      setHeaderProps(
-        reject(either(isNil, isEmpty))
-      )
-    )
+  // useEffect(() => {
+  //   dispatch(
+  //     setHeaderProps(
+  //       reject(either(isNil, isEmpty))
+  //     )
+  //   )
 
-    return () => dispatch(setHeaderProps({}))
-  }, [dispatch, documentName, pageTitle, track])
+  //   return () => dispatch(setHeaderProps({}))
+  // }, [dispatch, documentName, pageTitle, track])
 
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document
@@ -275,7 +275,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
       ]
     }, [])
   }, [pageData.pairs])
-    
+
   const pageLinesAsMarks = useMemo(() => {
     return pageData.lines.map(({ id, boundingBox }) => {
       return {
@@ -295,7 +295,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     }
   }, [highlightedKv])
 
-  
+
 
   const switchPage = useCallback(
     pageNumber => {
@@ -344,11 +344,11 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               </div>
             ) : null}
 
-            
-              
-               
+
+
+
               <div>
-               
+
               <Tabs
               isTrackTab={true}
               selected={trackTab}
@@ -398,7 +398,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible 
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
               )}
             >
               <KeyValueList

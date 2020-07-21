@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { connect } from "react-redux";
-import cs from 'classnames';
+import cs from "classnames";
 
 import { getSelectedSearch } from "../../store/ui/selectors";
 import { setSelectedSearch } from "../../store/ui/actions";
 
-import styles from './SearchTypeTabs.scss';
+import styles from "./SearchTypeTabs.scss";
 
 function SearchTypeTabs({ selectedSearch, setSelectedSearch }) {
   const selectES = useCallback(() => {
@@ -18,13 +18,11 @@ function SearchTypeTabs({ selectedSearch, setSelectedSearch }) {
     setSelectedSearch("both");
   }, [setSelectedSearch]);
 
-  useEffect(() => {
-    if (selectedSearch !== "both") return;
+  const [width, setWidth] = useState(window.innerWidth);
 
+  useEffect(() => {
     function resized() {
-      if (window.innerWidth < 1000) {
-        setSelectedSearch("es");
-      }
+      setWidth(window.innerWidth);
     }
 
     window.addEventListener("resize", resized);
@@ -34,20 +32,45 @@ function SearchTypeTabs({ selectedSearch, setSelectedSearch }) {
     };
   }, [selectedSearch, setSelectedSearch]);
 
+  const canShowSideBySide = useMemo(() => width >= 1000, [width]);
+
+  useEffect(() => {
+    if (selectedSearch === "both" && !canShowSideBySide) {
+      setSelectedSearch("es");
+    }
+  }, [selectedSearch, canShowSideBySide]);
+
   return (
     <div className={styles.wrapper}>
-      <a className={cs(styles.tab, selectedSearch === 'es' && styles.selected)} onClick={selectES}>
+      <a
+        className={cs(styles.tab, selectedSearch === "es" && styles.selected)}
+        onClick={selectES}
+      >
         Elasticsearch
         <span>Keyword Search Results</span>
       </a>
-      <a className={cs(styles.tab, selectedSearch === 'kendra' && styles.selected)} onClick={selectKendra}>
+      <a
+        className={cs(
+          styles.tab,
+          selectedSearch === "kendra" && styles.selected
+        )}
+        onClick={selectKendra}
+      >
         Amazon Kendra
         <span>Semantic Search Results</span>
       </a>
-      <a className={cs(styles.tab, selectedSearch === 'both' && styles.selected)} onClick={selectBoth}>
-        Elasticsearch and Amazon Kendra
-        <span>Compare Search Technologies</span>
-      </a>
+      {canShowSideBySide ? (
+        <a
+          className={cs(
+            styles.tab,
+            selectedSearch === "both" && styles.selected
+          )}
+          onClick={selectBoth}
+        >
+          Elasticsearch and Amazon Kendra
+          <span>Compare Search Technologies</span>
+        </a>
+      ) : null}
     </div>
   );
 }

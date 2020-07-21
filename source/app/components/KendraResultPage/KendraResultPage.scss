@@ -1,0 +1,10 @@
+@import '../../styles/shared/index';
+
+.resultList {
+  display: flex;
+  flex-direction: column;
+
+  > h3 {
+    text-align: center;
+  }
+}

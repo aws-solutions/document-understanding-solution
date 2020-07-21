@@ -1,0 +1,21 @@
+@import '../../styles/shared/index';
+
+.item {
+  border-top: 1px solid color(gray, 60);
+  padding: 1em 1.5em;
+}
+
+.question {
+  cursor: pointer;
+
+  a {
+    text-decoration: none;
+  }
+
+  h3 {
+    color: color(blue, 10);
+    font-size: 1.25em;
+    margin: 0;
+    padding-bottom: 0;
+  }
+}

@@ -27,7 +27,7 @@ Error.propTypes = {
 Error.getInitialProps = function({ res, err }) {
   const statusCode = res ? res.statusCode : err ? err.statusCode : null
   return reject(isNil, {
-    pageTitle: 'Error',
+    // pageTitle: 'Error',
     statusCode,
   })
 }

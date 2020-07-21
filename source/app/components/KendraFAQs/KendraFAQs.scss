@@ -1,13 +1,13 @@
 @import '../../styles/shared/index';
 
-.topResults {
+.faqs {
   border: 1px solid color(gray, 60);
   background: color(gray, 70);
   border-radius: 1em;
+  margin-top: 2em;
 
   > header {
     padding: 1em 1.5em;
-    border-bottom: inherit;
   }
 
   h2 {
@@ -16,12 +16,4 @@
     margin: 0;
     padding: 0;
   }
-}
-
-.results {
-  padding: 1em;
-}
-
-.result {
-  padding: 1em 0.5em;
 }

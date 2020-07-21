@@ -29,6 +29,18 @@ export default {
     id: 'search',
     title: 'Discovery',
     subtitle: 'Search across many documents, or within a single document',
+    longDescription: `
+      In this track, you can search through multiple documents and find information faster
+      and more efficiently, using state-of-the-art machine learning and natural language
+      with Amazon Kendra.
+
+      Once you select a document, you'll be able to interact with Amazon Textract,
+      Amazon Comprehend, and Amazon Comprehend Medical to experience the power
+      of document digitization and extration of sensitive information.
+
+      For demo purposes, we've loaded data related to COVID-19. Ask a question related
+      to this topic and see the power of natural language search.
+    `,
     icon: '/static/images/icon_cloud-search.svg',
     palette: 'blue',
   },
@@ -36,6 +48,9 @@ export default {
     id: 'redaction',
     title: 'Compliance',
     subtitle: 'Redact information from a document',
+    longDescription: `
+      Some description of the Compliance track goes here
+    `,
     icon: '/static/images/icon_redact.svg',
     palette: 'teal',
   },
@@ -43,6 +58,9 @@ export default {
     id: 'workflow',
     title: 'Workflow automation',
     subtitle: 'Edit and transfer data to other tools',
+    longDescription: `
+      Some description of the Workflow track goes here
+    `,
     icon: '/static/images/icon_workflow.svg',
     palette: 'purple',
   },

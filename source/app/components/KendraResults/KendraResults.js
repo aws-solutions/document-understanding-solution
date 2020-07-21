@@ -1,16 +1,12 @@
 import React, { useMemo, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import classNames from "classnames";
-import Link from "next/link";
+import cs from "classnames";
 import PropTypes from "prop-types";
 
-import Highlight from "../../components/Highlight/Highlight";
-import Loading from "../../components/Loading/Loading";
-import KendraTopResults from "../../components/KendraTopResults/KendraTopResults";
-import KendraDocumentResults from "../../components/KendraDocumentResults/KendraDocumentResults";
+import KendraResultPage from "../../components/KendraResultPage/KendraResultPage";
+import PersonaSelector from "../PersonaSelector/PersonaSelector";
 
 import { MIN_SEARCH_QUERY_LENGTH } from "../../constants/configs";
-import { makeDocumentLink } from "../../utils/link-generators";
 
 import css from "./KendraResults.scss";
 import { submitKendraFeedback } from "../../store/entities/searchResults/actions";
@@ -31,80 +27,73 @@ KendraResults.defaultProps = {
 export default function KendraResults({
   className,
   results,
+  filteredResults,
   searchQuery,
   searchStatus,
+  searchPersona,
   searchTotalDocuments,
   searchTotalMatches,
   kendraQueryId,
+  filteredQueryId,
+  showPersonaSelector,
   ...rest
 }) {
   const dispatch = useDispatch();
 
-  const searchResultsClassNames = classNames(css.searchResults, className);
   const isQueryLongEnough =
     searchQuery && searchQuery.length >= MIN_SEARCH_QUERY_LENGTH;
 
-  const topResults = useMemo(
-    () => results.filter((res) => res.Type === "ANSWER"),
-    [results]
-  );
-  const docResults = useMemo(
-    () => results.filter((res) => res.Type === "DOCUMENT"),
-    [results]
-  );
-
-  const submitFeedback = useCallback(
-    (feedback, item) => {
-      dispatch(
-        submitKendraFeedback({
-          relevance: feedback,
-          queryId: kendraQueryId,
-          resultId: item.Id,
-        })
-      );
-    },
-    [dispatch, kendraQueryId]
-  );
-
   if (!searchStatus || !searchQuery) return null;
 
+  const hasFilteredResults =
+    filteredResults && searchPersona && showPersonaSelector;
+
   return (
-    <nav className={searchResultsClassNames} {...rest}>
-      {!isQueryLongEnough && (
-        <p className={css.noContent}>
-          Enter a search query longer than {MIN_SEARCH_QUERY_LENGTH - 1}{" "}
-          characters to initiate a search.
-        </p>
-      )}
+    <div className={cs(css.base, hasFilteredResults && css.doubleWidth)}>
+      <nav {...rest}>
+        {!isQueryLongEnough && (
+          <p className={css.noContent}>
+            Enter a search query longer than {MIN_SEARCH_QUERY_LENGTH - 1}{" "}
+            characters to initiate a search.
+          </p>
+        )}
 
-      {/* {!searchTotalDocuments && searchStatus !== 'pending' && (
-        <p className={css.noContent}>No results found.</p>
-      )}
+        {/* {!searchTotalDocuments && searchStatus !== 'pending' && (
+          <p className={css.noContent}>No results found.</p>
+        )}
 
-      {!!searchTotalDocuments && searchStatus !== 'pending' && (
-        <div className={css.searchSummary}>
-          {`Found about ${searchTotalMatches} ${
-            searchTotalMatches === 1 ? 'result' : 'results'
-          } across ${searchTotalDocuments} ${
-            searchTotalDocuments === 1 ? 'document' : 'documents'
-          }`}
-        </div>
-      )}*/}
+        {!!searchTotalDocuments && searchStatus !== 'pending' && (
+          <div className={css.searchSummary}>
+            {`Found about ${searchTotalMatches} ${
+              searchTotalMatches === 1 ? 'result' : 'results'
+            } across ${searchTotalDocuments} ${
+              searchTotalDocuments === 1 ? 'document' : 'documents'
+            }`}
+          </div>
+        )}*/}
 
-      <h2>Amazon Kendra Results</h2>
+        <h2>Amazon Kendra Results</h2>
 
-      {searchStatus === "success" && isQueryLongEnough && (
-        <>
-          <KendraTopResults
-            results={topResults}
-            submitFeedback={submitFeedback}
+        {showPersonaSelector && <PersonaSelector />}
+      </nav>
+
+      <div className={css.resultContainer}>
+        {searchStatus === "success" && isQueryLongEnough && (
+          <KendraResultPage
+            title={hasFilteredResults ? "Unfiltered Results" : null}
+            results={results}
+            queryId={kendraQueryId}
           />
-          <KendraDocumentResults
-            results={docResults}
-            submitFeedback={submitFeedback}
+        )}
+
+        {hasFilteredResults ? (
+          <KendraResultPage
+            title="Filtered Results"
+            results={filteredResults}
+            queryId={filteredQueryId}
           />
-        </>
-      )}
-    </nav>
+        ) : null}
+      </div>
+    </div>
   );
 }

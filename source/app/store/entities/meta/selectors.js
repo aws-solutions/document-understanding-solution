@@ -24,7 +24,9 @@ export const getCleanSearchQuery = state =>
     view(getMetaLens('searchQuery')),
     trim
   )(state)
+export const getSearchPersona = state => view(getMetaLens('searchPersona'), state)
 export const getSearchStatus = state => view(getMetaLens('searchStatus'), state)
 export const getSearchTotalDocuments = state => view(getMetaLens('searchTotalDocuments'), state)
 export const getSearchTotalMatches = state => view(getMetaLens('searchTotalMatches'), state)
 export const getKendraQueryId = state => view(getMetaLens('kendraQueryId'), state);
+export const getKendraFilteredQueryId = state => view(getMetaLens('kendraFilteredQueryId'), state);

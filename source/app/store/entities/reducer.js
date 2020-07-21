@@ -26,7 +26,8 @@ import {
   SET_SEARCH_QUERY,
   SET_SEARCH_STATUS,
   CLEAR_SEARCH_QUERY,
-  HIGHLIGHT_DOCUMENT
+  HIGHLIGHT_DOCUMENT,
+  SET_SEARCH_PERSONA
 } from '../../constants/action-types'
 
 import documents from './documents/data'
@@ -51,6 +52,7 @@ export default handleActions(
     [SET_DOCUMENTS_NEXT_TOKEN]: receiveEntities,
     [SET_SEARCH_QUERY]: receiveEntities,
     [SET_SEARCH_STATUS]: receiveEntities,
+    [SET_SEARCH_PERSONA]: receiveEntities,
     [CLEAR_SEARCH_QUERY]: receiveEntities,
   },
 

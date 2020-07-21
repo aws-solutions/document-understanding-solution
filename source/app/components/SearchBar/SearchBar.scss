@@ -5,7 +5,12 @@
   display: flex;
   align-items: center;
   padding: em(10) 0;
+}
+
+.wrapper {
   position: relative;
+  flex: 1;
+  display: flex;
 }
 
 .search {
@@ -20,7 +25,7 @@
   margin: 0;
   border: none;
   padding: 0;
-  top: 13px;
+  top: 3px;
   right: 8px;
 
   svg {

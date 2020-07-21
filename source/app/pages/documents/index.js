@@ -38,10 +38,12 @@ import {
   getSearchStatus,
   getSearchTotalDocuments,
   getSearchTotalMatches,
+  getSearchPersona,
   getKendraQueryId,
+  getKendraFilteredQueryId,
 } from '../../store/entities/meta/selectors'
 import { getDocuments } from '../../store/entities/documents/selectors'
-import { getSearchResults, getKendraResults } from '../../store/entities/searchResults/selectors'
+import { getSearchResults, getKendraResults, getKendraFilteredResults } from '../../store/entities/searchResults/selectors'
 import { getSelectedTrackId, getSelectedSearch } from '../../store/ui/selectors'
 
 import { makeDocumentLink } from '../../utils/link-generators'
@@ -68,7 +70,7 @@ Documents.defaultProps = {
 
 Documents.getInitialProps = function() {
   return {
-    pageTitle: 'Your uploaded documents',
+    // pageTitle: 'Your uploaded documents',
   }
 }
 
@@ -78,12 +80,15 @@ function Documents({
   documentsTotal,
   dispatch,
   searchQuery,
+  searchPersona,
   searchResults,
   kendraResults,
+  kendraFilteredResults,
   searchStatus,
   searchTotalDocuments,
   searchTotalMatches,
   kendraQueryId,
+  kendraFilteredQueryId,
   track,
   selectedSearch
 }) {
@@ -129,8 +134,7 @@ function Documents({
   return (
     <div className={css.documents}>
       <div className={introClassNames}>
-        <Button link={{ href: '/select' }}>+ Add a new Document</Button>
-        <SearchBar className={css.searchBar} />
+        <SearchBar className={css.searchBar} light />
       </div>
 
       {status === 'pending' && !files.length && <Loading />}
@@ -164,9 +168,6 @@ function Documents({
             <SearchTypeTabs />
           : null }
           <div className={css.searchResultContainer}>
-
-            {searchStatus === 'pending' && isQueryLongEnough && <Loading />}
-
             { !ENABLE_KENDRA || selectedSearch === 'es' || selectedSearch === 'both' ?
               <SearchResults
                 results={searchResults}
@@ -180,11 +181,18 @@ function Documents({
             { ENABLE_KENDRA && (selectedSearch === 'kendra' || selectedSearch === 'both') ?
               <KendraResults
                 results={kendraResults}
+                filteredResults={kendraFilteredResults}
                 searchStatus={searchStatus}
                 searchQuery={searchQuery}
                 kendraQueryId={kendraQueryId}
+                filteredQueryId={kendraFilteredQueryId}
+                searchPersona={searchPersona}
+                showPersonaSelector={selectedSearch === 'kendra'}
               />
             : null }
+
+            {searchStatus === 'pending' && isQueryLongEnough && <Loading />}
+
           </div>
         </div>
       </> }
@@ -199,11 +207,14 @@ export default connect(function mapStateToProps(state) {
     documentsTotal: getDocumentsTotal(state),
     searchQuery: getCleanSearchQuery(state),
     searchStatus: getSearchStatus(state),
+    searchPersona: getSearchPersona(state),
     searchResults: getSearchResults(state),
     kendraResults: getKendraResults(state),
+    kendraFilteredResults: getKendraFilteredResults(state),
     searchTotalDocuments: getSearchTotalDocuments(state),
     searchTotalMatches: getSearchTotalMatches(state),
     kendraQueryId: getKendraQueryId(state),
+    kendraFilteredQueryId: getKendraFilteredQueryId(state),
     track: getSelectedTrackId(state),
     selectedSearch: getSelectedSearch(state)
   }

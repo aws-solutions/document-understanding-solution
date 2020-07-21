@@ -20,6 +20,7 @@ import {
   SET_SEARCH_QUERY,
   SET_SEARCH_STATUS,
   CLEAR_SEARCH_QUERY,
+  SET_SEARCH_PERSONA,
 } from '../../../constants/action-types'
 
 /**
@@ -55,4 +56,8 @@ export const clearSearchQuery = createAction(CLEAR_SEARCH_QUERY, () => {
  */
 export const setSearchStatus = createAction(SET_SEARCH_STATUS, searchStatus => {
   return { meta: { searchStatus } }
+})
+
+export const setSearchPersona = createAction(SET_SEARCH_PERSONA, persona => {
+  return { meta: { searchPersona: persona } }
 })

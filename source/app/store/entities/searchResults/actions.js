@@ -18,7 +18,7 @@ import { API, Auth } from "aws-amplify";
 
 import { ENABLE_KENDRA } from '../../../constants/configs'
 import { SEARCH, CLEAR_SEARCH_RESULTS, SUBMIT_FEEDBACK } from "../../../constants/action-types";
-import { searchResultsSchema, kendraResultsSchema } from "./data";
+import { searchResultsSchema, kendraResultsSchema,kendraFilteredResultsSchema } from "./data";
 
 /**
  * Get documents from TextractDemoTextractAPI
@@ -30,7 +30,7 @@ export const search = createAction(SEARCH, async params => {
       .getJwtToken()}`
   }
 
-  const [ esResponse, kendraResponse ] = await Promise.all([
+  const [ esResponse, kendraResponse, kendraFilteredResponse ] = await Promise.all([
     API.get("TextractDemoTextractAPI", "search", {
       headers,
       response: true,
@@ -43,6 +43,18 @@ export const search = createAction(SEARCH, async params => {
       queryStringParameters: {},
       body: {
         query: params.k,
+        pageNumber: 1,
+        pageSize: 100
+      }
+    }) : null,
+
+    ENABLE_KENDRA && params.persona ? API.post("TextractDemoTextractAPI", "searchkendra", {
+      headers,
+      response: true,
+      queryStringParameters: {},
+      body: {
+        query: params.k,
+        tag: params.persona,
         pageNumber: 1,
         pageSize: 100
       }
@@ -61,16 +73,20 @@ export const search = createAction(SEARCH, async params => {
     };
   });
 
-  const QueryId = ENABLE_KENDRA ? kendraResponse.data.QueryId : null;
+  const kendraQueryId = ENABLE_KENDRA ? kendraResponse.data.QueryId : null;
+  const kendraFilteredQueryId = ENABLE_KENDRA && params.persona ? kendraFilteredResponse.data.QueryId : null;
   const kendraData = ENABLE_KENDRA ? normalize(kendraResponse.data.ResultItems, kendraResultsSchema).entities : {}
+  const kendraFilteredData = ENABLE_KENDRA && params.persona ? normalize(kendraFilteredResponse.data.ResultItems, kendraFilteredResultsSchema).entities : {}
 
   return {
     ...(normalize(esResults, searchResultsSchema).entities),
     ...kendraData,
+    ...kendraFilteredData,
     meta: {
       searchTotalMatches,
       searchTotalDocuments,
-      kendraQueryId: QueryId
+      kendraQueryId,
+      kendraFilteredQueryId,
     }
   };
 });
@@ -97,6 +113,7 @@ export const submitKendraFeedback = createAction(SUBMIT_FEEDBACK, async ({ relev
 export const clearSearchResults = createAction(CLEAR_SEARCH_RESULTS, () => ({
   searchResults: [],
   kendraResults: [],
+  kendraFilteredResults: undefined,
   meta: {
     searchTotalMatches: 0,
     searchTotalDocuments: 0,

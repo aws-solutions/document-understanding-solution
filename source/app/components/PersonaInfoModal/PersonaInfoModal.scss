@@ -1,0 +1,39 @@
+@import '../../styles/shared/index';
+
+.actions {
+  text-align: right;
+}
+
+.personas {
+  display: flex;
+  flex-direction: row;
+  margin: 0 1em;
+
+  > * {
+    display: flex;
+    flex-direction: column;
+    flex: 0 1 200px;
+    margin: 0 1em;
+    align-items: center;
+    font-size: 0.8em;
+    text-align: center;
+  }
+
+  img {
+    max-width: 100px;
+    margin-bottom: .5em;
+  }
+}
+
+.notes {
+  font-size: 0.8em;
+  font-style: italic;
+  margin-top: 1em;
+}
+
+.stepLabel {
+  float: left;
+  margin-right: 1em;
+  font-size: 1.25em;
+  font-weight: bold;
+}

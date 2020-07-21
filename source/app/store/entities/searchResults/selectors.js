@@ -14,8 +14,9 @@
 
 import { values, view } from 'ramda'
 
-import { lensSearchResults, lensSearchResult, lensKendraResults } from './data'
+import { lensSearchResults, lensSearchResult, lensKendraResults, lensKendraFilteredResults } from './data'
 
 export const getSearchResults = state => values(view(lensSearchResults, state))
 export const getSearchResultById = (state, id) => view(lensSearchResult(id), state)
 export const getKendraResults = state => values(view(lensKendraResults, state));
+export const getKendraFilteredResults = state => values(view(lensKendraFilteredResults, state));

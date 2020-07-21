@@ -24,22 +24,23 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
 
   > * + * {
     margin-left: rem(20);
   }
-
-  @include media-grid(8) {
-    width: span(6, $grid-8col);
-  }
-
-  @include media-grid(4) {
-    width: 100%;
-  }
 }
 
 .searchBar {
-  flex: 1;
+  flex: 0 1 span(8);
+
+  @include media-grid(8) {
+    flex-basis: span(6, $grid-8col);
+  }
+
+  @include media-grid(4) {
+    flex-basis: 100%;
+  }
 }
 
 .loadingItems {
@@ -113,9 +114,10 @@
   flex-direction: row;
   position: relative;
   padding-top: rem(32);
+  justify-content: center;
 
   > * {
-    flex: 0 1 rem(800);
+    flex: 0 1 auto;
     overflow: hidden;
   }
 
