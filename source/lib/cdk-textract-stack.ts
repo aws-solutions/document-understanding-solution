@@ -152,7 +152,9 @@ export class CdkTextractStack extends cdk.Stack {
         serverAccessLogsBucket: logsS3Bucket,
         serverAccessLogsPrefix: "bulk-processing-s3-bucket",
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-      }
+        lifecycleRules: [{
+        expiration: Duration.days(3),
+      }]}
     );
     // ### Client ###
 
