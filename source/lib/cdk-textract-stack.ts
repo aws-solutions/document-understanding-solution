@@ -421,7 +421,7 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
     documentBulkProcessingQueue.addToResourcePolicy(new iam.PolicyStatement({
-      actions: ["sqs:SendMessage","sqs:Get*"],
+      actions: ["sqs:SendMessage","sqs:GetQueueUrl","sqs:GetQueueAttributes"],
       resources: [
         `*`,
       ],
