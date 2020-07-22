@@ -41,9 +41,15 @@
 
     .closeButton {
       position: absolute;
-      right: 1.5em;
-      top: 1em;
+      right: 1.4em;
+      top: 1.4em;
       cursor: pointer;
+    }
+
+    path {
+      stroke: #000;
+      fill: none;
+      stroke-width: 2px;
     }
   }
 }

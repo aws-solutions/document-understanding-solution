@@ -31,7 +31,11 @@ export default function Modal({
       <div className={css.modal} onClick={stopProp}>
         <header>
           <h2>{title}</h2>
-          <a className={css.closeButton} onClick={onRequestClose}>&times;</a>
+          <a className={css.closeButton} onClick={onRequestClose}>
+            <svg width={20} height={20}>
+              <path d="M5,5l10,10M5,15l10,-10" />
+            </svg>
+          </a>
         </header>
         <div className={css.content}>
           {children}

@@ -12,7 +12,7 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -46,7 +46,11 @@ SearchBar.defaultProps = {}
 function SearchBar({ className, dispatch, searchQuery, searchPersona, light }) {
   const searchBarClassNames = classNames(css.searchBar, className)
   const doSearch = useSearchCallback(dispatch, searchPersona)
-  const handleClearClick = useCallback(() => dispatch(clearSearchQuery()), [dispatch])
+  const [ hasTerm, setHasTerm ] = useState(!!searchQuery)
+  const handleClearClick = useCallback(() => {
+    dispatch(clearSearchQuery());
+    input.current.value = '';
+  }, [dispatch])
 
   useEffect(() => {
     dispatch(clearSearchQuery())
@@ -60,6 +64,10 @@ function SearchBar({ className, dispatch, searchQuery, searchPersona, light }) {
     doSearch(input.current.value);
   }, []);
 
+  const searchValueChange = useCallback(e => {
+    setHasTerm(!!e.target.value);
+  }, []);
+
   return (
     <form className={searchBarClassNames} onSubmit={handleSubmit}>
       <div className={css.wrapper}>
@@ -70,12 +78,13 @@ function SearchBar({ className, dispatch, searchQuery, searchPersona, light }) {
           className={css.search}
           placeholder="Search..."
           defaultValue={searchQuery}
+          onChange={searchValueChange}
         />
-        {searchQuery ? (
+        {hasTerm ? (
           <Button
+            type="button"
             simple
             palette="black"
-            disabled={!searchQuery}
             className={css.clear}
             onClick={handleClearClick}
           >

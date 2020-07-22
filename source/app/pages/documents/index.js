@@ -70,6 +70,8 @@ Documents.defaultProps = {
 
 Documents.getInitialProps = function() {
   return {
+    backHref: '/select',
+    backTitle: 'Upload your own documents'
     // pageTitle: 'Your uploaded documents',
   }
 }

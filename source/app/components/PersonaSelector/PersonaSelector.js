@@ -77,22 +77,22 @@ function PersonaSelector({
         </p>
         <div className={css.personas}>
           <label>
-            <img src="/static/images/healthcare-provider.svg" />
+            <img src="/static/images/healthcare-provider.png" />
             <input name="persona" type="radio" value="healthcareprovider" onChange={() => setSelectedPersona("healthcareprovider")} />
             <p>Healthcare provider</p>
           </label>
           <label>
-            <img src="/static/images/scientist.svg" />
+            <img src="/static/images/scientist.png" />
             <input name="persona" type="radio" value="scientist" onChange={() => setSelectedPersona("scientist")} />
             <p>Scientist</p>
           </label>
           <label>
-            <img src="/static/images/general-public.svg" />
+            <img src="/static/images/general-public.png" />
             <input name="persona" type="radio" value="generalpublic" onChange={() => setSelectedPersona("generalpublic")} />
             <p>General public</p>
           </label>
           <label>
-            <img src="/static/images/user1.svg" />
+            <img src="/static/images/user1.png" />
             <input name="persona" type="radio" value="" onChange={() => setSelectedPersona(undefined)} />
             <p>Don't filter search results</p>
           </label>
