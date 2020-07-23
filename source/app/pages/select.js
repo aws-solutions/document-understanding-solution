@@ -21,7 +21,7 @@ import Button from '../components/Button/Button'
 import getConfig from 'next/config'
 
 import css from './select.scss'
-import Modal from '../components/Modal/Modal'
+import ContextModal from '../components/ContextModal/ContextModal'
 import ModalContext from '../components/ModalContext/ModalContext'
 import SampleCollections from '../components/SampleCollections/SampleCollections'
 
@@ -38,11 +38,11 @@ function Select({ dispatch }) {
     const [modal, setModal] = React.useState(false)
     return (
       <ModalContext.Provider value={{modal:modal, setModal:setModal}}>
-        <Modal onClose={() => setModal(false)} show={modal} modalTitle={"Cannot Upload Your Own Documents - Read Only Mode"}>
-        This DUS instance is running in Read-Only Mode which does not support uploading your own documents. 
+        <ContextModal onClose={() => setModal(false)} show={modal} modalTitle={"Cannot Upload Your Own Documents - Read Only Mode"}>
+        This DUS instance is running in Read-Only Mode which does not support uploading your own documents.
         To use all the features of DUS, please deploy your own instance following the instructions
          <a href="https://github.com/awslabs/document-understanding-solution"> here.</a>
-          </Modal>
+          </ContextModal>
           <div className={css.select}>
           <p>
             <Button inverted link={{ href: '/documents' }}>
@@ -54,7 +54,7 @@ function Select({ dispatch }) {
           <h2>Or Upload your own documents</h2>
           <FileUpload />
         </div>
-      </ModalContext.Provider>   
+      </ModalContext.Provider>
     )
   }
 else {

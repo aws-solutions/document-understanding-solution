@@ -63,7 +63,7 @@ function PersonaSelector({
 
   return (
     <div className={css.container}>
-      <div className={css.filterButton} onClick={showPopover}>
+      <div className={cs(css.filterButton, searchPersona && css.hasFilter)} onClick={showPopover}>
         Filter
       </div>
       <div className={css.moreInfoContainer}>

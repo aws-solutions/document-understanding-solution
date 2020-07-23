@@ -46,7 +46,10 @@ export default function KendraResults({
   if (!searchStatus || !searchQuery) return null;
 
   const hasFilteredResults =
-    filteredResults && searchPersona && showPersonaSelector;
+    searchStatus === "success" &&
+    filteredResults &&
+    searchPersona &&
+    showPersonaSelector;
 
   return (
     <div className={cs(css.base, hasFilteredResults && css.doubleWidth)}>
