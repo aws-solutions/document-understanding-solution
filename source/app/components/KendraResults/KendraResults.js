@@ -35,6 +35,8 @@ export default function KendraResults({
   searchTotalMatches,
   kendraQueryId,
   filteredQueryId,
+  resultCount,
+  filteredResultCount,
   showPersonaSelector,
   ...rest
 }) {
@@ -86,6 +88,7 @@ export default function KendraResults({
             title={hasFilteredResults ? "Unfiltered Results" : null}
             results={results}
             queryId={kendraQueryId}
+            resultCount={resultCount}
           />
         )}
 
@@ -94,6 +97,7 @@ export default function KendraResults({
             title="Filtered Results"
             results={filteredResults}
             queryId={filteredQueryId}
+            resultCount={filteredResultCount}
           />
         ) : null}
       </div>

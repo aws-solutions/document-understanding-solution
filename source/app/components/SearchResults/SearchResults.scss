@@ -4,7 +4,6 @@
   position: relative;
   width: rem(800);
   min-height: 300px;
-  margin: 0 auto;
 
   header {
     display: flex;
@@ -17,11 +16,6 @@
     margin-top: rem(-2);
     margin-right: 0.5rem;
     fill: color(gray, 30);
-  }
-
-  h3 {
-    @include type-heading-h5;
-    margin: 0;
   }
 
   a {
@@ -76,6 +70,13 @@
   &:nth-child(even) {
     background: color(gray, 70);
   }
+
+  h3 {
+    font-size: 1.25em;
+    margin: 0;
+    padding-bottom: .25em;
+    color: color(blue, 10);
+  }
 }
 
 
@@ -92,7 +93,6 @@
 
 .lines {
   @include type-body-secondary(color(gray, 20));
-  margin-left: rem(32);
 
   li {
     margin-bottom: 0.25rem;

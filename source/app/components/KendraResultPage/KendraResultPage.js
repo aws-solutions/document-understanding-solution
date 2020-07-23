@@ -15,15 +15,14 @@ KendraResultPage.propTypes = {
   results: PropTypes.array,
   searchQuery: PropTypes.string,
   searchStatus: PropTypes.string,
-  searchTotalDocuments: PropTypes.number,
-  searchTotalMatches: PropTypes.number,
+  resultCount: PropTypes.number,
 };
 
 KendraResultPage.defaultProps = {
   results: [],
 };
 
-export default function KendraResultPage({ title, results, queryId }) {
+export default function KendraResultPage({ title, results, queryId, resultCount }) {
   const dispatch = useDispatch();
 
   const topResults = useMemo(
@@ -55,6 +54,9 @@ export default function KendraResultPage({ title, results, queryId }) {
   return (
     <div className={styles.resultList}>
       {title && <h3>{title}</h3>}
+      <div className={styles.searchSummary}>
+        1&ndash;{results.length} of {resultCount} Results
+      </div>
       <KendraTopResults results={topResults} submitFeedback={submitFeedback} />
       <KendraFAQs results={faqResults} submitFeedback={submitFeedback} />
       <KendraDocumentResults

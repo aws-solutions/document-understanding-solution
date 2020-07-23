@@ -2,4 +2,8 @@
 
 .result {
   padding: 1.5em;
+
+  p {
+    @include type-body-secondary(color(gray, 20));
+  }
 }

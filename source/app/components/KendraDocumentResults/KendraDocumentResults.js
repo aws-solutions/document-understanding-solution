@@ -16,9 +16,11 @@ export default function KendraDocumentResults({ results, submitFeedback }) {
               result={result}
               submitFeedback={submitFeedback}
             />
-            <KendraHighlightedText
-              textWithHighlights={result.DocumentExcerpt}
-            />
+            <p>
+              <KendraHighlightedText
+                textWithHighlights={result.DocumentExcerpt}
+              />
+            </p>
             <KendraResultFooter
               result={result}
               submitFeedback={submitFeedback}

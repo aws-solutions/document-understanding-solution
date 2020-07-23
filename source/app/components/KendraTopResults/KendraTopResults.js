@@ -38,9 +38,11 @@ export default function KendraTopResults({ results, submitFeedback }) {
               submitFeedback={submitFeedback}
             />
             {getTopAnswer(answer.TextWithHighlightsValue)}
-            <KendraHighlightedText
-              textWithHighlights={answer.Value.TextWithHighlightsValue}
-            />
+            <p>
+              <KendraHighlightedText
+                textWithHighlights={answer.Value.TextWithHighlightsValue}
+              />
+            </p>
             <KendraResultFooter
               result={result}
               submitFeedback={submitFeedback}

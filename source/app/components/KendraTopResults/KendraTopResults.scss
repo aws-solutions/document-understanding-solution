@@ -24,4 +24,8 @@
 
 .result {
   padding: 1em 0.5em;
+
+  p {
+    @include type-body-secondary(color(gray, 20));
+  }
 }

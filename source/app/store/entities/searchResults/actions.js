@@ -44,7 +44,7 @@ export const search = createAction(SEARCH, async params => {
       body: {
         query: params.k,
         pageNumber: 1,
-        pageSize: 100
+        pageSize: 10
       }
     }) : null,
 
@@ -56,7 +56,7 @@ export const search = createAction(SEARCH, async params => {
         query: params.k,
         tag: params.persona,
         pageNumber: 1,
-        pageSize: 100
+        pageSize: 10
       }
     }) : null
   ]);
@@ -74,7 +74,9 @@ export const search = createAction(SEARCH, async params => {
   });
 
   const kendraQueryId = ENABLE_KENDRA ? kendraResponse.data.QueryId : null;
+  const kendraTotalResults = ENABLE_KENDRA ? kendraResponse.data.TotalNumberOfResults : null;
   const kendraFilteredQueryId = ENABLE_KENDRA && params.persona ? kendraFilteredResponse.data.QueryId : null;
+  const kendraTotalFilteredResults = ENABLE_KENDRA && params.persona ? kendraFilteredResponse.data.TotalNumberOfResults : null;
   const kendraData = ENABLE_KENDRA ? normalize(kendraResponse.data.ResultItems, kendraResultsSchema).entities : {}
   const kendraFilteredData = ENABLE_KENDRA && params.persona ? normalize(kendraFilteredResponse.data.ResultItems, kendraFilteredResultsSchema).entities : {}
 
@@ -87,6 +89,8 @@ export const search = createAction(SEARCH, async params => {
       searchTotalDocuments,
       kendraQueryId,
       kendraFilteredQueryId,
+      kendraTotalResults,
+      kendraTotalFilteredResults
     }
   };
 });

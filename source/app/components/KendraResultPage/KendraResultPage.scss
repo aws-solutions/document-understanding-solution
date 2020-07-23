@@ -8,3 +8,10 @@
     text-align: center;
   }
 }
+
+.searchSummary {
+  @include type-body-supplemental(color(gray, 60));
+  @include all-caps;
+  margin: 0.5rem 0;
+  font-weight: 500;
+}

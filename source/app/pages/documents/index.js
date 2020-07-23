@@ -41,6 +41,8 @@ import {
   getSearchPersona,
   getKendraQueryId,
   getKendraFilteredQueryId,
+  getKendraResultCount,
+  getKendraFilteredResultCount,
 } from '../../store/entities/meta/selectors'
 import { getDocuments } from '../../store/entities/documents/selectors'
 import { getSearchResults, getKendraResults, getKendraFilteredResults } from '../../store/entities/searchResults/selectors'
@@ -91,6 +93,8 @@ function Documents({
   searchTotalMatches,
   kendraQueryId,
   kendraFilteredQueryId,
+  kendraResultCount,
+  kendraFilteredResultCount,
   track,
   selectedSearch
 }) {
@@ -188,6 +192,8 @@ function Documents({
                 searchQuery={searchQuery}
                 kendraQueryId={kendraQueryId}
                 filteredQueryId={kendraFilteredQueryId}
+                resultCount={kendraResultCount}
+                filterdResultCount={kendraFilteredResultCount}
                 searchPersona={searchPersona}
                 showPersonaSelector={selectedSearch === 'kendra'}
               />
@@ -217,6 +223,8 @@ export default connect(function mapStateToProps(state) {
     searchTotalMatches: getSearchTotalMatches(state),
     kendraQueryId: getKendraQueryId(state),
     kendraFilteredQueryId: getKendraFilteredQueryId(state),
+    kendraResultCount: getKendraResultCount(state),
+    kendraFilteredResultCount: getKendraFilteredResultCount(state),
     track: getSelectedTrackId(state),
     selectedSearch: getSelectedSearch(state)
   }
