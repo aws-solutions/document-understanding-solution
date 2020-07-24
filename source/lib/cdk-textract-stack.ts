@@ -255,18 +255,8 @@ export class CdkTextractStack extends cdk.Stack {
 
     const esSearchLogGroup = new LogGroup(
       this,
-      this.resourceName("ElasticSearchSearchLogGroup"),
-      {
-        logGroupName: this.resourceName("ElasticSearchSearchLogGroup"),
-      }
-    );
-
-    const esIndexLogGroup = new LogGroup(
-      this,
-      this.resourceName("ElasticSearchIndexLogGroup"),
-      {
-        logGroupName: this.resourceName("ElasticSearchIndexLogGroup"),
-      }
+      this.resourceName("ElasticSearchLogGroup"),
+      {}
     );
 
     // Elasticsearch
@@ -296,6 +286,18 @@ export class CdkTextractStack extends cdk.Stack {
           },
           nodeToNodeEncryptionOptions: {
             enabled: true,
+          },
+        }
+      );
+    } else {
+      const serviceLinkedRole = new cdk.CfnResource(
+        this,
+        this.resourceName("es-service-linked-role"),
+        {
+          type: "AWS::IAM::ServiceLinkedRole",
+          properties: {
+            AWSServiceName: "es.amazonaws.com",
+            Description: "Role for ES to access resources in my VPC",
           },
         }
       );
@@ -359,11 +361,8 @@ export class CdkTextractStack extends cdk.Stack {
     // SNS Topic
     const jobCompletionTopic = new sns.Topic(
       this,
-      this.resourceName("JobCompletionTopic"),
-      {
-        displayName: "Job completion topic",
-        masterKey: jobResultsKey,
-      }
+      this.resourceName("JobCompletion"),
+      {}
     );
 
     // Textract service IAM role
