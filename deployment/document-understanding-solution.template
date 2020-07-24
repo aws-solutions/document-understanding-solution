@@ -222,6 +222,11 @@ Resources:
   # CICD helper resources [start]
   CICDHelper:
     Type: "AWS::Lambda::Function"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W58
+            reason: "Customer resource needs no additional permission to log to Cloudwatch"
     Properties:
       Description: "Document Understanding Solution CICD helper"
       Code:
@@ -311,6 +316,8 @@ Resources:
             reason: "Reviewed, actions split per service, and which cannot be applied at resource level. Because of CDK deployment we do not know the exact resource ARN"
           - id: F5
             reason: "Reviewed, need permissions to delete various IAM resources"
+          - id: W12
+            reason: "Resource level permissions are not supported by those services"
     Properties:
       PolicyName: cicdhelperpolicy
       PolicyDocument:
