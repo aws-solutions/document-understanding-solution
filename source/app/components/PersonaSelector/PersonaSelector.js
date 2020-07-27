@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import cs from 'classnames';
 
 import { getSearchQuery, getSearchStatus, getSearchPersona } from '../../store/entities/meta/selectors'
-import { setSearchStatus, setSearchPersona } from '../../store/entities/meta/actions'
+import { setSearchStatus, setSearchQuery, setSearchPersona } from '../../store/entities/meta/actions'
 import { clearSearchResults, search } from '../../store/entities/searchResults/actions'
 
 const PERSONAS = {
@@ -14,6 +14,7 @@ const PERSONAS = {
 
 import css from './PersonaSelector.scss';
 import PersonaInfoModal from '../PersonaInfoModal/PersonaInfoModal';
+import Button from '../Button/Button';
 
 function PersonaSelector({
   dispatch,
@@ -23,23 +24,13 @@ function PersonaSelector({
   const [ selectedPersona, setSelectedPersona ] = useState(searchPersona);
 
   const personaChange = useCallback(persona => {
-    dispatch(setSearchStatus('pending'));
-    dispatch(clearSearchResults())
     dispatch(setSearchPersona(persona))
-    dispatch(search({
-      k: searchQuery,
-      persona
-    })).then(() => {
-      dispatch(setSearchStatus('success'))
-    }).catch(err => {
-      console.error(err);
-      dispatch(setSearchStatus('error'))
-    })
   }, [ dispatch, searchQuery ])
 
   const [ popoverVisible, setPopoverVisible ] = useState(false);
 
   const showPopover = useCallback(() => setPopoverVisible(true), [])
+  const hidePopover = useCallback(() => setPopoverVisible(false), []);
 
   const submit = useCallback(() => {
     personaChange(selectedPersona);
@@ -56,10 +47,13 @@ function PersonaSelector({
     setShowingInfoModal(false);
   }, []);
 
-  const onModalSubmit = useCallback(persona => {
+  const onModalSubmit = useCallback((persona, query) => {
     personaChange(persona);
+    if (query) {
+      dispatch(setSearchQuery(query))
+    }
     setShowingInfoModal(false);
-  }, [ personaChange ]);
+  }, [ personaChange, dispatch ]);
 
   return (
     <div className={css.container}>
@@ -92,13 +86,14 @@ function PersonaSelector({
             <p>General public</p>
           </label>
           <label>
-            <img src="/static/images/user1.png" />
+            <img src="/static/images/nofilter.svg" />
             <input name="persona" type="radio" value="" onChange={() => setSelectedPersona(undefined)} />
             <p>Don't filter search results</p>
           </label>
         </div>
         <footer>
-          <button onClick={submit}>Select</button>
+          <Button palette="black" onClick={hidePopover}>Cancel</Button>
+          <Button onClick={submit}>Select</Button>
         </footer>
       </div>
 

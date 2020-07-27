@@ -5,6 +5,7 @@ import KendraHighlightedText from "../KendraHighlightedText/KendraHighlightedTex
 import KendraResultFooter from "../KendraResultFooter/KendraResultFooter";
 
 import styles from "./KendraTopResults.scss";
+import cs from 'classnames';
 
 function getTopAnswer(text) {
   if (text && text.Highlights) {
@@ -71,7 +72,7 @@ export default function KendraTopResults({ results, submitFeedback }) {
 
         {renderedResults.length > 1 ? (
           <>
-            <div onClick={toggleExpanded}>
+            <div className={cs(styles.showMore, expanded && styles.expanded)} onClick={toggleExpanded}>
               More suggested answers ({renderedResults.length - 1})
             </div>
             {expanded ? <div>{renderedResults.slice(1)}</div> : null}

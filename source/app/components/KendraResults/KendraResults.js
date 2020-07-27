@@ -98,6 +98,7 @@ export default function KendraResults({
             results={filteredResults}
             queryId={filteredQueryId}
             resultCount={filteredResultCount}
+            persona={searchPersona}
           />
         ) : null}
       </div>

@@ -15,3 +15,27 @@
   margin: 0.5rem 0;
   font-weight: 500;
 }
+
+.personaLabel {
+  display: inline-block;
+  color: #fff;
+  padding: .25em .5em;
+  border-radius: .25em;
+  background: color(blue, 20)
+}
+
+.removePersona {
+  cursor: pointer;
+  display: inline-block;
+  margin-left: .5em;
+  position: relative;
+
+  &:before {
+    position: absolute;
+    top: -.5em;
+    left: -.5em;
+    right: -.5em;
+    bottom: -.5em;
+    content: '';
+  }
+}

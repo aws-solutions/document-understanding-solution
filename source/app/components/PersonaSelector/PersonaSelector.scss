@@ -7,6 +7,7 @@
 
 .filterButton {
   padding: .25em 1em;
+  padding-right: .75em;
   border: 1px solid #fff;
   cursor: pointer;
   display: inline-block;
@@ -14,6 +15,11 @@
 
   &.hasFilter {
     border-color: color(blue, 10);
+  }
+
+  &:after {
+    content: '⯆';
+    margin-left: 1ch;
   }
 }
 
@@ -68,5 +74,6 @@
   a {
     color: color(blue, 10);
     font-style: italic;
+    cursor: pointer;
   }
 }

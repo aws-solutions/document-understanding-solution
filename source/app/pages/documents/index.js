@@ -12,13 +12,21 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { Fragment, useEffect, useState, useRef } from 'react'
+import React, { Fragment, useEffect, useState, useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { useInView } from 'react-intersection-observer'
 import { distanceInWordsToNow, distanceInWords } from 'date-fns'
 import Router from "next/router";
+import { reject, isNil } from 'ramda'
+
+import {
+  clearSearchQuery,
+  setSearchQuery,
+  setSearchStatus,
+} from '../../store/entities/meta/actions'
+import { search, clearSearchResults } from '../../store/entities/searchResults/actions'
 
 import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA } from '../../constants/configs'
 
@@ -105,6 +113,13 @@ function Documents({
     isSentinelVisible,
   })
 
+
+  const doSearch = useSearchCallback(dispatch, searchPersona)
+
+  useEffect(() => {
+    doSearch(searchQuery)
+  }, [ searchQuery, doSearch ]);
+
   let files = documents.map(
     ({ documentId, documentName, documentStatus, documentCreatedOn, documentCompletedOn }) => {
       const uploadedTime = distanceInWordsToNow(`${documentCreatedOn}Z`, { addSuffix: true })
@@ -140,7 +155,15 @@ function Documents({
   return (
     <div className={css.documents}>
       <div className={introClassNames}>
-        <SearchBar className={css.searchBar} light />
+        <SearchBar
+          className={css.searchBar}
+          light
+          suggestions={ENABLE_KENDRA && [
+            'What are the testing guidelines for COVID-19?',
+            'How to prevent transmission of COVID-19',
+            'What is the recommended treatment for COVID-19?'
+          ]}
+        />
       </div>
 
       {status === 'pending' && !files.length && <Loading />}
@@ -193,7 +216,7 @@ function Documents({
                 kendraQueryId={kendraQueryId}
                 filteredQueryId={kendraFilteredQueryId}
                 resultCount={kendraResultCount}
-                filterdResultCount={kendraFilteredResultCount}
+                filteredResultCount={kendraFilteredResultCount}
                 searchPersona={searchPersona}
                 showPersonaSelector={selectedSearch === 'kendra'}
               />
@@ -269,4 +292,46 @@ function useFetchDocuments({ dispatch, nextToken, isSentinelVisible }) {
   useEffect(() => () => (isMounted.current = false), [])
 
   return { status }
+}
+
+
+
+/**
+ * Create a throttled search handler.
+ * Search query must be greater than or equal to MIN_SEARCH_QUERY_LENGTH.
+ *
+ * @param {Function} dispatch Redux dispatch function
+ * @return {Function} Returns a search handler
+ */
+function useSearchCallback(dispatch, persona) {
+  const isMounted = useRef(true)
+
+
+  // Ensure we don't try to set state after component unmount
+  useEffect(() => () => (isMounted.current = false), [])
+
+  const handleSearchChange = useCallback(
+    (k) => {
+      if (k && k.length >= MIN_SEARCH_QUERY_LENGTH) {
+        dispatch(setSearchStatus('pending'))
+        const params = reject(isNil, { k, persona })
+
+        // Clear out old search results
+        dispatch(clearSearchResults())
+
+        // Search documents
+        dispatch(search(params))
+          .then(() => {
+            isMounted.current && dispatch(setSearchStatus('success'))
+          })
+          .catch((err) => {
+            console.log(err);
+            isMounted.current && dispatch(setSearchStatus('error'))
+          })
+      }
+    },
+    [dispatch, persona]
+  )
+
+  return handleSearchChange
 }

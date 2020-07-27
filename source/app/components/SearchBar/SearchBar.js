@@ -43,9 +43,9 @@ SearchBar.propTypes = {
 
 SearchBar.defaultProps = {}
 
-function SearchBar({ className, dispatch, searchQuery, searchPersona, light }) {
+function SearchBar({ className, dispatch, searchQuery, searchPersona, light, suggestions }) {
   const searchBarClassNames = classNames(css.searchBar, className)
-  const doSearch = useSearchCallback(dispatch, searchPersona)
+
   const [ hasTerm, setHasTerm ] = useState(!!searchQuery)
   const handleClearClick = useCallback(() => {
     dispatch(clearSearchQuery());
@@ -61,12 +61,21 @@ function SearchBar({ className, dispatch, searchQuery, searchPersona, light }) {
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
-    doSearch(input.current.value);
+    dispatch(setSearchQuery(input.current.value))
   }, []);
 
   const searchValueChange = useCallback(e => {
     setHasTerm(!!e.target.value);
   }, []);
+
+  useEffect(() => {
+    input.current.value = searchQuery;
+    searchValueChange({ target: { value: searchQuery } })
+  }, [ searchQuery ]);
+
+  const selectSuggestion = useCallback((q) => {
+    dispatch(setSearchQuery(q));
+  }, [ dispatch ]);
 
   return (
     <form className={searchBarClassNames} onSubmit={handleSubmit}>
@@ -93,6 +102,15 @@ function SearchBar({ className, dispatch, searchQuery, searchPersona, light }) {
             </svg>
           </Button>
         ) : null}
+        {!hasTerm && suggestions ?
+          <div className={css.suggestions}>
+            <ul>
+              {suggestions.map(q => (
+                <li key={q} onClick={() => selectSuggestion(q)}>{q}</li>
+              ))}
+            </ul>
+          </div>
+        : null}
       </div>
       <Button onClick={handleSubmit}>Search</Button>
     </form>
@@ -106,44 +124,3 @@ export default connect(function mapStateToProps(state) {
     searchPersona: getSearchPersona(state)
   }
 })(SearchBar)
-
-/**
- * Create a throttled search handler.
- * Search query must be greater than or equal to MIN_SEARCH_QUERY_LENGTH.
- *
- * @param {Function} dispatch Redux dispatch function
- * @return {Function} Returns a search handler
- */
-function useSearchCallback(dispatch, persona) {
-  const isMounted = useRef(true)
-
-
-  // Ensure we don't try to set state after component unmount
-  useEffect(() => () => (isMounted.current = false), [])
-
-  const handleSearchChange = useCallback(
-    (k) => {
-      dispatch(setSearchQuery(k))
-      if (k && k.length >= MIN_SEARCH_QUERY_LENGTH) {
-        dispatch(setSearchStatus('pending'))
-        const params = reject(isNil, { k, persona })
-
-        // Clear out old search results
-        dispatch(clearSearchResults())
-
-        // Search documents
-        dispatch(search(params))
-          .then(() => {
-            isMounted.current && dispatch(setSearchStatus('success'))
-          })
-          .catch((err) => {
-            console.log(err);
-            isMounted.current && dispatch(setSearchStatus('error'))
-          })
-      }
-    },
-    [dispatch]
-  )
-
-  return handleSearchChange
-}

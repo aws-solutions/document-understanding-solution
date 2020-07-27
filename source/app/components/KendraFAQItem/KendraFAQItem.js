@@ -3,6 +3,7 @@ import KendraHighlightedText from "../KendraHighlightedText/KendraHighlightedTex
 import KendraResultFooter from "../KendraResultFooter/KendraResultFooter";
 
 import css from './KendraFAQItem.scss';
+import cs from 'classnames';
 
 export default function KendraFAQItem({ item, submitFeedback }) {
   const question = useMemo(
@@ -20,7 +21,7 @@ export default function KendraFAQItem({ item, submitFeedback }) {
 
   return (
     <div className={css.item}>
-      <div className={css.question} onClick={toggleExpanded}>
+      <div className={cs(css.question, expanded && css.expanded)} onClick={toggleExpanded}>
         <h3>
           <KendraHighlightedText textWithHighlights={question.Value.TextWithHighlightsValue} />
         </h3>

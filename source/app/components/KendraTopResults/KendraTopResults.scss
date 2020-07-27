@@ -29,3 +29,14 @@
     @include type-body-secondary(color(gray, 20));
   }
 }
+
+.showMore {
+  &:before {
+    content: '⯈';
+    margin-right: 1em;;
+  }
+
+  &.expanded:before {
+    content: '⯆'
+  }
+}

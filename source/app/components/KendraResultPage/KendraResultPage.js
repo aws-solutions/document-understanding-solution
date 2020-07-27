@@ -9,6 +9,7 @@ import { submitKendraFeedback } from "../../store/entities/searchResults/actions
 
 import styles from "./KendraResultPage.scss";
 import KendraFAQs from "../KendraFAQs/KendraFAQs";
+import { setSearchPersona } from "../../store/entities/meta/actions";
 
 KendraResultPage.propTypes = {
   className: PropTypes.string,
@@ -22,7 +23,19 @@ KendraResultPage.defaultProps = {
   results: [],
 };
 
-export default function KendraResultPage({ title, results, queryId, resultCount }) {
+const PERSONAS = {
+  scientist: "Scientist",
+  healthcareprovider: "Healthcare Provider",
+  generalpublic: "General Public",
+};
+
+export default function KendraResultPage({
+  title,
+  results,
+  queryId,
+  resultCount,
+  persona,
+}) {
   const dispatch = useDispatch();
 
   const topResults = useMemo(
@@ -51,11 +64,27 @@ export default function KendraResultPage({ title, results, queryId, resultCount 
     [dispatch, queryId]
   );
 
+  const clearPersona = useCallback(() => {
+    dispatch(setSearchPersona(undefined));
+  }, []);
+
   return (
     <div className={styles.resultList}>
       {title && <h3>{title}</h3>}
       <div className={styles.searchSummary}>
         1&ndash;{results.length} of {resultCount} Results
+        {persona ? (
+          <>
+            {" "}
+            for{" "}
+            <div className={styles.personaLabel}>
+              {PERSONAS[persona]}
+              <a className={styles.removePersona} onClick={clearPersona}>
+                &times;
+              </a>
+            </div>
+          </>
+        ) : null}
       </div>
       <KendraTopResults results={topResults} submitFeedback={submitFeedback} />
       <KendraFAQs results={faqResults} submitFeedback={submitFeedback} />

@@ -23,6 +23,15 @@
     max-width: 100px;
     margin-bottom: .5em;
   }
+
+  h4 {
+    @include type-heading-h5(inherit);
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0;
+  }
 }
 
 .notes {
@@ -36,4 +45,13 @@
   margin-right: 1em;
   font-size: 1.25em;
   font-weight: bold;
+}
+
+.sampleQueries {
+  list-style-type: none;
+
+  li {
+    cursor: pointer;
+    color: color(blue, 20)
+  }
 }

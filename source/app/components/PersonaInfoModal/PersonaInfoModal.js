@@ -6,6 +6,12 @@ import Modal from '../Modal/Modal';
 import Button from '../Button/Button'
 import css from './PersonaInfoModal.scss';
 
+const COVID_QUESTIONS = [
+  'What are the testing guidelines for COVID-19?',
+  'How to prevent transmission of COVID-19',
+  'What is the recommended treatment for COVID-19?'
+]
+
 function PersonaInfoModal({
   onClose,
   onSubmit,
@@ -13,8 +19,8 @@ function PersonaInfoModal({
 }) {
   const [ selectedPersona, setSelectedPersona ] = useState(searchPersona)
 
-  const submit = useCallback(() => {
-    onSubmit(selectedPersona);
+  const submit = useCallback((query) => {
+    onSubmit(selectedPersona, query);
   }, [ onSubmit, selectedPersona ])
 
   return (
@@ -36,25 +42,25 @@ function PersonaInfoModal({
           <label>
             <img src="/static/images/healthcare-provider.png" />
             <input name="persona" type="radio" value="healthcareprovider" onChange={() => setSelectedPersona("healthcareprovider")} />
-            <p>Healthcare provider</p>
+            <h4>Healthcare provider</h4>
             <p>Has access to information for Healthcare Professionals.</p>
           </label>
           <label>
             <img src="/static/images/scientist.png" />
             <input name="persona" type="radio" value="scientist" onChange={() => setSelectedPersona("scientist")} />
-            <p>Scientist</p>
+            <h4>Scientist</h4>
             <p>Has access to scientific papers and research documents.</p>
           </label>
           <label>
             <img src="/static/images/general-public.png" />
             <input name="persona" type="radio" value="generalpublic" onChange={() => setSelectedPersona("generalpublic")} />
-            <p>General public</p>
+            <h4>General public</h4>
             <p>Has access to official guidance to prevent and manage COVID-19.</p>
           </label>
           <label>
-            <img src="/static/images/user1.png" />
+            <img src="/static/images/nofilter.svg" />
             <input name="persona" type="radio" value="" onChange={() => setSelectedPersona(undefined)} />
-            <p>No filter</p>
+            <h4>No filter</h4>
             <p>Use this option for unfiltered search results.</p>
           </label>
         </div>
@@ -65,14 +71,19 @@ function PersonaInfoModal({
           <div className={css.stepLabel}>
             Step 2
           </div>
-          <p>Choose one of the COVID-19 queries autosuggested in the search bar</p>
+          <p>Search for a COVID-19-related term to see the sample results</p>
         </header>
 
-        <p>TODO add suggested searchs in here. [ NOTE: THIS FEELS A BIT UNNATURAL HERE? ]</p>
+        <ul className={css.sampleQueries}>
+          {COVID_QUESTIONS.map(q => (
+            <li onClick={() => submit(q)}>{q}</li>
+          ))}
+        </ul>
       </section>
 
       <div className={css.actions}>
-        <Button onClick={submit}>Filter Search Results</Button>
+        <Button palette="black" onClick={onClose}>Cancel</Button>
+        <Button onClick={() => submit()}>Filter Search Results</Button>
       </div>
 
       <aside className={css.notes}>
