@@ -67,6 +67,11 @@
   span {
     @include type-body-supplemental();
   }
+
+  @include media-grid(4) {
+    padding-right: $gutter-site-4col;
+    padding-left: $gutter-site-4col;
+  }
 }
 
 .leftSpace {

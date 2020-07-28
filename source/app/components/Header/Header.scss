@@ -22,6 +22,10 @@ $header-bg-color: color(gray, 90);
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    &:first-child {
+      flex: 1 1 0px;
+    }
   }
 
   // Logo
@@ -31,6 +35,7 @@ $header-bg-color: color(gray, 90);
 
     img {
       height: 38px;
+      max-width: 100%;
     }
   }
 
@@ -64,12 +69,6 @@ $header-bg-color: color(gray, 90);
       stroke: color(orange, 20);
     }
   }
-
-  @include media('<=tabletPortraitSmall') {
-    > .logo {
-      width: rem(48);
-    }
-  }
 }
 
 .logoutlink {
@@ -83,14 +82,18 @@ $header-bg-color: color(gray, 90);
 
   @include media('<=tabletPortraitSmall') {
     margin-top: 0.5rem;
+
+    > * {
+      min-width: 0;
+    }
   }
 }
 .borderlessButton {
   border-style: none;
 }
-.backButtons {
-  > * + * {
-    margin-left: rem(10);
-    margin-left: 10;
+
+.backButton {
+  @include media('<=tabletPortraitSmall') {
+    display: none;
   }
 }

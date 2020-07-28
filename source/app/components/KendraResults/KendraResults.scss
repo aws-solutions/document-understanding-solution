@@ -22,3 +22,9 @@
     margin-left: rem(40);
   }
 }
+
+.topNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

@@ -12,8 +12,9 @@ $header-bg-color: color(gray, 90);
 
 .tab {
   flex: 0 1 20%;
-  min-width: 250px;
-  margin: 0 2em;
+  white-space: nowrap;
+  padding-left: 1em;
+  padding-right: 1em;;
   padding-top: 1em;
   padding-bottom: 0.5em;
   display: flex;

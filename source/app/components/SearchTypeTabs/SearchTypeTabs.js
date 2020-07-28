@@ -30,7 +30,7 @@ function SearchTypeTabs({ selectedSearch, setSelectedSearch }) {
     return () => {
       window.removeEventListener("resize", resized);
     };
-  }, [selectedSearch, setSelectedSearch]);
+  }, []);
 
   const canShowSideBySide = useMemo(() => width >= 1000, [width]);
 
