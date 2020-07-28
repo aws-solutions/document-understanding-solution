@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -69,11 +68,11 @@ export class CdkTextractStack extends cdk.Stack {
     id: string | undefined,
     props: TextractStackProps
   ) {
-    super(scope, id , props);
+    super(scope, id, props);
 
     this.resourceName = (name: any) =>
       `${id}-${name}-${this.uuid}`.toLowerCase();
-  
+
     this.uuid = uuid.generate();
 
     const corsRule = {
@@ -350,7 +349,7 @@ export class CdkTextractStack extends cdk.Stack {
       partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
       sortKey: { name: "outputType", type: ddb.AttributeType.STRING },
       serverSideEncryption: true,
-      billingMode: ddb.BillingMode.PAY_PER_REQUEST
+      billingMode: ddb.BillingMode.PAY_PER_REQUEST,
     });
 
     const documentsTable = new ddb.Table(
@@ -360,7 +359,7 @@ export class CdkTextractStack extends cdk.Stack {
         partitionKey: { name: "documentId", type: ddb.AttributeType.STRING },
         stream: ddb.StreamViewType.NEW_IMAGE,
         serverSideEncryption: true,
-        billingMode: ddb.BillingMode.PAY_PER_REQUEST
+        billingMode: ddb.BillingMode.PAY_PER_REQUEST,
       }
     );
 
@@ -558,7 +557,7 @@ export class CdkTextractStack extends cdk.Stack {
         path: "/",
       }
     );
-    
+
     const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy", {
       statements: [
         new iam.PolicyStatement({
@@ -588,21 +587,6 @@ export class CdkTextractStack extends cdk.Stack {
         }),
       ],
     });
-
-    const cognitoPolicyResource = cognitoPolicy.node.findChild(
-      "Resource"
-    ) as iam.CfnPolicy;
-    cognitoPolicyResource.cfnOptions.metadata = {
-      cfn_nag: {
-        rules_to_suppress: [
-          {
-            id: "W11",
-            reason:
-              "The resources in the policy are created/managed by this solution.",
-          },
-        ],
-      },
-    };
 
     cognitoPolicy.attachToRole(textractCognitoAuthenticatedRole);
 
@@ -694,6 +678,7 @@ export class CdkTextractStack extends cdk.Stack {
         },
       }
     );
+
     documentProcessor.addLayers(helperLayer);
 
     //Trigger
@@ -725,6 +710,7 @@ export class CdkTextractStack extends cdk.Stack {
         },
       }
     );
+
     jobErrorHandler.addLayers(helperLayer);
 
     //Trigger
@@ -799,33 +785,6 @@ export class CdkTextractStack extends cdk.Stack {
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["textract:DetectDocumentText", "textract:AnalyzeDocument"],
-        resources: ["*"], // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
-      })
-    );
-
-    syncProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "comprehend:BatchDetectEntities",
-          "comprehend:DetectEntities",
-        ],
-        resources: ["*"], //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
-      })
-    );
-
-    syncProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "comprehendmedical:InferICD10CM",
-          "comprehendmedical:DetectEntitiesV2",
-        ],
-        resources: ["*"], // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
-      })
-    );
-
-    syncProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
         actions: [
           "es:ESHttpHead",
           "es:Get*",
@@ -880,15 +839,6 @@ export class CdkTextractStack extends cdk.Stack {
         resources: [textractServiceRole.roleArn],
       })
     );
-    asyncProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "textract:StartDocumentTextDetection",
-          "textract:StartDocumentAnalysis",
-        ],
-        resources: ["*"], // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
-      })
-    );
 
     //------------------------------------------------------------
 
@@ -935,15 +885,6 @@ export class CdkTextractStack extends cdk.Stack {
     jobResultProcessor.addToRolePolicy(
       new iam.PolicyStatement({
         actions: [
-          "textract:GetDocumentTextDetection",
-          "textract:GetDocumentAnalysis",
-        ],
-        resources: ["*"], // Currently, Textract does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
-      })
-    );
-    jobResultProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
           "es:ESHttpHead",
           "es:Get*",
           "es:List*",
@@ -957,32 +898,82 @@ export class CdkTextractStack extends cdk.Stack {
       })
     );
 
-    jobResultProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "comprehend:BatchDetectEntities",
-          "comprehend:DetectEntities",
-        ],
-        resources: ["*"], //Currently, Comprehend does not support resource level permissions for these APIs. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncomprehend.html#amazoncomprehend-resources-for-iam-policies
-      })
-    );
-
-    jobResultProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "comprehendmedical:InferICD10CM",
-          "comprehendmedical:DetectEntitiesV2",
-        ],
-        resources: ["*"], // Currently, Comprehend Medical does not support resource type permssions. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_comprehendmedical.html#comprehendmedical-resources-for-iam-policies
-      })
-    );
-
     esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
-    
+
     //------------------------------------------------------------
 
     pdfGenerator.grantInvoke(syncProcessor);
     pdfGenerator.grantInvoke(jobResultProcessor);
+
+    const textractSyncPolicy = new iam.Policy(this, "textractSyncPolicy", {
+      statements: [
+        new iam.PolicyStatement({
+          actions: ["textract:DetectDocumentText", "textract:AnalyzeDocument"],
+          resources: ["*"], // Currently, Textract does not support resource level permissions https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        }),
+      ],
+      roles: [syncProcessor.role],
+    });
+
+    const textractAsyncPolicy = new iam.Policy(this, "textractAsyncPolicy", {
+      statements: [
+        new iam.PolicyStatement({
+          actions: [
+            "textract:StartDocumentTextDetection",
+            "textract:StartDocumentAnalysis",
+          ],
+          resources: ["*"], // Currently, Textract does not support resource level permissions https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        }),
+      ],
+      roles: [asyncProcessor.role],
+    });
+
+    const textractJobResultsPolicy = new iam.Policy(
+      this,
+      "textractJobResultsPolicy",
+      {
+        statements: [
+          new iam.PolicyStatement({
+            actions: [
+              "textract:GetDocumentTextDetection",
+              "textract:GetDocumentAnalysis",
+            ],
+            resources: ["*"], // Currently, Textract does not support resource level permissions https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+          }),
+        ],
+        roles: [jobResultProcessor.role],
+      }
+    );
+
+    const comprehendPolicy = new iam.Policy(this, "comprehendPolicy", {
+      statements: [
+        new iam.PolicyStatement({
+          actions: [
+            "comprehend:BatchDetectEntities",
+            "comprehend:DetectEntities",
+          ],
+          resources: ["*"], // Currently, Comprehend does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+        }),
+      ],
+      roles: [syncProcessor.role, jobResultProcessor.role],
+    });
+
+    const comprehendMedicalPolicy = new iam.Policy(
+      this,
+      "comprehendMedicalPolicy",
+      {
+        statements: [
+          new iam.PolicyStatement({
+            actions: [
+              "comprehendmedical:InferICD10CM",
+              "comprehendmedical:DetectEntitiesV2",
+            ],
+            resources: ["*"], // Currently, ComprehendMedical does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+          }),
+        ],
+        roles: [syncProcessor.role, jobResultProcessor.role],
+      }
+    );
 
     //------------------------------------------------------------
 
@@ -1039,7 +1030,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("DUSApiLogGroup"),
       {
         logGroupName: this.resourceName("DUSApiLogGroup"),
-      },
+      }
     );
     // API
     const api = new apigateway.LambdaRestApi(
@@ -1052,7 +1043,7 @@ export class CdkTextractStack extends cdk.Stack {
           loggingLevel: apigateway.MethodLoggingLevel.INFO,
           dataTraceEnabled: false,
           accessLogDestination: new LogGroupLogDestination(DUSApiLogGroup),
-          accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields()
+          accessLogFormat: apigateway.AccessLogFormat.jsonWithStandardFields(),
         },
       }
     );
@@ -1151,5 +1142,146 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
       })
     );
+
+    /*** CFN NAG SUPPRESSIONS - These do not affect the functionality of the solution ***/
+
+    const cfnBucket = logsS3Bucket.node.defaultChild as s3.CfnBucket;
+    cfnBucket.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W51",
+            reason: "Default usage plan can be used for this API",
+          },
+          {
+            id: "W35",
+            reason: "This is a logs bucket, no logging desired.",
+          },
+        ],
+      },
+    };
+
+    textractUserPool.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "F78",
+            reason: "MFA Configuration is not required for this solution",
+          },
+        ],
+      },
+    };
+
+    const cognitoPolicyResource = cognitoPolicy.node.findChild(
+      "Resource"
+    ) as iam.CfnPolicy;
+    cognitoPolicyResource.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W11",
+            reason:
+              "The resources in the policy are created/managed by this solution.",
+          },
+        ],
+      },
+    };
+
+    const cfnTextractSyncPolicy = textractSyncPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfnTextractSyncPolicy.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W12",
+            reason:
+              "Currently, some AI services does not support resource level permissions",
+          },
+        ],
+      },
+    };
+
+    const cfnTextractAsyncPolicy = textractAsyncPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfnTextractAsyncPolicy.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W12",
+            reason:
+              "Currently, some AI services does not support resource level permissions",
+          },
+        ],
+      },
+    };
+
+    const cfnTextractJobResultsPolicy = textractJobResultsPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfnTextractJobResultsPolicy.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W12",
+            reason:
+              "Currently, some AI services does not support resource level permissions",
+          },
+        ],
+      },
+    };
+
+    const cfncomprehendPolicy = comprehendPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfncomprehendPolicy.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W12",
+            reason:
+              "Currently, some AI services does not support resource level permissions",
+          },
+        ],
+      },
+    };
+
+    const cfncomprehendMedicalPolicy = comprehendMedicalPolicy.node
+      .defaultChild as iam.CfnPolicy;
+    cfncomprehendMedicalPolicy.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W12",
+            reason:
+              "Currently, some AI services does not support resource level permissions",
+          },
+        ],
+      },
+    };
+
+    const apiStage = api.deploymentStage;
+    const cfnStage = apiStage.node.defaultChild as apigateway.CfnStage;
+    cfnStage.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W64",
+            reason: "No usage plan intended",
+          },
+        ],
+      },
+    };
+
+    const apiDeployment = api.latestDeployment;
+    const cfnDeployment = apiDeployment.node
+      .defaultChild as apigateway.CfnDeployment;
+    cfnDeployment.cfnOptions.metadata = {
+      cfn_nag: {
+        rules_to_suppress: [
+          {
+            id: "W68",
+            reason: "No usage plan intended",
+          },
+        ],
+      },
+    };
   }
 }
