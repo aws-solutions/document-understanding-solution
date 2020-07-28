@@ -1,7 +1,9 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import cs from "classnames";
 import PropTypes from "prop-types";
+
+import Joyride, { STATUS } from 'react-joyride'
 
 import KendraResultPage from "../../components/KendraResultPage/KendraResultPage";
 import PersonaSelector from "../PersonaSelector/PersonaSelector";
@@ -10,6 +12,8 @@ import { MIN_SEARCH_QUERY_LENGTH } from "../../constants/configs";
 
 import css from "./KendraResults.scss";
 import { submitKendraFeedback } from "../../store/entities/searchResults/actions";
+import { dismissWalkthrough } from "../../store/ui/actions";
+import { getHasDismissedWalkthrough } from "../../store/ui/selectors";
 
 KendraResults.propTypes = {
   className: PropTypes.string,
@@ -23,6 +27,26 @@ KendraResults.propTypes = {
 KendraResults.defaultProps = {
   results: [],
 };
+
+
+
+const WALKTHROUGH_STEPS = [
+  {
+    target: '[data-walkthrough="top-result"]',
+    title: 'Top Results',
+    content: 'This is a top result. Some extra text goes in here to explain what all thisis about.',
+    disableBeacon: true
+  },
+  {
+    target: '[data-walkthrough="faq"]',
+    title: 'FAQs',
+    content: 'FAQs are great. Here is some text describing FAQs and why you should use them',
+    disableBeacon: true
+  }
+];
+
+
+
 
 export default function KendraResults({
   className,
@@ -70,10 +94,40 @@ export default function KendraResults({
 
   const canShowSideBySide = useMemo(() => width >= 1000, [width]);
 
+  const hasDismissedWalkthrough = useSelector(getHasDismissedWalkthrough);
+
+  const [ walkthroughRunning, setWalkthroughRunning ] = useState(false);
+  useEffect(() => {
+    if (!hasDismissedWalkthrough) setWalkthroughRunning(true);
+  }, [])
+
+  const walkthroughCallback = useCallback(data => {
+    if ([ STATUS.FINISHED, STATUS.SKIPPED ].includes(data.status)) {
+      dispatch(dismissWalkthrough());
+      setWalkthroughRunning(false);
+    }
+  }, [ dispatch ]);
+
 
 
   return (
     <div className={cs(css.base, hasFilteredResults && css.doubleWidth)}>
+      <Joyride
+        steps={WALKTHROUGH_STEPS}
+        run={walkthroughRunning}
+        callback={walkthroughCallback}
+        continuous
+        showSkipButton
+        locale={{ last: 'Finish' }}
+        styles={{
+          options: {
+            backgroundColor: '#545b64',
+            arrowColor: '#545b64',
+            textColor: '#fff',
+            primaryColor: '#f6761d'
+          }
+        }}
+      />
       <nav {...rest} className={css.topNav}>
         {!isQueryLongEnough && (
           <p className={css.noContent}>

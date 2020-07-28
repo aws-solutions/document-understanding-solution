@@ -25,6 +25,8 @@
   color: #000;
   width: 800px;
   max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
 
   > header {
     padding: 1em 1.5em;

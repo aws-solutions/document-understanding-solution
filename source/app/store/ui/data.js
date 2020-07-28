@@ -23,3 +23,4 @@ export default {
 export const lensSelectedTrack = lensPath(['ui', 'selectedTrack'])
 export const lensHeaderProps = lensPath(['ui', 'headerProps'])
 export const lensSelectedSearch = lensPath(['ui', 'selectedSearch'])
+export const lensDismissedWalkthrough = lensPath(['ui', 'dismissedWalkthrough'])

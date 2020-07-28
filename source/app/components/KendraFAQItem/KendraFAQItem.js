@@ -20,7 +20,7 @@ export default function KendraFAQItem({ item, submitFeedback }) {
   const toggleExpanded = useCallback(() => setExpanded((e) => !e), []);
 
   return (
-    <div className={css.item}>
+    <div className={css.item} data-walkthrough="faq">
       <div className={cs(css.question, expanded && css.expanded)} onClick={toggleExpanded}>
         <h3>
           <KendraHighlightedText textWithHighlights={question.Value.TextWithHighlightsValue} />

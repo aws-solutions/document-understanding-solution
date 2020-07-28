@@ -13,12 +13,13 @@
  *********************************************************************************************************************/
 
 import { view } from 'ramda'
-import { lensSelectedTrack, lensHeaderProps, lensSelectedSearch } from './data'
+import { lensSelectedTrack, lensHeaderProps, lensSelectedSearch, lensDismissedWalkthrough } from './data'
 
 import { getTrackById } from '../../store/entities/tracks/selectors'
 
 export const getSelectedTrackId = state => view(lensSelectedTrack, state)
 export const getSelectedTrack = state => getTrackById(state, getSelectedTrackId(state))
 export const getSelectedSearch = state => view(lensSelectedSearch, state)
+export const getHasDismissedWalkthrough = state => view(lensDismissedWalkthrough, state)
 
 export const getHeaderProps = state => view(lensHeaderProps, state)

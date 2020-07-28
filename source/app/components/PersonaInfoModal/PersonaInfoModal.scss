@@ -7,13 +7,17 @@
 .personas {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   margin: 0 1em;
 
   > * {
     display: flex;
     flex-direction: column;
-    flex: 0 1 200px;
+    flex: 1 1 0px;
+    min-width: 100px;
+    max-width: 200px;
     margin: 0 1em;
+    overflow: hidden;
     align-items: center;
     font-size: 0.8em;
     text-align: center;

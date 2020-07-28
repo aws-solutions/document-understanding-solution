@@ -3764,10 +3764,20 @@ decode-uri-component@^0.2.0:
   resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
   integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
 
+deep-diff@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/deep-diff/-/deep-diff-1.0.2.tgz#afd3d1f749115be965e89c63edc7abb1506b9c26"
+  integrity sha512-aWS3UIVH+NPGCD1kki+DCU9Dua032iSsO43LqQpcs4R3+dVv7tX0qBGjiVHJHjplsoUM2XRO/KB92glqc68awg==
+
 deep-is@~0.1.3:
   version "0.1.3"
   resolved "https://registry.yarnpkg.com/deep-is/-/deep-is-0.1.3.tgz#b369d6fb5dbc13eecf524f91b070feedc357cf34"
   integrity sha1-s2nW+128E+7PUk+RsHD+7cNXzzQ=
+
+deepmerge@^4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.2.2.tgz#44d2ea3679b8f4d4ffba33f03d865fc1e7bf4955"
+  integrity sha512-FJ3UgI4gIl+PHZm53knsuSFpE+nESMr7M4v9QcgB7S63Kj/6WqMiFQJpBBYz1Pt+66bZpP3Q7Lye0Oo9MPKEdg==
 
 define-properties@^1.1.2, define-properties@^1.1.3:
   version "1.1.3"
@@ -4462,6 +4472,11 @@ evp_bytestokey@^1.0.0, evp_bytestokey@^1.0.3:
   dependencies:
     md5.js "^1.3.4"
     safe-buffer "^5.1.1"
+
+exenv@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/exenv/-/exenv-1.2.2.tgz#2ae78e85d9894158670b03d47bec1f03bd91bb9d"
+  integrity sha1-KueOhdmJQVhnCwPUe+wfA72Ru50=
 
 exit-hook@^1.0.0:
   version "1.1.1"
@@ -5690,6 +5705,11 @@ is-glob@^4.0.0, is-glob@^4.0.1, is-glob@~4.0.1:
   dependencies:
     is-extglob "^2.1.1"
 
+is-lite@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/is-lite/-/is-lite-0.6.0.tgz#806b7c967f1d75b5f4121d6ce93107c427b542eb"
+  integrity sha512-kJ16DuwOhtZg7RimZOf+zK86XOlPeNGGy20MhAfjN/zozuetECxOEtUDUAtzC5n21Yd2lVx6LqZvO1Zvd5DYhw==
+
 is-my-ip-valid@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/is-my-ip-valid/-/is-my-ip-valid-1.0.0.tgz#7b351b8e8edd4d3995d4d066680e664d94696824"
@@ -6652,6 +6672,16 @@ neo-async@2.6.1, neo-async@^2.5.0, neo-async@^2.6.1:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
+nested-property@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/nested-property/-/nested-property-1.0.1.tgz#2001105b5c69413411b876bba9b86f4316af613f"
+  integrity sha512-BnBBoo/8bBNRdAnJc7+m79oWk7dXwW1+vCesaEQhfDGVwXGLMvmI4NwYgLTW94R/x+R2s/yr2g/hB/4w/YSAvA==
+
+nested-property@^1.0.2:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/nested-property/-/nested-property-1.0.4.tgz#4068c4289d1f3ac9f367e784502ff342d277ee2f"
+  integrity sha512-6fNIumJJUyP3rkB4FyVYCYpdW+PKUCaxRWRGLLf0kv/RKoG4mbTvInedA9x3zOyuOmOkGudKuAtPSI+dnhwj2g==
+
 netmask@^1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/netmask/-/netmask-1.0.6.tgz#20297e89d86f6f6400f250d9f4f6b4c1945fcd35"
@@ -7386,6 +7416,11 @@ pnp-webpack-plugin@1.6.4:
   dependencies:
     ts-pnp "^1.1.6"
 
+popper.js@^1.16.0:
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.16.1.tgz#2a223cb3dc7b6213d740e40372be40de43e65b1b"
+  integrity sha512-Wb4p1J4zyFTbM+u6WuO4XstYx4Ky9Cewe4DWrel7B0w6VVICvPwdOpotjzcf6eD8TsckVnIMNONQyPIUFOUbCQ==
+
 posix-character-classes@^0.1.0:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
@@ -8090,6 +8125,18 @@ react-dropzone@^10.1.5:
     file-selector "^0.1.12"
     prop-types "^15.7.2"
 
+react-floater@^0.7.2:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/react-floater/-/react-floater-0.7.2.tgz#c0c7ddab18a955b1c4a3934890fa804b3d2a4801"
+  integrity sha512-YKixUNXdySMqo4gh6ZGVLI/h7cI59MFQKOG38jAdBJl7XVC///w+sa7dmz+o2xWe4oUSey3z2vmg+AtX7A7Kug==
+  dependencies:
+    deepmerge "^4.2.2"
+    exenv "^1.2.2"
+    is-lite "^0.6.0"
+    popper.js "^1.16.0"
+    react-proptype-conditional-require "^1.0.4"
+    tree-changes "^0.5.1"
+
 react-highlighter@^0.4.3:
   version "0.4.3"
   resolved "https://registry.yarnpkg.com/react-highlighter/-/react-highlighter-0.4.3.tgz#e32c84d053259c30ca72c615aa759036d0d23048"
@@ -8107,10 +8154,26 @@ react-intersection-observer@^8.23.0:
   dependencies:
     tiny-invariant "^1.1.0"
 
-react-is@16.13.1, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.9.0:
+react-is@16.13.1, react-is@^16.12.0, react-is@^16.7.0, react-is@^16.8.1, react-is@^16.9.0:
   version "16.13.1"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
+
+react-joyride@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/react-joyride/-/react-joyride-2.2.1.tgz#a65fe7aba1184f2ceff3b2b79beffcc3cad17231"
+  integrity sha512-2dcfuOPW1viQ7TxUxLajNJJiW+I4dh3dPaySuvc1uiWK1qC8uaxjhGwWSIdQitVw0j1/4NU7P2dPuB9d5umtlw==
+  dependencies:
+    deep-diff "^1.0.2"
+    deepmerge "^4.2.2"
+    exenv "^1.2.2"
+    is-lite "^0.6.0"
+    nested-property "^1.0.2"
+    react-floater "^0.7.2"
+    react-is "^16.12.0"
+    scroll "^3.0.1"
+    scrollparent "^2.0.1"
+    tree-changes "^0.5.1"
 
 react-pdf@^4.1.0:
   version "4.1.0"
@@ -8123,6 +8186,11 @@ react-pdf@^4.1.0:
     merge-class-names "^1.1.1"
     pdfjs-dist "2.1.266"
     prop-types "^15.6.2"
+
+react-proptype-conditional-require@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/react-proptype-conditional-require/-/react-proptype-conditional-require-1.0.4.tgz#69c2d5741e6df5e08f230f36bbc2944ee1222555"
+  integrity sha1-acLVdB5t9eCPIw82u8KUTuEiJVU=
 
 react-redux@^7.1.0:
   version "7.2.0"
@@ -8725,6 +8793,16 @@ schema-utils@^2.6.1, schema-utils@^2.6.6:
     "@types/json-schema" "^7.0.4"
     ajv "^6.12.2"
     ajv-keywords "^3.4.1"
+
+scroll@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/scroll/-/scroll-3.0.1.tgz#d5afb59fb3592ee3df31c89743e78b39e4cd8a26"
+  integrity sha512-pz7y517OVls1maEzlirKO5nPYle9AXsFzTMNJrRGmT951mzpIBy7sNHOg5o/0MQd/NqliCiWnAi0kZneMPFLcg==
+
+scrollparent@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/scrollparent/-/scrollparent-2.0.1.tgz#715d5b9cc57760fb22bdccc3befb5bfe06b1a317"
+  integrity sha1-cV1bnMV3YPsivczDvvtb/gaxoxc=
 
 scss-tokenizer@^0.2.3:
   version "0.2.3"
@@ -9647,6 +9725,14 @@ traverse@0.6.6:
   version "0.6.6"
   resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.6.6.tgz#cbdf560fd7b9af632502fed40f918c157ea97137"
   integrity sha1-y99WD9e5r2MlAv7UD5GMFX6pcTc=
+
+tree-changes@^0.5.1:
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/tree-changes/-/tree-changes-0.5.1.tgz#e31cc8a0f56c8c401f0a88243d9165dbea4f570c"
+  integrity sha512-O873xzV2xRZ6N059Mn06QzmGKEE21LlvIPbsk2G+GS9ZX5OCur6PIwuuh0rWpAPvLWQZPj0XObyG27zZyLHUzw==
+  dependencies:
+    deep-diff "^1.0.2"
+    nested-property "1.0.1"
 
 trim-newlines@^1.0.0:
   version "1.0.0"

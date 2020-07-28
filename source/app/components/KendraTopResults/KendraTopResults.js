@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useState, useCallback } from "react";
+import React, { Fragment, useMemo, useState, useCallback, useEffect } from "react";
 
 import KendraResultTitle from "../KendraResultTitle/KendraResultTitle";
 import KendraHighlightedText from "../KendraHighlightedText/KendraHighlightedText";
@@ -33,7 +33,7 @@ export default function KendraTopResults({ results, submitFeedback }) {
         );
 
         return (
-          <article key={result.id} className={styles.result}>
+          <article key={result.id} className={styles.result} data-walkthrough="top-result">
             <KendraResultTitle
               result={result}
               submitFeedback={submitFeedback}

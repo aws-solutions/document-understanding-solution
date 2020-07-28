@@ -25,7 +25,7 @@ import withRedux from "next-redux-wrapper";
 import initStore from "../store/store";
 import Header from "../components/Header/Header";
 
-import { setSelectedTrack } from "../store/ui/actions";
+import { setSelectedTrack, dismissWalkthrough } from "../store/ui/actions";
 
 import "../styles/global.scss";
 import css from "./app.scss";
@@ -96,6 +96,9 @@ class AppLayout extends App {
       const { store } = this.props;
       const cachedTrack = localStorage.getItem("track");
       if (cachedTrack) store.dispatch(setSelectedTrack(cachedTrack));
+
+      const previouslyDismissedWalkthrough = localStorage.getItem("dismissedWalkthrough");
+      if (previouslyDismissedWalkthrough) store.dispatch(dismissWalkthrough());
     }
   }
 
