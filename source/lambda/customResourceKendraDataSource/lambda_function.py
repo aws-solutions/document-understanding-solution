@@ -39,11 +39,7 @@ def on_create(event, context):
     dataSourceId = create_data_source_response['Id']
     print("Data source id {} for kendra index with id {} created.".format(dataSourceId, kendraIndexId))
     print("syncing the s3 data source")
-    response = kendra_client.start_data_source_sync_job(
-        Id=dataSourceId,
-        IndexId=kendraIndexId
-    )
-    print("Started sync job for data source id :{}, the execution id of the sync job is :{}".format(dataSourceId,response['ExecutionId']))
+    
     return {'PhysicalResourceId' : dataSourceId}
    
 def on_update(event, context):

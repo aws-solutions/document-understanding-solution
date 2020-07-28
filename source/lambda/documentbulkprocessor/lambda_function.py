@@ -12,16 +12,186 @@
  #  and limitations under the License.                                                                                #
  #####################################################################################################################
 
+import boto3
+from botocore.exceptions import ClientError
 import json
 import os
-from helper import FileHelper, AwsHelper
+import uuid
+from helper import FileHelper, AwsHelper, S3Helper
+from datastore import DocumentStore
 
+
+def generateDocumentID(bucketName, s3Client):
+    documentId = str(uuid.uuid4())
+    
+    response = s3Client.list_objects_v2(Bucket = bucketName,
+                                        Prefix = 'public/{}'.format(documentId),
+                                        MaxKeys = 1)
+        
+    if response.get('Contents') is not None:
+        return generateDocumentID(bucketName)
+
+    return documentId
+
+
+def downloadDocument(bucketName, documentKey, filename, s3Client):
+    
+    # create a local file
+    datafile = open('/tmp/' + filename, 'wb')
+
+    # system error
+    if datafile == None:
+        print("downloadDocument: failed to open local file: " + filename)
+        return False
+
+    # download s3 object into local file
+    try:
+        s3Client.download_fileobj(bucketName, documentKey, datafile)
+    except Exception as e:
+        print("downloadDocument: " + str(e))
+        return False
+
+    return True
+
+
+def uploadDocument(bucketName, documentKey, filename, s3Client):
+
+    #pdb.set_trace()
+    
+    # open local file
+    datafile = open('/tmp/' + filename, 'rb')
+    
+    if datafile == None:
+        print("uploadDocument: failed to open local file: " + filename)
+        return False
+    
+    # upload local file to s3
+    s3Client.upload_fileobj(datafile, bucketName, documentKey)
+    return True
+
+
+def processDocument(record):
+
+    import pdb
+    pdb.set_trace()
+    
+    print(str(record['s3']['object']['key']))
+
+    ingestionBucketName = record['s3']['bucket']['name']
+    ingestionDocumentKey = record['s3']['object']['key']
+    ingestionDocumentFilename = record['s3']['object']['key'].split('/')[1]
+
+    s3Client = boto3.client('s3')
+    
+    # get document from bulk bucket
+    ret = downloadDocument(ingestionBucketName,
+                           ingestionDocumentKey,
+                           ingestionDocumentFilename,
+                           s3Client)
+
+    # error trying to dowload document, exit
+    if ret == False:
+        print("processDocument: failed to download locally document:" + ingestionDocumentKey)
+        return
+    
+    # attempt to get an optional document Kendra policy json file
+    policyFilename = ingestionDocumentFilename + ".metadata.json"
+    policyKey = "kendraPolicyDrop/" + policyFilename
+
+    s3helper = S3Helper()
+    policyData = None
+
+    # try to fetch amd load the policy
+    try:
+        
+        policyData = s3helper.readFromS3(ingestionBucketName,
+                                       policyKey,
+                                       os.environ['AWS_REGION'])
+
+
+    # the normal case of a file not provided is handled.  If any other error
+    # occur the indexing will proceed without the membership tags in the policy file
+    except ClientError as e:
+        policyData = None
+        # NoSuchKey is the expected exception, any other means an error
+        if e.response['Error']['Code'] != 'NoSuchKey':
+               print("ClientError exception from s3helper.readFromS3() for policy file: " + str(e))
+        else:
+            print("no kendra policy file found, skipping copy over")
+
+    # an error that should be investigated
+    except Exception as e:
+        policyData = None
+        print("unspecified exception from s3helper.readFromS3() for policy file: " + str(e))
+                                    
+    # generate UUID for document
+    documentId = generateDocumentID(os.environ['OUTPUT_BUCKET'], s3Client)
+
+    # upload document in document bucket
+    destinationDocumentKey = "public/" + documentId + "/" + ingestionDocumentFilename
+
+    ret = uploadDocument(os.environ['OUTPUT_BUCKET'],
+                         destinationDocumentKey,
+                         ingestionDocumentFilename,
+                         s3Client)
+
+    # in case of error uploading document, we exit
+    if ret == False:
+        print("failed to upload document into output bucket: " + destinationDocumentKey)
+        return
+
+    # if optional Kendra policy was present, upload it to document folder
+    # alongside document
+    if policyData != None:
+        print("copying over to document folder the kendra policy file")
+        s3helper.writeToS3(policyData,
+                           os.environ['OUTPUT_BUCKET'],
+                           "public/" + documentId + "/" + policyFilename,
+                           awsRegion=os.environ['AWS_REGION'])
+
+    # start normal document processing by creating a DynamoDB record,
+    # another lambda function will pick it up from a DynamoDB stream
+    # event
+    docStore = DocumentStore(os.environ['DOCUMENTS_TABLE'],
+                             os.environ['OUTPUT_TABLE'])
+
+    docStore.createDocument(documentId,
+                            os.environ['OUTPUT_BUCKET'],
+                            destinationDocumentKey)
+
+    return
+
+
+def processQueueRecord(queueRecord):
+
+    #pdb.set_trace()
+    records = json.loads(queueRecord['body'])
+
+    # one of more s3 event records
+    for record in records['Records']:
+
+        try:
+            if record['eventSource'] == 'aws:s3' and record['eventName'] == 'ObjectCreated:Put':
+                processDocument(record)
+                
+        except Exception as e:
+            print("Failed to process s3 record. Exception: {}".format(e))
 
 
 def lambda_handler(event, context):
 
-    try:
 
-        print("event: {}".format(event))
-    except Exception as e:
-        print("Failed to process records. Exception: {}".format(e))
+    #pdb.set_trace()
+    print("event: {}".format(event))
+    
+    for queueRecord in event['Records']:
+    
+        try:
+            processQueueRecord(queueRecord)
+        
+        except Exception as e:
+            print("Failed to process queue record. Exception: {}".format(e))
+
+
+
+
