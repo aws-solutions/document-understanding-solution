@@ -25,12 +25,12 @@
   }
 
   &:after {
-    content: '⯈';
+    content: '▶\fe0e';
     flex: 0 0 auto;
     margin-left: 1em;
   }
 
   &.expanded:after {
-    content: '⯆'
+    content: '▼'
   }
 }

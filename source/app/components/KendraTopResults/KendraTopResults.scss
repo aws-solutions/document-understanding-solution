@@ -32,11 +32,11 @@
 
 .showMore {
   &:before {
-    content: '⯈';
+    content: '▶\fe0e';
     margin-right: 1em;;
   }
 
   &.expanded:before {
-    content: '⯆'
+    content: '▼'
   }
 }
