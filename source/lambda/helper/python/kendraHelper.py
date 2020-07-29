@@ -28,13 +28,7 @@ class KendraHelper:
                       documentExtension,
                       tag = 'everybody'):
 
-        #import pdb
-        #pdb.set_trace()
-  
-        print("KendraHelper.indexDocument: s3key: " + s3key)
-        print("KendraHelper.indexDocument: documentId: " + documentId)
-        print("KendraHelper.indexDocument: documentExtension: " + documentExtension)
-        
+    
         # try to fetch the optional kendra policy file that may have been uploaded to s3
         # along with the document
         originalDocumentName = s3key[:-15].split('/')[3]
@@ -52,10 +46,10 @@ class KendraHelper:
         except ClientError as e:
             policyData = None
             # NoSuchKey is the expected exception, any other means an error
-            if e.response['Error']['Code'] != 'NoSuchKey':
-                print("ClientError exception from s3helper.readFromS3: " + str(e))
-            else:
+            if e.response['Error']['Code'] == 'NoSuchKey':
                 print("no kendra policy file found, only default membership will be applied")
+            else:
+                print("ClientError exception from s3helper.readFromS3: " + str(e))
                     
         # an error that should be investigated
         except Exception as e:

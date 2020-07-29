@@ -56,8 +56,6 @@ def downloadDocument(bucketName, documentKey, filename, s3Client):
 
 def uploadDocument(bucketName, documentKey, filename, s3Client):
 
-    #pdb.set_trace()
-    
     # open local file
     datafile = open('/tmp/' + filename, 'rb')
     
@@ -71,9 +69,6 @@ def uploadDocument(bucketName, documentKey, filename, s3Client):
 
 
 def processDocument(record):
-
-    import pdb
-    pdb.set_trace()
     
     print(str(record['s3']['object']['key']))
 
@@ -113,11 +108,11 @@ def processDocument(record):
     # occur the indexing will proceed without the membership tags in the policy file
     except ClientError as e:
         policyData = None
-        # NoSuchKey is the expected exception, any other means an error
-        if e.response['Error']['Code'] != 'NoSuchKey':
-               print("ClientError exception from s3helper.readFromS3() for policy file: " + str(e))
+        # NoSuchKey is the expected exception when no policy provided
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            print("no kendra policy file found, skipping")
         else:
-            print("no kendra policy file found, skipping copy over")
+            print("ClientError exception from s3helper.readFromS3() for policy file: " + str(e))
 
     # an error that should be investigated
     except Exception as e:
@@ -164,33 +159,28 @@ def processDocument(record):
 
 def processQueueRecord(queueRecord):
 
-    #pdb.set_trace()
     records = json.loads(queueRecord['body'])
 
     # one of more s3 event records
-    for record in records['Records']:
-
-        try:
-            if record['eventSource'] == 'aws:s3' and record['eventName'] == 'ObjectCreated:Put':
-                processDocument(record)
-                
-        except Exception as e:
-            print("Failed to process s3 record. Exception: {}".format(e))
+    if 'Records' in records:
+        for record in records['Records']:
+            try:
+                if record['eventSource'] == 'aws:s3' and record['eventName'] == 'ObjectCreated:Put':
+                    processDocument(record)
+            except Exception as e:
+                print("Failed to process s3 record. Exception: {}".format(e))
 
 
 def lambda_handler(event, context):
 
-
-    #pdb.set_trace()
     print("event: {}".format(event))
     
-    for queueRecord in event['Records']:
-    
-        try:
-            processQueueRecord(queueRecord)
-        
-        except Exception as e:
-            print("Failed to process queue record. Exception: {}".format(e))
+    if 'Records' in event:
+        for queueRecord in event['Records']:
+            try:
+                processQueueRecord(queueRecord)
+            except Exception as e:
+                print("Failed to process queue record. Exception: {}".format(e))
 
 
 
