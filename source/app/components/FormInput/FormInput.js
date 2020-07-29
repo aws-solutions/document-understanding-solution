@@ -20,9 +20,10 @@ import css from './FormInput.scss'
 
 export const INPUT_TYPES = ['text', 'textarea', 'checkbox', 'radio', 'search', 'password']
 
-const FormInput = forwardRef(function FormInput({ children, className, disabled, error, label, type, light, ...rest }, ref) {
+const FormInput = forwardRef(function FormInput({ children, className, disabled, error, label, type, light, white, ...rest }, ref) {
   const statusClassNames = classNames({
     [css.light]: !!light,
+    [css.white]: !!white,
     [css.disabled]: !!disabled,
     [css.error]: !!error,
     [css.hasLabel]: !!label,

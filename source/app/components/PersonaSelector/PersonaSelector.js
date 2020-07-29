@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import ReactDOM from 'react-dom'
 import { connect } from 'react-redux'
 import cs from 'classnames';
 
@@ -57,6 +58,12 @@ function PersonaSelector({
 
   return (
     <div className={css.container}>
+      {popoverVisible ?
+        ReactDOM.createPortal(
+          <div className={css.overlay} onClick={hidePopover} />,
+          document.body
+        )
+      : null}
       <div className={cs(css.filterButton, searchPersona && css.hasFilter)} onClick={showPopover}>
         Filter
       </div>
@@ -67,7 +74,7 @@ function PersonaSelector({
       </div>
       <div className={cs(css.popover, popoverVisible && css.visible)}>
         <p>
-          <strong>Amazon Kendra</strong> can refine your results based on who you are. Select one of the users below, and see the different results each user gets.
+          <strong>Amazon Kendra</strong> can deliver highly relevant query results based on user name or group membership. Select one of the users below, and see the different results each user gets.
         </p>
         <div className={css.personas}>
           <label>

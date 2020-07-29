@@ -65,7 +65,7 @@ export default function KendraTopResults({ results, submitFeedback }) {
   return (
     <div className={styles.topResults}>
       <header>
-        <h2>Amazon Kendra Suggested Answers</h2>
+        <h2>Amazon Kendra suggested answers</h2>
       </header>
       <div className={styles.results}>
         {renderedResults[0]}

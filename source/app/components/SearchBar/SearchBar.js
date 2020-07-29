@@ -43,7 +43,7 @@ SearchBar.propTypes = {
 
 SearchBar.defaultProps = {}
 
-function SearchBar({ className, dispatch, searchQuery, searchPersona, light, suggestions }) {
+function SearchBar({ className, dispatch, searchQuery, searchPersona, light, suggestions, placeholder }) {
   const searchBarClassNames = classNames(css.searchBar, className)
 
   const [ hasTerm, setHasTerm ] = useState(!!searchQuery)
@@ -85,7 +85,7 @@ function SearchBar({ className, dispatch, searchQuery, searchPersona, light, sug
           light={light}
           type="search"
           className={css.search}
-          placeholder="Search..."
+          placeholder={placeholder || "Search..."}
           defaultValue={searchQuery}
           onChange={searchValueChange}
         />

@@ -26,11 +26,11 @@ import { getHeaderProps } from '../../store/ui/selectors'
 import css from './Header.scss'
 
 Header.propTypes = {
-  backHref: PropTypes.string,
+  showNavigation: PropTypes.string,
   heading: PropTypes.string,
 }
 
-function Header({ backHref, backTitle, heading }) {
+function Header({ showNavigation, backTitle, heading }) {
   return (
     <header className={css.header}>
       <div>
@@ -40,12 +40,20 @@ function Header({ backHref, backTitle, heading }) {
           </a>
         </Link>
 
-        {backHref && (
-          <Link href={backHref}>
-            <a className={css.backButton}>
-              {backTitle}
-            </a>
-          </Link>
+        {showNavigation && (
+          <>
+            <Link href="/documents">
+              <a className={css.backButton}>
+                Preloaded documents
+              </a>
+            </Link>
+            {' | '}
+            <Link href="/select">
+              <a className={css.backButton}>
+                Upload your own documents
+              </a>
+            </Link>
+          </>
         )}
       </div>
 

@@ -14,6 +14,7 @@
   @include all-caps;
   margin: 0.5rem 0;
   font-weight: 500;
+  line-height: 2;
 }
 
 .personaLabel {
@@ -21,7 +22,8 @@
   color: #fff;
   padding: .25em .5em;
   border-radius: .25em;
-  background: color(blue, 20)
+  background: $link-blue;
+  line-height: 1.3
 }
 
 .removePersona {
@@ -29,6 +31,10 @@
   display: inline-block;
   margin-left: .5em;
   position: relative;
+  font-size: 1.5em;
+  margin-top: -.25em;
+  margin-bottom: -.25em;
+  top: .15em;
 
   &:before {
     position: absolute;

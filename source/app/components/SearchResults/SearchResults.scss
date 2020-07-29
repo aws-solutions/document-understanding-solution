@@ -75,7 +75,7 @@
     font-size: 1.25em;
     margin: 0;
     padding-bottom: .25em;
-    color: color(blue, 10);
+    color: $link-blue;
   }
 }
 
@@ -117,6 +117,7 @@
   @include all-caps;
   margin: 0.5rem 0;
   font-weight: 500;
+  line-height: 2;
 }
 
 .noContent {

@@ -33,15 +33,24 @@ KendraResults.defaultProps = {
 const WALKTHROUGH_STEPS = [
   {
     target: '[data-walkthrough="top-result"]',
-    title: 'Top Results',
-    content: 'This is a top result. Some extra text goes in here to explain what all thisis about.',
-    disableBeacon: true
+    title: 'Amazon Kendra suggested answers',
+    content: 'When you type a question, Kendra uses machine learning algorithms to understand the context and return the most relevant results, whether that be a precise answer or an entire document. Kendra will map to the relevant documents and return a specific answer.',
+    disableBeacon: true,
+    placement: 'top'
   },
   {
     target: '[data-walkthrough="faq"]',
-    title: 'FAQs',
-    content: 'FAQs are great. Here is some text describing FAQs and why you should use them',
-    disableBeacon: true
+    title: 'Frequently asked questions',
+    content: 'You can upload a list of FAQs to Kendra to provide direct answers to common questions your end users are asking. Kendra will find the closest question to the search query and return the corresponding answer.',
+    disableBeacon: true,
+    placement: 'top'
+  },
+  {
+    target: '[data-walkthrough="feedback"]',
+    title: 'Promote',
+    content: 'Kendra supports boosting documents based on a vote or view count.',
+    disableBeacon: true,
+    placement: 'top'
   }
 ];
 

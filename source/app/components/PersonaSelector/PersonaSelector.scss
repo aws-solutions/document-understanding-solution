@@ -3,9 +3,22 @@
 .container {
   position: relative;
   text-align: right;
+  z-index: 4;
+}
+
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(color(gray, 90), 0.8);
+  z-index: 3;
 }
 
 .filterButton {
+  margin-top: 1.6em;
   padding: .25em 1em;
   padding-right: .75em;
   border: 1px solid #fff;
@@ -14,7 +27,7 @@
   border-radius: .25em;
 
   &.hasFilter {
-    border-color: color(blue, 10);
+    border-color: $link-blue;
   }
 
   &:after {
@@ -75,7 +88,7 @@
 
 .moreInfoContainer {
   a {
-    color: color(blue, 10);
+    color: $link-blue;
     font-style: italic;
     cursor: pointer;
   }

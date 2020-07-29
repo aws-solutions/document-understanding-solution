@@ -28,7 +28,9 @@ export default function KendraFAQItem({ item, submitFeedback }) {
       </div>
       {expanded ? (
         <div className={css.answer}>
-          <KendraHighlightedText textWithHighlights={answer.Value.TextWithHighlightsValue} />
+          <p>
+            <KendraHighlightedText textWithHighlights={answer.Value.TextWithHighlightsValue} />
+          </p>
           <KendraResultFooter result={item} submitFeedback={submitFeedback} />
         </div>
       ) : null}

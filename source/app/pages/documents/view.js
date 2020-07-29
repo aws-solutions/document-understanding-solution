@@ -85,8 +85,7 @@ Document.getInitialProps = function({ query, store }) {
   const { documentName } = getDocumentById(state, id) || {}
 
   const props = {
-    backHref: '/documents',
-    backTitle: 'Change Document',
+    showNavigation: true
   }
 
   return props
@@ -363,7 +362,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             </div>
           </div>
           <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
-            <SearchBar className={css.searchBar} />
+            <SearchBar className={css.searchBar} placeholder="Search current document…" />
             {track === 'redaction' ? <Button onClick={redactMatches}>Redact matches</Button> : null}
           </div>
           <div className={css.content} ref={contentRef}>

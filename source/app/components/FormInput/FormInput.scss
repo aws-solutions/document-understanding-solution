@@ -62,6 +62,16 @@ $input-background-error: rgba($input-border-error, 0.05);
     background-color: $input-background-light;
   }
 
+  &.white {
+    background-color: white;
+    color: inherit;
+
+    + svg {
+      opacity: .6;
+      fill: currentColor;
+    }
+  }
+
   &.error {
     background-color: $input-background-error;
     border-color: $input-border-error;

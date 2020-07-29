@@ -15,7 +15,7 @@
 import { handleActions } from 'redux-actions'
 
 import initialState from './data'
-import { SET_SELECTED_TRACK, SET_HEADER_PROPS, SET_SELECTED_SEARCH } from '../../constants/action-types.js'
+import { SET_SELECTED_TRACK, SET_HEADER_PROPS, SET_SELECTED_SEARCH, DISMISS_WALKTHROUGH } from '../../constants/action-types.js'
 
 export function uiReducer(state, { payload }) {
   return {
@@ -29,6 +29,7 @@ export default handleActions(
     [SET_SELECTED_TRACK]: uiReducer,
     [SET_SELECTED_SEARCH]: uiReducer,
     [SET_HEADER_PROPS]: uiReducer,
+    [DISMISS_WALKTHROUGH]: uiReducer
   },
   initialState
 )

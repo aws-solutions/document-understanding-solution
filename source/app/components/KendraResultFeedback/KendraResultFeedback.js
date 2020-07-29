@@ -23,7 +23,7 @@ export default function KendraResultFeedback({ result, submitFeedback }) {
   }, [submitFeedback, result]);
 
   return (
-    <div>
+    <div data-walkthrough="feedback">
       <button
         disabled={!!submitted}
         className={cs(

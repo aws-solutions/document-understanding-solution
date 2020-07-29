@@ -39,7 +39,6 @@
 }
 
 .notes {
-  font-size: 0.8em;
   font-style: italic;
   margin-top: 1em;
 }
@@ -57,5 +56,38 @@
   li {
     cursor: pointer;
     color: color(blue, 20)
+  }
+
+  + form {
+    width: 80%;
+    margin: 1em auto;
+
+    label {
+      width: 100%;
+    }
+  }
+}
+
+.toggleAPI {
+  margin: 1em -1.5em -1.5em;
+  padding: 1.5em;
+  color: $link-blue;
+  cursor: pointer;
+  font-weight: bold;
+  border-top: 1px solid color(gray, 40);
+
+  &:before {
+    content: '▶\fe0e';
+    margin-right: 1em;
+  }
+
+  &.expanded:before {
+    content: '▼'
+  }
+}
+
+.learnMore {
+  a {
+    color: $link-blue;
   }
 }

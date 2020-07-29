@@ -77,9 +77,9 @@ export default function KendraResultPage({
           <>
             {" "}
             for{" "}
-            <div className={styles.personaLabel}>
+            <div className={styles.personaLabel} onClick={clearPersona}>
               {PERSONAS[persona]}
-              <a className={styles.removePersona} onClick={clearPersona}>
+              <a className={styles.removePersona} title="Click to remove filter">
                 &times;
               </a>
             </div>

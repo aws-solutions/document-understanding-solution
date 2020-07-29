@@ -51,8 +51,8 @@ $header-bg-color: color(gray, 90);
   .backButton {
     z-index: 3;
     text-decoration: none;
-    margin-left: 2em;
-    color: color(orange, 20);
+    margin: 0 1em;
+    color: $link-blue;
     font-weight: bold;
   }
 

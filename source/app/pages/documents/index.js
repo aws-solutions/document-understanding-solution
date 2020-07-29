@@ -15,7 +15,7 @@
 import React, { Fragment, useEffect, useState, useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { useInView } from 'react-intersection-observer'
 import { distanceInWordsToNow, distanceInWords } from 'date-fns'
 import Router from "next/router";
@@ -60,6 +60,8 @@ import { makeDocumentLink } from '../../utils/link-generators'
 
 import css from './documents.scss'
 import SearchBar from '../../components/SearchBar/SearchBar'
+import { setHeaderProps } from '../../store/ui/actions'
+import Link from 'next/link'
 
 Documents.propTypes = {
   dispatch: PropTypes.func,
@@ -80,8 +82,9 @@ Documents.defaultProps = {
 
 Documents.getInitialProps = function() {
   return {
-    backHref: '/select',
-    backTitle: 'Upload your own documents'
+    showNavigation: true
+    // backHref: '/select',
+    // backTitle: 'Upload your own documents'
     // pageTitle: 'Your uploaded documents',
   }
 }
@@ -139,6 +142,18 @@ function Documents({
   const listDetailsClassNames = classNames(css.listDetails)
   const introClassNames = classNames(css.intro)
 
+  useEffect(() => {
+    dispatch(setHeaderProps({
+      showNavigation: !!searchQuery
+    }))
+
+    return () => {
+      dispatch(setHeaderProps({
+        showNavigation: true
+      }))
+    }
+  }, [ searchQuery ])
+
   if (documentsTotal === 0 && status === 'success') {
     return (
       <div className={css.documents}>
@@ -155,6 +170,9 @@ function Documents({
   return (
     <div className={css.documents}>
       <div className={introClassNames}>
+        {!searchQuery && <p>
+          Search through documents to find the information you are looking for
+        </p>}
         <SearchBar
           className={css.searchBar}
           light
@@ -163,19 +181,22 @@ function Documents({
             'How to prevent transmission of COVID-19',
             'What is the recommended treatment for COVID-19?'
           ]}
+          placeholder={ENABLE_KENDRA ? 'Type a Natural Language Query related to COVID-19' : null}
         />
       </div>
 
       {status === 'pending' && !files.length && <Loading />}
       {(status === 'success' || !!files.length) && !searchQuery && (
         <Fragment>
-          {!!files.length && (
-            <div className={listDetailsClassNames}>
-              <p>
+          <div className={listDetailsClassNames}>
+            <p className={css.instructions}>Analyze a document from the list of documents below, or <Link href="/select"><a>upload your own documents</a></Link>.</p>
+
+            {!!files.length && (
+              <p className={css.fileCount}>
                 Showing {files.length} of {documentsTotal} document{documentsTotal !== 1 && 's'}
               </p>
-            </div>
-          )}
+            )}
+          </div>
           <DocumentList items={files} className={css.list} />
           {status === 'pending' && !!files.length && (
             <Loading size={64} overlay={false} className={css.loadingItems} />
