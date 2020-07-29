@@ -20,52 +20,23 @@ def on_create(event, context):
     )
     
     print("covid FAQ created")
-                                            
-    create_data_source_response = kendra_client.create_data_source(
-        Name='DUSCovidDataset',
-        IndexId= kendraIndexId,
-        Type='S3',
-        Configuration={
-            'S3Configuration': {
-                'BucketName': dataBucketName,
-                'InclusionPrefixes': [
-                    'documents/'
-                ]
-            }
-        },
-        Description='Covid pdfs data',
-        RoleArn=roleArn
-    )
-    dataSourceId = create_data_source_response['Id']
-    print("Data source id {} for kendra index with id {} created.".format(dataSourceId, kendraIndexId))
-    print("syncing the s3 data source")
     
+    # create s3 folders
+    s3_client = boto3.client('s3', region_name=os.environ['AWS_REGION'])
+    s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('documentDrop' +'/'))
+    s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
+    
+    # copy the covid pdfs into the bulk processing bucket for processing
+    
+    dataSourceId = ""
     return {'PhysicalResourceId' : dataSourceId}
-   
+
+
+
 def on_update(event, context):
-    kendra_client = boto3.client('kendra')
-    kendraIndexId = os.environ['KENDRA_INDEX_ID']
-    print("Updating the s3 data source and connector for kendra index id: {}".format(kendraIndexId))
-    dataBucketName = os.environ['DATA_BUCKET_NAME']
-    roleArn = os.environ['KENDRA_ROLE_ARN']
-    dataSourceId = event['PhysicalResourceId']
-    # Name of the data source cannot be updated. Hence we do not give the customers an option to do so.
-    try:
-        update_data_source_response = kendra_client.update_data_source(
-            Id=dataSourceId,
-            Name='DUSCovidDataset',
-            IndexId= kendraIndexId,
-            Configuration={
-                'S3Configuration': {
-                    'BucketName': dataBucketName,
-                }
-            },
-            Description='Covid pdfs data',
-            RoleArn=roleArn
-        )
-        return {'PhysicalResourceId' : dataSourceId}
-    except:
-        raise
+    # not in use
+    return
+
 
 def lambda_handler(event, context):
     print("event: {}".format(event))
