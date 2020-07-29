@@ -76,7 +76,7 @@ def processDocument(record):
     ingestionDocumentKey = record['s3']['object']['key']
     ingestionDocumentFilename = record['s3']['object']['key'].split('/')[1]
 
-    s3Client = boto3.client('s3')
+    s3Client = boto3.client('s3', region_name=os.environ['AWS_REGION'])
     
     # get document from bulk bucket
     ret = downloadDocument(ingestionBucketName,
