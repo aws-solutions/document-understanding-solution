@@ -27,10 +27,45 @@ def on_create(event, context):
     s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
     
     # copy the covid pdfs into the bulk processing bucket for processing
-    
-    dataSourceId = ""
-    return {'PhysicalResourceId' : dataSourceId}
+    # get a list of all covid pdfs and their associated kendra policy
+    response = s3_client.list_objects_v2(Bucket=dataBucketName, MaxKeys=1000)
 
+    s3_resource = boto3.resource('s3', region_name=os.environ['AWS_REGION'])
+
+    # copy over in the bulk bucket the kendra json policy files
+    for doc in response['Contents']:
+        
+        if doc['Key'].split('.')[-1] == 'json':
+            
+            copy_source = {
+                'Bucket': dataBucketName,
+                'Key': doc['Key']
+            }
+            
+            destinationKey = doc['Key'].split('/')[2]
+
+            s3_resource.meta.client.copy(copy_source,
+                                     os.environ['BULK_PROCESSING_BUCKET'],
+                                     'kendraPolicyDrop/' + destinationKey)
+
+    # copy over in the bulk bucket the pdfs
+    for doc in response['Contents']:
+        
+        if doc['Key'].split('.')[-1] == 'pdf':
+            
+            copy_source = {
+                'Bucket': dataBucketName,
+                'Key': doc['Key']
+            }
+            
+            destinationKey = doc['Key'].split('/')[2]
+
+            s3_resource.meta.client.copy(copy_source,
+                                     os.environ['BULK_PROCESSING_BUCKET'],
+                                     'documentDrop/' + destinationKey)
+
+    dataSourceId = "None"
+    return {'PhysicalResourceId' : dataSourceId}
 
 
 def on_update(event, context):
