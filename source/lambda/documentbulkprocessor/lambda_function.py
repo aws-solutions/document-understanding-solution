@@ -165,8 +165,9 @@ def processQueueRecord(queueRecord):
     if 'Records' in records:
         for record in records['Records']:
             try:
-                if record['eventSource'] == 'aws:s3' and record['eventName'] == 'ObjectCreated:Put':
-                    processDocument(record)
+                if record['eventSource'] == 'aws:s3':
+                    if record['eventName'] == 'ObjectCreated:Put' or record['eventName'] == 'ObjectCreated:Copy':
+                        processDocument(record)
             except Exception as e:
                 print("Failed to process s3 record. Exception: {}".format(e))
 

@@ -771,12 +771,14 @@ export class CdkTextractStack extends cdk.Stack {
     bulkProcessingBucket.grantReadWrite(documentBulkProcessor);
 
     bulkProcessingBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.SqsDestination(documentBulkProcessingQueue), {prefix: 'documentDrop/' } );
+    bulkProcessingBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.SqsDestination(documentBulkProcessingQueue), {prefix: 'documentDrop/' } );
+    
     documentBulkProcessor.addEventSource(
       new SqsEventSource(documentBulkProcessingQueue, {
         batchSize: 10,
       })
     );
-
+                  
     const documentProcessor = new lambda.Function(
       this,
       this.resourceName("TaskProcessor"),
