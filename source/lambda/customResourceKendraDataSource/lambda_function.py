@@ -62,7 +62,7 @@ def on_create(event, context):
                                                  CopySource= '/' + dataBucketName + '/' + doc['Key'],
                                                  Key='documentDrop/' + destinationKey)
 
-    return {'status':'ok'}
+    return
 
 
 def on_update(event, context):
