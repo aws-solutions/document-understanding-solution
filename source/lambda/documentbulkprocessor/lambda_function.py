@@ -120,12 +120,12 @@ def processDocument(record):
         print("unspecified exception from s3helper.readFromS3() for policy file: " + str(e))
                                     
     # generate UUID for document
-    documentId = generateDocumentID(os.environ['OUTPUT_BUCKET'], s3Client)
+    documentId = generateDocumentID(os.environ['DOCUMENTS_BUCKET'], s3Client)
 
     # upload document in document bucket
     destinationDocumentKey = "public/" + documentId + "/" + ingestionDocumentFilename
 
-    ret = uploadDocument(os.environ['OUTPUT_BUCKET'],
+    ret = uploadDocument(os.environ['DOCUMENTS_BUCKET'],
                          destinationDocumentKey,
                          ingestionDocumentFilename,
                          s3Client)
@@ -138,9 +138,9 @@ def processDocument(record):
     # if optional Kendra policy was present, upload it to document folder
     # alongside document
     if policyData != None:
-        print("copying over to document folder the kendra policy file")
+        print("copying over the kendra policy file for document " + documentId)
         s3helper.writeToS3(policyData,
-                           os.environ['OUTPUT_BUCKET'],
+                           os.environ['DOCUMENTS_BUCKET'],
                            "public/" + documentId + "/" + policyFilename,
                            awsRegion=os.environ['AWS_REGION'])
 
@@ -151,7 +151,7 @@ def processDocument(record):
                              os.environ['OUTPUT_TABLE'])
 
     docStore.createDocument(documentId,
-                            os.environ['OUTPUT_BUCKET'],
+                            os.environ['DOCUMENTS_BUCKET'],
                             destinationDocumentKey)
 
     return

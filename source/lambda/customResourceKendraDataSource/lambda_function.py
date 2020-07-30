@@ -4,10 +4,10 @@ import os
 def on_create(event, context):
     kendra_client = boto3.client('kendra')
     kendraIndexId = os.environ['KENDRA_INDEX_ID']
-    print("creating an s3 data source and connector for kendra index id: {}".format(kendraIndexId))
+    print("indexing covid-19 documents for kendra index id: {}".format(kendraIndexId))
     dataBucketName = os.environ['DATA_BUCKET_NAME']
     roleArn = os.environ['KENDRA_ROLE_ARN']
-
+    
     create_faq_response = kendra_client.create_faq(
         IndexId=kendraIndexId,
         Name="DUSCovidFAQ",
@@ -23,49 +23,46 @@ def on_create(event, context):
     
     # create s3 folders
     s3_client = boto3.client('s3', region_name=os.environ['AWS_REGION'])
-    s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('documentDrop' +'/'))
-    s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
+    #s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('documentDrop' +'/'))
+    #s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
+    
+    print("copying covid pdfs and kendra policies to bulk processing bucket")
     
     # copy the covid pdfs into the bulk processing bucket for processing
     # get a list of all covid pdfs and their associated kendra policy
     response = s3_client.list_objects_v2(Bucket=dataBucketName, MaxKeys=1000)
 
-    s3_resource = boto3.resource('s3', region_name=os.environ['AWS_REGION'])
-
     # copy over in the bulk bucket the kendra json policy files
     for doc in response['Contents']:
         
-        if doc['Key'].split('.')[-1] == 'json':
+        if doc['Key'].split('.')[-1].lower() == 'json':
             
-            copy_source = {
-                'Bucket': dataBucketName,
-                'Key': doc['Key']
-            }
-            
-            destinationKey = doc['Key'].split('/')[2]
-
-            s3_resource.meta.client.copy(copy_source,
-                                     os.environ['BULK_PROCESSING_BUCKET'],
-                                     'kendraPolicyDrop/' + destinationKey)
+            # we process only files under the 'documents' folder
+            # example: documents/GeneralPublic/covid.pdf
+            folders = doc['Key'].split('/')
+            if folders[0] == 'documents':
+                destinationKey = doc['Key'].split('/')[2]
+                print("Copying sample kendra policy from covid bucket to bulk bucket: " + destinationKey)
+                ret = s3_client.copy_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'],
+                                                 CopySource= '/' + dataBucketName + '/' + doc['Key'],
+                                                 Key='kendraPolicyDrop/' + destinationKey)
 
     # copy over in the bulk bucket the pdfs
     for doc in response['Contents']:
         
-        if doc['Key'].split('.')[-1] == 'pdf':
+        if doc['Key'].split('.')[-1].lower() != 'json':
             
-            copy_source = {
-                'Bucket': dataBucketName,
-                'Key': doc['Key']
-            }
-            
-            destinationKey = doc['Key'].split('/')[2]
+            # we process only files under the 'documents' folder
+            # example: documents/GeneralPublic/covid.pdf
+            folders = doc['Key'].split('/')
+            if folders[0] == 'documents':
+                destinationKey = doc['Key'].split('/')[2]
+                print("Copying sample document from covid bucket to bulk bucket: " + destinationKey)
+                ret = s3_client.copy_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'],
+                                                 CopySource= '/' + dataBucketName + '/' + doc['Key'],
+                                                 Key='documentDrop/' + destinationKey)
 
-            s3_resource.meta.client.copy(copy_source,
-                                     os.environ['BULK_PROCESSING_BUCKET'],
-                                     'documentDrop/' + destinationKey)
-
-    dataSourceId = "None"
-    return {'PhysicalResourceId' : dataSourceId}
+    return {'status':'ok'}
 
 
 def on_update(event, context):

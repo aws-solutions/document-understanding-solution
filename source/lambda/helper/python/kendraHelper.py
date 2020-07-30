@@ -5,6 +5,16 @@ import os
 from helper import S3Helper
 
 
+# document in the bucket have prepending folder names, when spliting with '/'
+# the actual file name is at index 3
+# example: public/2866bd2b-bfa7-4df4-8c4e-8b550bd97ad2/output/mydoc-searchable.pdf
+DOCUMENT_KEY_FILENAME_INDEX = 3
+
+# this is the length to move back to remove the suffix applied to document when
+# transformed into a searchable pdf example mydoc-searchable.pdf
+SEARCHABLE_PDF_SUFFIX_LENGTH = -15
+
+
 class KendraHelper:
 
 
@@ -31,7 +41,7 @@ class KendraHelper:
     
         # try to fetch the optional kendra policy file that may have been uploaded to s3
         # along with the document
-        originalDocumentName = s3key[:-15].split('/')[3]
+        originalDocumentName = s3key[:SEARCHABLE_PDF_SUFFIX_LENGTH].split('/')[DOCUMENT_KEY_FILENAME_INDEX]
         policyFilepath = "public/" + documentId + "/" + originalDocumentName + "." + documentExtension + ".metadata.json"
         s3helper = S3Helper()
         policyData = None
@@ -93,7 +103,7 @@ class KendraHelper:
         except Exception as e:
             print("exception while processing policy file " + policyFilepath + str(e))
     
-        print("document will have the following membership policy in Kendra: " + json.dumps(accessControlList))
+        print('Document {} will have the following membership policy in Kendra:{}'.format(documentId, json.dumps(accessControlList)))
     
         # get Kendra to index the document along with memberships
         kendraclient = client = boto3.client('kendra', region_name=os.environ['AWS_REGION'])

@@ -758,7 +758,7 @@ export class CdkTextractStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(300),
         tracing: lambda.Tracing.ACTIVE,
         environment: {
-            OUTPUT_BUCKET: documentsS3Bucket.bucketName,
+            DOCUMENTS_BUCKET: documentsS3Bucket.bucketName,
             OUTPUT_TABLE: outputTable.tableName,
             DOCUMENTS_TABLE: documentsTable.tableName
         },
