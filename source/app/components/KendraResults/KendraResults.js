@@ -71,6 +71,7 @@ export default function KendraResults({
   resultCount,
   filteredResultCount,
   showPersonaSelector,
+  isComparing,
   ...rest
 }) {
   const dispatch = useDispatch();
@@ -138,6 +139,12 @@ export default function KendraResults({
         }}
       />
       <nav {...rest} className={css.topNav}>
+        <header className={cs(isComparing && css.comparing)}>
+          <h2>Amazon Kendra{!isComparing ? ' Results' : ''}</h2>
+          { isComparing ?
+            <p>Semantic search results</p>
+          : null }
+        </header>
         {!isQueryLongEnough && (
           <p className={css.noContent}>
             Enter a search query longer than {MIN_SEARCH_QUERY_LENGTH - 1}{" "}
@@ -158,8 +165,6 @@ export default function KendraResults({
             }`}
           </div>
         )}*/}
-
-        <h2>Amazon Kendra Results</h2>
 
         {showPersonaSelector && <PersonaSelector />}
       </nav>

@@ -5,10 +5,18 @@
   width: rem(800);
   min-height: 300px;
 
-  header {
-    display: flex;
-    margin-bottom: 0.25em;
-    align-items: center;
+  > header {
+    &.comparing {
+      text-align: center;
+
+      h2 {
+        margin-bottom: 0;
+      }
+
+      p {
+        margin-top: 0;
+      }
+    }
   }
 
   svg {
@@ -69,6 +77,12 @@
 
   &:nth-child(even) {
     background: color(gray, 70);
+  }
+
+  header {
+    display: flex;
+    margin-bottom: 0.25em;
+    align-items: center;
   }
 
   h3 {

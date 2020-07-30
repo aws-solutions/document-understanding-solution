@@ -225,6 +225,7 @@ function Documents({
                 searchQuery={searchQuery}
                 searchTotalDocuments={searchTotalDocuments}
                 searchTotalMatches={searchTotalMatches}
+                isComparing={selectedSearch === 'both'}
               />
             : null }
 
@@ -240,6 +241,7 @@ function Documents({
                 filteredResultCount={kendraFilteredResultCount}
                 searchPersona={searchPersona}
                 showPersonaSelector={selectedSearch === 'kendra'}
+                isComparing={selectedSearch === 'both'}
               />
             : null }
 

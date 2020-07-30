@@ -45,6 +45,7 @@ export default function SearchResults({
   searchStatus,
   searchTotalDocuments,
   searchTotalMatches,
+  isComparing,
   ...rest
 }) {
   const searchResultsClassNames = classNames(css.searchResults, className)
@@ -54,7 +55,12 @@ export default function SearchResults({
 
   return (
     <nav className={searchResultsClassNames} {...rest}>
-      <h2>Elasticsearch Results</h2>
+      <header className={classNames(isComparing && css.comparing)}>
+        <h2>Elasticsearch{!isComparing ? ' Results' : ''}</h2>
+        { isComparing ?
+          <p>Keyword search results</p>
+        : null }
+      </header>
 
       {!isQueryLongEnough && (
         <p className={css.noContent}>

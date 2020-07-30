@@ -27,4 +27,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  > header {
+    &.comparing {
+      width: 100%;
+      text-align: center;
+
+      h2 {
+        margin-bottom: 0;
+      }
+
+      p {
+        margin-top: 0;
+      }
+    }
+  }
 }
