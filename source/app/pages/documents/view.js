@@ -22,7 +22,7 @@ import { Storage } from 'aws-amplify'
 
 import Loading from '../../components/Loading/Loading'
 import DocumentViewer from '../../components/DocumentViewer/DocumentViewer'
-import SearchBar from '../../components/SearchBar/SearchBar'
+import DocumentSearchBar from '../../components/DocumentSearchBar/DocumentSearchBar'
 import Tabs from '../../components/Tabs/Tabs'
 
 import {
@@ -36,8 +36,8 @@ import {
 import { getDocumentById } from '../../store/entities/documents/selectors'
 import { setHeaderProps , setSelectedTrack} from '../../store/ui/actions'
 import { getSelectedTrackId } from '../../store/ui/selectors'
-import { setCurrentPageNumber, setSearchQuery } from '../../store/entities/meta/actions'
-import { getCleanSearchQuery, getCurrentPageNumber } from '../../store/entities/meta/selectors'
+import { setCurrentPageNumber, setDocumentSearchQuery } from '../../store/entities/meta/actions'
+import { getDocumentSearchQuery, getCurrentPageNumber } from '../../store/entities/meta/selectors'
 
 import {
   getDocumentPageCount,
@@ -190,7 +190,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const redactMatches = useCallback(async () => {
     dispatch(addRedactions(id, currentPageNumber, wordsMatchingSearch))
-    dispatch(setSearchQuery(''))
+    dispatch(setDocumentSearchQuery(''))
   }, [currentPageNumber, dispatch, id, wordsMatchingSearch])
 
   const redact = useCallback(
@@ -362,7 +362,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             </div>
           </div>
           <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
-            <SearchBar className={css.searchBar} placeholder="Search current document…" />
+            <DocumentSearchBar className={css.searchBar} placeholder="Search current document…" />
             {track === 'redaction' ? <Button onClick={redactMatches}>Redact matches</Button> : null}
           </div>
           <div className={css.content} ref={contentRef}>
@@ -485,7 +485,7 @@ export default connect(function mapStateToProps(state) {
     id,
     currentPageNumber: getCurrentPageNumber(state, id),
     document: getDocumentById(state, id),
-    searchQuery: getCleanSearchQuery(state),
+    searchQuery: getDocumentSearchQuery(state),
     track: getSelectedTrackId(state),
   }
 })(Document)

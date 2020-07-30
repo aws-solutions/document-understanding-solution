@@ -19,6 +19,7 @@ export const getCurrentPageNumber = state => view(getMetaLens('currentPageNumber
 export const getDocumentsNextToken = state => view(getMetaLens('documentsNextToken'), state)
 export const getDocumentsTotal = state => view(getMetaLens('documentsTotal'), state)
 export const getSearchQuery = state => view(getMetaLens('searchQuery'), state)
+export const getDocumentSearchQuery = state => view(getMetaLens('documentSearchQuery'), state)
 export const getCleanSearchQuery = state =>
   pipe(
     view(getMetaLens('searchQuery')),
