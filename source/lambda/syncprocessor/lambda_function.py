@@ -113,12 +113,14 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     if 'KENDRA_INDEX_ID' in os.environ :
         kendraClient = KendraHelper()
         fileName = os.path.basename(objectName).split(".")[0]
+        fileExtension = os.path.basename(objectName).split(".")[1]
         outputDocumentName = "{}{}-searchable.pdf".format(outputPath, fileName)
         kendraClient.indexDocument(os.environ['KENDRA_INDEX_ID'],
                                    os.environ['KENDRA_ROLE_ARN'],
                                    outputBucketName,
                                    outputDocumentName,
-                                   documentId)
+                                   documentId,
+                                   fileExtension)
 
     print("DocumentId: {}".format(documentId))
     print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))

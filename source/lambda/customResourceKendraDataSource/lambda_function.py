@@ -1,13 +1,26 @@
+######################################################################################################################
+#  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+#                                                                                                                    #
+#  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance      #
+#  with the License. A copy of the License is located at                                                             #
+#                                                                                                                    #
+#      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
+#                                                                                                                    #
+#  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
+#  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
+#  and limitations under the License.                                                                                #
+#####################################################################################################################
+
 import boto3
 import os
 
 def on_create(event, context):
     kendra_client = boto3.client('kendra')
     kendraIndexId = os.environ['KENDRA_INDEX_ID']
-    print("creating an s3 data source and connector for kendra index id: {}".format(kendraIndexId))
+    print("indexing covid-19 documents for kendra index id: {}".format(kendraIndexId))
     dataBucketName = os.environ['DATA_BUCKET_NAME']
     roleArn = os.environ['KENDRA_ROLE_ARN']
-
+    
     create_faq_response = kendra_client.create_faq(
         IndexId=kendraIndexId,
         Name="DUSCovidFAQ",
@@ -20,56 +33,54 @@ def on_create(event, context):
     )
     
     print("covid FAQ created")
-                                            
-    create_data_source_response = kendra_client.create_data_source(
-        Name='DUSCovidDataset',
-        IndexId= kendraIndexId,
-        Type='S3',
-        Configuration={
-            'S3Configuration': {
-                'BucketName': dataBucketName,
-                'InclusionPrefixes': [
-                    'documents/'
-                ]
-            }
-        },
-        Description='Covid pdfs data',
-        RoleArn=roleArn
-    )
-    dataSourceId = create_data_source_response['Id']
-    print("Data source id {} for kendra index with id {} created.".format(dataSourceId, kendraIndexId))
-    print("syncing the s3 data source")
-    response = kendra_client.start_data_source_sync_job(
-        Id=dataSourceId,
-        IndexId=kendraIndexId
-    )
-    print("Started sync job for data source id :{}, the execution id of the sync job is :{}".format(dataSourceId,response['ExecutionId']))
-    return {'PhysicalResourceId' : dataSourceId}
-   
+    
+    # create s3 folders
+    s3_client = boto3.client('s3', region_name=os.environ['AWS_REGION'])
+    s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('documentDrop' +'/'))
+    s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
+    
+    print("copying covid pdfs and kendra policies to bulk processing bucket")
+    
+    # copy the covid pdfs into the bulk processing bucket for processing
+    # get a list of all covid pdfs and their associated kendra policy
+    response = s3_client.list_objects_v2(Bucket=dataBucketName, MaxKeys=1000)
+
+    # copy over in the bulk bucket the kendra json policy files
+    for doc in response['Contents']:
+        
+        if doc['Key'].split('.')[-1].lower() == 'json':
+            
+            # we process only files under the 'documents' folder
+            # example: documents/GeneralPublic/covid.pdf
+            folders = doc['Key'].split('/')
+            if folders[0] == 'documents':
+                destinationKey = doc['Key'].split('/')[2]
+                print("Copying sample kendra policy from covid bucket to bulk bucket: " + destinationKey)
+                ret = s3_client.copy_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'],
+                                                 CopySource= '/' + dataBucketName + '/' + doc['Key'],
+                                                 Key='kendraPolicyDrop/' + destinationKey)
+
+    # copy over in the bulk bucket the pdfs
+    for doc in response['Contents']:
+        
+        if doc['Key'].split('.')[-1].lower() != 'json':
+            
+            # we process only files under the 'documents' folder
+            # example: documents/GeneralPublic/covid.pdf
+            folders = doc['Key'].split('/')
+            if folders[0] == 'documents':
+                destinationKey = doc['Key'].split('/')[2]
+                print("Copying sample document from covid bucket to bulk bucket: " + destinationKey)
+                ret = s3_client.copy_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'],
+                                                 CopySource= '/' + dataBucketName + '/' + doc['Key'],
+                                                 Key='documentDrop/' + destinationKey)
+
+    return
+
+
 def on_update(event, context):
-    kendra_client = boto3.client('kendra')
-    kendraIndexId = os.environ['KENDRA_INDEX_ID']
-    print("Updating the s3 data source and connector for kendra index id: {}".format(kendraIndexId))
-    dataBucketName = os.environ['DATA_BUCKET_NAME']
-    roleArn = os.environ['KENDRA_ROLE_ARN']
-    dataSourceId = event['PhysicalResourceId']
-    # Name of the data source cannot be updated. Hence we do not give the customers an option to do so.
-    try:
-        update_data_source_response = kendra_client.update_data_source(
-            Id=dataSourceId,
-            Name='DUSCovidDataset',
-            IndexId= kendraIndexId,
-            Configuration={
-                'S3Configuration': {
-                    'BucketName': dataBucketName,
-                }
-            },
-            Description='Covid pdfs data',
-            RoleArn=roleArn
-        )
-        return {'PhysicalResourceId' : dataSourceId}
-    except:
-        raise
+    return
+
 
 def lambda_handler(event, context):
     print("event: {}".format(event))

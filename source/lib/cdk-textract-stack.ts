@@ -758,7 +758,9 @@ export class CdkTextractStack extends cdk.Stack {
         timeout: cdk.Duration.seconds(300),
         tracing: lambda.Tracing.ACTIVE,
         environment: {
-
+            DOCUMENTS_BUCKET: documentsS3Bucket.bucketName,
+            OUTPUT_TABLE: outputTable.tableName,
+            DOCUMENTS_TABLE: documentsTable.tableName
         },
       }
     );
@@ -769,12 +771,14 @@ export class CdkTextractStack extends cdk.Stack {
     bulkProcessingBucket.grantReadWrite(documentBulkProcessor);
 
     bulkProcessingBucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT, new s3n.SqsDestination(documentBulkProcessingQueue), {prefix: 'documentDrop/' } );
+    bulkProcessingBucket.addEventNotification(s3.EventType.OBJECT_CREATED_COPY, new s3n.SqsDestination(documentBulkProcessingQueue), {prefix: 'documentDrop/' } );
+    
     documentBulkProcessor.addEventSource(
       new SqsEventSource(documentBulkProcessingQueue, {
         batchSize: 10,
       })
     );
-
+                  
     const documentProcessor = new lambda.Function(
       this,
       this.resourceName("TaskProcessor"),
@@ -1264,7 +1268,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     // add kendra index id to lambda environment in case of DUS+Kendra mode
     if(props.enableKendra){
-      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket, documentsS3Bucket, samplesS3Bucket);
+      let kendraResources = this.createandGetKendraRelatedResources(boto3Layer,logsS3Bucket, documentsS3Bucket, samplesS3Bucket, bulkProcessingBucket);
       const kendraRoleArn = kendraResources['KENDRA_ROLE_ARN'];
       const kendraIndexId = kendraResources['KENDRA_INDEX_ID'];
       apiProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId)
@@ -1315,7 +1319,7 @@ export class CdkTextractStack extends cdk.Stack {
     addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
     }
   }
-  createandGetKendraRelatedResources(boto3Layer: lambda.LayerVersion, logsS3Bucket: s3.Bucket, documentsS3Bucket: s3.Bucket, samplesS3Bucket: s3.Bucket) {
+  createandGetKendraRelatedResources(boto3Layer: lambda.LayerVersion, logsS3Bucket: s3.Bucket, documentsS3Bucket: s3.Bucket, samplesS3Bucket: s3.Bucket, bulkProcessingBucket: s3.Bucket) {
     const covidDataBucket = new s3.Bucket(
       this,
       this.resourceName("CovidDataBucket"),
@@ -1514,13 +1518,16 @@ export class CdkTextractStack extends cdk.Stack {
         KENDRA_ROLE_ARN: kendraRole.roleArn,
         KMS_KEY_ID: kendraKMSKey.keyId,
         KENDRA_INDEX_ID: kendraIndexCustomResource.getAtt('KendraIndexId').toString(),
-        DATA_BUCKET_NAME: covidDataBucket.bucketName
+        DATA_BUCKET_NAME: covidDataBucket.bucketName,
+        BULK_PROCESSING_BUCKET: bulkProcessingBucket.bucketName
       }
     });
 
     onEventKendraDataSourceLambda.addLayers(boto3Layer);
     kendraKMSKey.grantEncryptDecrypt(onEventKendraDataSourceLambda);
-
+    bulkProcessingBucket.grantReadWrite(onEventKendraDataSourceLambda);
+    covidDataBucket.grantReadWrite(onEventKendraDataSourceLambda);
+                                              
     onEventKendraDataSourceLambda.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
