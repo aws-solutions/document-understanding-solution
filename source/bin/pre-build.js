@@ -109,6 +109,9 @@ const GetResources = new Promise((resolve, reject) => {
     resources.FileBucketName = stackDescriptionObj.find((x) =>
       /DocumentsS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
+    resources.BulkProcessingBucketName = stackDescriptionObj.find((x) =>
+      /BulkProcessingBucket/i.test(x.LogicalResourceId)
+    ).PhysicalResourceId;
     resources.SampleBucketName = stackDescriptionObj.find((x) =>
       /SamplesS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
