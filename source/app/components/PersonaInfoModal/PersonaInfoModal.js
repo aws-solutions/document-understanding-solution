@@ -145,7 +145,7 @@ response = kendra.query(
           </pre>
         </section>
         <p className={css.learnMore}>
-          <a href="LINK TODO">Learn more about this feature in the Amazon Kendra Developers page</a>
+          <a href="https://docs.aws.amazon.com/kendra/latest/dg/user-context-filter.html" target="_blank">Learn more about this feature in the Amazon Kendra Developers page</a>
         </p>
       </>}
     </Modal>
