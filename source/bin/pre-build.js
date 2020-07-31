@@ -118,6 +118,9 @@ const GetResources = new Promise((resolve, reject) => {
     resources.ClientAppBucketName = stackDescriptionObj.find((x) =>
       /ClientAppS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
+    resources.CovidDataBucketName = stackDescriptionObj.find((x) =>
+    /CovidDataBucket/i.test(x.LogicalResourceId)
+    ).PhysicalResourceId;
     resources.PdfGenLambda = stackDescriptionObj.find((x) =>
       /pdfgenerator/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;

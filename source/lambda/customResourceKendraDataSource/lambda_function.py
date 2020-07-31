@@ -39,42 +39,8 @@ def on_create(event, context):
     s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('documentDrop' +'/'))
     s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
     
-    print("copying covid pdfs and kendra policies to bulk processing bucket")
+    #copying of the covid the files is done by upload-sample.sh
     
-    # copy the covid pdfs into the bulk processing bucket for processing
-    # get a list of all covid pdfs and their associated kendra policy
-    response = s3_client.list_objects_v2(Bucket=dataBucketName, MaxKeys=1000)
-
-    # copy over in the bulk bucket the kendra json policy files
-    for doc in response['Contents']:
-        
-        if doc['Key'].split('.')[-1].lower() == 'json':
-            
-            # we process only files under the 'documents' folder
-            # example: documents/GeneralPublic/covid.pdf
-            folders = doc['Key'].split('/')
-            if folders[0] == 'documents':
-                destinationKey = doc['Key'].split('/')[2]
-                print("Copying sample kendra policy from covid bucket to bulk bucket: " + destinationKey)
-                ret = s3_client.copy_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'],
-                                                 CopySource= '/' + dataBucketName + '/' + doc['Key'],
-                                                 Key='kendraPolicyDrop/' + destinationKey)
-
-    # copy over in the bulk bucket the pdfs
-    for doc in response['Contents']:
-        
-        if doc['Key'].split('.')[-1].lower() != 'json':
-            
-            # we process only files under the 'documents' folder
-            # example: documents/GeneralPublic/covid.pdf
-            folders = doc['Key'].split('/')
-            if folders[0] == 'documents':
-                destinationKey = doc['Key'].split('/')[2]
-                print("Copying sample document from covid bucket to bulk bucket: " + destinationKey)
-                ret = s3_client.copy_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'],
-                                                 CopySource= '/' + dataBucketName + '/' + doc['Key'],
-                                                 Key='documentDrop/' + destinationKey)
-
     return
 
 
