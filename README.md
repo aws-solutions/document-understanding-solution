@@ -5,7 +5,7 @@ DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehen
 Current document formats supported : **PDF,JPG,PNG**
 
 The instructions below cover installation on Unix-based Operating systems like macOS and Linux. 
-You can use a AWS Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
+You can use a AWS Cloud9 environment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
 To run the solution,first clone the project
 
 There are multiple options to deploy the solution. Please review them below-
@@ -15,13 +15,29 @@ There are multiple options to deploy the solution. Please review them below-
 There is also a deploy option for developers, and those wishing to modify the source code. This deploy allows for running the client-side code on a local server.
 
 ### Requirements
-Please ensure you install all requirements before beginning the deployment
-- yarn
-- node 10+
+Please ensure you install all requirements before beginning the deployment. Based on your OS, you can use yum/homebrew for installing dependencies 
+
 - aws cli
+  
+  ```sudo yum -y install aws-cli```
+
+- node 10+
+  
+  ```sudo yum -y install nodejs```
+
+- yarn
+
+  ```curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo```
+  ```sudo yum -y install yarn```
+
 - tsc
+
+  ``` npm install -g typescript ```
+
 - jq
 
+  ```sudo yum -y install jq```
+  
 To deploy using this approach, you must first set few values inside the `package.json` file in the `source` folder.
 
 - Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile.
@@ -179,6 +195,8 @@ http://www.apache.org/licenses/
 
 ## Additional Notes
 
- The intended use is for users to use this application as a reference architecture to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
+* The intended use is for users to use this application as a reference architecture to build production ready systems for their use cases. Users will deploy this solution in their own AWS accounts and own the deployment, maintenance and updates of their applications based on this solution.
+
+* DUS can currently process documents upto 200 pages/150MB
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
