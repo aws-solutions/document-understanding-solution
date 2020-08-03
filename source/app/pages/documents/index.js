@@ -83,9 +83,6 @@ Documents.defaultProps = {
 Documents.getInitialProps = function() {
   return {
     showNavigation: true
-    // backHref: '/select',
-    // backTitle: 'Upload your own documents'
-    // pageTitle: 'Your uploaded documents',
   }
 }
 

@@ -70,7 +70,7 @@ Document.propTypes = {
   dispatch: PropTypes.func,
   document: PropTypes.object,
   id: PropTypes.string,
-  // pageTitle: PropTypes.string,
+  pageTitle: PropTypes.string,
   searchQuery: PropTypes.string,
   track: PropTypes.string,
 }
@@ -145,16 +145,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   const [tab, selectTab] = useState('search')
 
   const [trackTab, selectTrack] = useState('search')
-  // Update header props when we get a document response
-  // useEffect(() => {
-  //   dispatch(
-  //     setHeaderProps(
-  //       reject(either(isNil, isEmpty))
-  //     )
-  //   )
-
-  //   return () => dispatch(setHeaderProps({}))
-  // }, [dispatch, documentName, pageTitle, track])
 
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document

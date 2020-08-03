@@ -75,7 +75,7 @@ function Home({ dispatch, tracks }) {
 
 Home.getInitialProps = function() {
   return {
-    // pageTitle: 'Welcome',
+    pageTitle: 'Welcome',
   }
 }
 

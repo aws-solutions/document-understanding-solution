@@ -151,7 +151,7 @@ class AppLayout extends App {
 }
 
 function Page({ children, pageProps, pathname }) {
-  const { showNavigation, backTitle, pageTitle: heading } = pageProps;
+  const { showNavigation, pageTitle: heading } = pageProps;
   const showGrid = useGridOverlay();
 
   // All routes are protected by default. We whitelist public routes.
@@ -195,7 +195,7 @@ function Page({ children, pageProps, pathname }) {
   return (
     shouldRenderApp && (
       <div className={css.container}>
-        <Header {...{ heading, showNavigation, backTitle }} />
+        <Header {...{ heading, showNavigation }} />
 
         <main>{children}</main>
 

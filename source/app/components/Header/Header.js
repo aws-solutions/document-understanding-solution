@@ -27,10 +27,9 @@ import css from './Header.scss'
 
 Header.propTypes = {
   showNavigation: PropTypes.string,
-  heading: PropTypes.string,
 }
 
-function Header({ showNavigation, backTitle, heading }) {
+function Header({ showNavigation }) {
   return (
     <header className={css.header}>
       <div>
@@ -56,10 +55,6 @@ function Header({ showNavigation, backTitle, heading }) {
           </>
         )}
       </div>
-
-      {/* <h1>{heading}</h1> */}
-
-
 
       <div className={css.logoutlink}>
         <Button className={css.borderlessButton} inverted onClick={handleLogoutClick}>Log Out</Button>
