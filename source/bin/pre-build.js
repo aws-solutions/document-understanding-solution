@@ -20,6 +20,7 @@ const stackName = `${process.env.STACKNAME}Stack`;
 const region = process.env.AWS_REGION;
 aws.config.region = region;
 const isROMode = process.env.isROMode;
+const enableKendra = process.env.ENABLE_KENDRA;
 
 // listStackResources needs to be called twice in order to get the full stack.
 const listFullStack = (stackName, callback) => {
@@ -118,9 +119,11 @@ const GetResources = new Promise((resolve, reject) => {
     resources.ClientAppBucketName = stackDescriptionObj.find((x) =>
       /ClientAppS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
-    resources.CovidDataBucketName = stackDescriptionObj.find((x) =>
-    /CovidDataBucket/i.test(x.LogicalResourceId)
-    ).PhysicalResourceId;
+    if(enableKendra == "true"){
+      resources.CovidDataBucketName = stackDescriptionObj.find((x) =>
+      /CovidDataBucket/i.test(x.LogicalResourceId)
+      ).PhysicalResourceId;
+    }
     resources.PdfGenLambda = stackDescriptionObj.find((x) =>
       /pdfgenerator/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
