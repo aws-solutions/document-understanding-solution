@@ -173,7 +173,7 @@ function Documents({
         <SearchBar
           className={css.searchBar}
           light
-          suggestions={ENABLE_KENDRA && [
+          suggestions={ENABLE_KENDRA && searchQuery && [
             'What are the testing guidelines for COVID-19?',
             'How to prevent transmission of COVID-19',
             'What is the recommended treatment for COVID-19?'
