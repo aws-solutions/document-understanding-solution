@@ -12,7 +12,7 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
- import React, { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import ReactDOM from 'react-dom';
 
 import css from './Modal.scss';
