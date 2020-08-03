@@ -190,6 +190,12 @@ export class CdkTextractStack extends cdk.Stack {
             behaviors: [{ isDefaultBehavior: true }],
           },
         ],
+        errorConfigurations: [{
+          errorCode: 404,
+          responseCode: 200,
+          errorCachingMinTtl: 5,
+          responsePagePath: '/index.html'
+        }],
         priceClass: PriceClass.PRICE_CLASS_100,
         httpVersion: HttpVersion.HTTP2,
         enableIpV6: true,
