@@ -68,8 +68,8 @@ else {
 
       <h2>Upload your own documents</h2>
       <FileUpload />
-      {/* <h2>Or add some example documents</h2>
-      <SampleCollections /> */}
+      <h2>Or add some example documents</h2>
+      <SampleCollections />
     </div>
   )
   }
