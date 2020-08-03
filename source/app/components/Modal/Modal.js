@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -12,17 +11,13 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useCallback } from "react";
+import ReactDOM from "react-dom";
 
-import css from './Modal.scss';
+import css from "./Modal.scss";
 
-export default function Modal({
-  title,
-  children,
-  onRequestClose
-}) {
-  const stopProp = useCallback(e => {
+export default function Modal({ title, children, onRequestClose }) {
+  const stopProp = useCallback((e) => {
     e.stopPropagation();
   }, []);
 
@@ -37,11 +32,9 @@ export default function Modal({
             </svg>
           </a>
         </header>
-        <div className={css.content}>
-          {children}
-        </div>
+        <div className={css.content}>{children}</div>
       </div>
     </div>,
     document.body
-  )
+  );
 }

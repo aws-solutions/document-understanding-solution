@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -17,7 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import cs from "classnames";
 import PropTypes from "prop-types";
 
-import Joyride, { STATUS } from 'react-joyride'
+import Joyride, { STATUS } from "react-joyride";
 
 import KendraResultPage from "../../components/KendraResultPage/KendraResultPage";
 import PersonaSelector from "../PersonaSelector/PersonaSelector";
@@ -42,34 +41,32 @@ KendraResults.defaultProps = {
   results: [],
 };
 
-
-
 const WALKTHROUGH_STEPS = [
   {
     target: '[data-walkthrough="top-result"]',
-    title: 'Amazon Kendra suggested answers',
-    content: 'When you type a question, Kendra uses machine learning algorithms to understand the context and return the most relevant results, whether that be a precise answer or an entire document. Kendra will map to the relevant documents and return a specific answer.',
+    title: "Amazon Kendra suggested answers",
+    content:
+      "When you type a question, Kendra uses machine learning algorithms to understand the context and return the most relevant results, whether that be a precise answer or an entire document. Kendra will map to the relevant documents and return a specific answer.",
     disableBeacon: true,
-    placement: 'top'
+    placement: "top",
   },
   {
     target: '[data-walkthrough="faq"]',
-    title: 'Frequently asked questions',
-    content: 'You can upload a list of FAQs to Kendra to provide direct answers to common questions your end users are asking. Kendra will find the closest question to the search query and return the corresponding answer.',
+    title: "Frequently asked questions",
+    content:
+      "You can upload a list of FAQs to Kendra to provide direct answers to common questions your end users are asking. Kendra will find the closest question to the search query and return the corresponding answer.",
     disableBeacon: true,
-    placement: 'top'
+    placement: "top",
   },
   {
     target: '[data-walkthrough="feedback"]',
-    title: 'Promote',
-    content: 'Kendra supports boosting documents based on a vote or view count.',
+    title: "Promote",
+    content:
+      "Kendra supports boosting documents based on a vote or view count.",
     disableBeacon: true,
-    placement: 'top'
-  }
+    placement: "top",
+  },
 ];
-
-
-
 
 export default function KendraResults({
   className,
@@ -101,7 +98,6 @@ export default function KendraResults({
     searchPersona &&
     showPersonaSelector;
 
-
   const [width, setWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -120,19 +116,20 @@ export default function KendraResults({
 
   const hasDismissedWalkthrough = useSelector(getHasDismissedWalkthrough);
 
-  const [ walkthroughRunning, setWalkthroughRunning ] = useState(false);
+  const [walkthroughRunning, setWalkthroughRunning] = useState(false);
   useEffect(() => {
     if (!hasDismissedWalkthrough) setWalkthroughRunning(true);
-  }, [])
+  }, []);
 
-  const walkthroughCallback = useCallback(data => {
-    if ([ STATUS.FINISHED, STATUS.SKIPPED ].includes(data.status)) {
-      dispatch(dismissWalkthrough());
-      setWalkthroughRunning(false);
-    }
-  }, [ dispatch ]);
-
-
+  const walkthroughCallback = useCallback(
+    (data) => {
+      if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data.status)) {
+        dispatch(dismissWalkthrough());
+        setWalkthroughRunning(false);
+      }
+    },
+    [dispatch]
+  );
 
   return (
     <div className={cs(css.base, hasFilteredResults && css.doubleWidth)}>
@@ -142,22 +139,20 @@ export default function KendraResults({
         callback={walkthroughCallback}
         continuous
         showSkipButton
-        locale={{ last: 'Finish' }}
+        locale={{ last: "Finish" }}
         styles={{
           options: {
-            backgroundColor: '#545b64',
-            arrowColor: '#545b64',
-            textColor: '#fff',
-            primaryColor: '#f6761d'
-          }
+            backgroundColor: "#545b64",
+            arrowColor: "#545b64",
+            textColor: "#fff",
+            primaryColor: "#f6761d",
+          },
         }}
       />
       <nav {...rest} className={css.topNav}>
         <header className={cs(isComparing && css.comparing)}>
-          <h2>Amazon Kendra{!isComparing ? ' Results' : ''}</h2>
-          { isComparing ?
-            <p>Semantic search results</p>
-          : null }
+          <h2>Amazon Kendra{!isComparing ? " Results" : ""}</h2>
+          {isComparing ? <p>Semantic search results</p> : null}
         </header>
         {!isQueryLongEnough && (
           <p className={css.noContent}>
@@ -184,14 +179,16 @@ export default function KendraResults({
       </nav>
 
       <div className={css.resultContainer}>
-        {searchStatus === "success" && isQueryLongEnough && (!hasFilteredResults || canShowSideBySide) && (
-          <KendraResultPage
-            title={hasFilteredResults ? "Unfiltered Results" : null}
-            results={results}
-            queryId={kendraQueryId}
-            resultCount={resultCount}
-          />
-        )}
+        {searchStatus === "success" &&
+          isQueryLongEnough &&
+          (!hasFilteredResults || canShowSideBySide) && (
+            <KendraResultPage
+              title={hasFilteredResults ? "Unfiltered Results" : null}
+              results={results}
+              queryId={kendraQueryId}
+              resultCount={resultCount}
+            />
+          )}
 
         {hasFilteredResults ? (
           <KendraResultPage

@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -93,7 +92,10 @@ export default function KendraResultPage({
             for{" "}
             <div className={styles.personaLabel} onClick={clearPersona}>
               {PERSONAS[persona]}
-              <a className={styles.removePersona} title="Click to remove filter">
+              <a
+                className={styles.removePersona}
+                title="Click to remove filter"
+              >
                 &times;
               </a>
             </div>

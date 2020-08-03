@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -12,14 +11,20 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { Fragment, useMemo, useState, useCallback, useEffect } from "react";
+import React, {
+  Fragment,
+  useMemo,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 
 import KendraResultTitle from "../KendraResultTitle/KendraResultTitle";
 import KendraHighlightedText from "../KendraHighlightedText/KendraHighlightedText";
 import KendraResultFooter from "../KendraResultFooter/KendraResultFooter";
 
 import styles from "./KendraTopResults.scss";
-import cs from 'classnames';
+import cs from "classnames";
 
 function getTopAnswer(text) {
   if (text && text.Highlights) {
@@ -47,7 +52,11 @@ export default function KendraTopResults({ results, submitFeedback }) {
         );
 
         return (
-          <article key={result.id} className={styles.result} data-walkthrough="top-result">
+          <article
+            key={result.id}
+            className={styles.result}
+            data-walkthrough="top-result"
+          >
             <KendraResultTitle
               result={result}
               submitFeedback={submitFeedback}
@@ -86,7 +95,10 @@ export default function KendraTopResults({ results, submitFeedback }) {
 
         {renderedResults.length > 1 ? (
           <>
-            <div className={cs(styles.showMore, expanded && styles.expanded)} onClick={toggleExpanded}>
+            <div
+              className={cs(styles.showMore, expanded && styles.expanded)}
+              onClick={toggleExpanded}
+            >
               More suggested answers ({renderedResults.length - 1})
             </div>
             {expanded ? <div>{renderedResults.slice(1)}</div> : null}

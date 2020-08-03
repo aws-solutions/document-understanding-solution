@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -12,70 +11,88 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import classNames from 'classnames'
-import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
-import { throttle } from 'lodash'
-import { reject, isNil } from 'ramda'
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import classNames from "classnames";
+import PropTypes from "prop-types";
+import { connect } from "react-redux";
+import { throttle } from "lodash";
+import { reject, isNil } from "ramda";
 
-import Button from '../Button/Button'
-import FormInput from '../FormInput/FormInput'
+import Button from "../Button/Button";
+import FormInput from "../FormInput/FormInput";
 
 import {
   clearSearchQuery,
   setSearchQuery,
   setSearchStatus,
-} from '../../store/entities/meta/actions'
-import { getSearchQuery, getSearchStatus, getSearchPersona } from '../../store/entities/meta/selectors'
-import { search, clearSearchResults } from '../../store/entities/searchResults/actions'
+} from "../../store/entities/meta/actions";
+import {
+  getSearchQuery,
+  getSearchStatus,
+  getSearchPersona,
+} from "../../store/entities/meta/selectors";
+import {
+  search,
+  clearSearchResults,
+} from "../../store/entities/searchResults/actions";
 
-import { MIN_SEARCH_QUERY_LENGTH } from '../../constants/configs'
+import { MIN_SEARCH_QUERY_LENGTH } from "../../constants/configs";
 
-import css from './SearchBar.scss'
+import css from "./SearchBar.scss";
 
 SearchBar.propTypes = {
   className: PropTypes.string,
   dispatch: PropTypes.func,
   searchQuery: PropTypes.string,
   light: PropTypes.bool,
-}
+};
 
-SearchBar.defaultProps = {}
+SearchBar.defaultProps = {};
 
-function SearchBar({ className, dispatch, searchQuery, searchPersona, light, suggestions, placeholder }) {
-  const searchBarClassNames = classNames(css.searchBar, className)
+function SearchBar({
+  className,
+  dispatch,
+  searchQuery,
+  searchPersona,
+  light,
+  suggestions,
+  placeholder,
+}) {
+  const searchBarClassNames = classNames(css.searchBar, className);
 
-  const [ hasTerm, setHasTerm ] = useState(!!searchQuery)
+  const [hasTerm, setHasTerm] = useState(!!searchQuery);
   const handleClearClick = useCallback(() => {
     dispatch(clearSearchQuery());
-    input.current.value = '';
-  }, [dispatch])
+    input.current.value = "";
+  }, [dispatch]);
 
   useEffect(() => {
-    dispatch(clearSearchQuery())
+    dispatch(clearSearchQuery());
     // eslint-disable-next-line
-  }, [])
+  }, []);
 
   const input = useRef();
 
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
-    dispatch(setSearchQuery(input.current.value))
+    dispatch(setSearchQuery(input.current.value));
   }, []);
 
-  const searchValueChange = useCallback(e => {
+  const searchValueChange = useCallback((e) => {
     setHasTerm(!!e.target.value);
   }, []);
 
   useEffect(() => {
     input.current.value = searchQuery;
-    searchValueChange({ target: { value: searchQuery } })
-  }, [ searchQuery ]);
+    searchValueChange({ target: { value: searchQuery } });
+  }, [searchQuery]);
 
-  const selectSuggestion = useCallback((q) => {
-    dispatch(setSearchQuery(q));
-  }, [ dispatch ]);
+  const selectSuggestion = useCallback(
+    (q) => {
+      dispatch(setSearchQuery(q));
+    },
+    [dispatch]
+  );
 
   return (
     <form className={searchBarClassNames} onSubmit={handleSubmit}>
@@ -97,30 +114,37 @@ function SearchBar({ className, dispatch, searchQuery, searchPersona, light, sug
             className={css.clear}
             onClick={handleClearClick}
           >
-            <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              height="24"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path d="m12 10.5857864 5.2928932-5.29289318c.3905243-.39052429 1.0236893-.39052429 1.4142136 0s.3905243 1.02368927 0 1.41421356l-5.2928932 5.29289322 5.2928932 5.2928932c.3905243.3905243.3905243 1.0236893 0 1.4142136s-1.0236893.3905243-1.4142136 0l-5.2928932-5.2928932-5.29289322 5.2928932c-.39052429.3905243-1.02368927.3905243-1.41421356 0s-.39052429-1.0236893 0-1.4142136l5.29289318-5.2928932-5.29289318-5.29289322c-.39052429-.39052429-.39052429-1.02368927 0-1.41421356s1.02368927-.39052429 1.41421356 0z" />
             </svg>
           </Button>
         ) : null}
-        {!hasTerm && suggestions ?
+        {!hasTerm && suggestions ? (
           <div className={css.suggestions}>
             <ul>
-              {suggestions.map(q => (
-                <li key={q} onClick={() => selectSuggestion(q)}>{q}</li>
+              {suggestions.map((q) => (
+                <li key={q} onClick={() => selectSuggestion(q)}>
+                  {q}
+                </li>
               ))}
             </ul>
           </div>
-        : null}
+        ) : null}
       </div>
       <Button onClick={handleSubmit}>Search</Button>
     </form>
-  )
+  );
 }
 
 export default connect(function mapStateToProps(state) {
   return {
     searchQuery: getSearchQuery(state),
     searchStatus: getSearchStatus(state),
-    searchPersona: getSearchPersona(state)
-  }
-})(SearchBar)
+    searchPersona: getSearchPersona(state),
+  };
+})(SearchBar);

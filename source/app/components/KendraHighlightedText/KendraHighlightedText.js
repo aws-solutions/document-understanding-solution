@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -14,7 +13,7 @@
 
 import React, { Fragment } from "react";
 
-import styles from './KendraHighlightedText.scss';
+import styles from "./KendraHighlightedText.scss";
 
 function unionSortedHighlights(highlights) {
   if (!highlights) {
