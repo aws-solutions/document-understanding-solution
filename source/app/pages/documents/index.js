@@ -12,18 +12,30 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { Fragment, useEffect, useState, useRef } from 'react'
+import React, { Fragment, useEffect, useState, useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import classNames from 'classnames'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { useInView } from 'react-intersection-observer'
 import { distanceInWordsToNow, distanceInWords } from 'date-fns'
 import Router from "next/router";
+import { reject, isNil } from 'ramda'
+
+import {
+  clearSearchQuery,
+  setSearchQuery,
+  setSearchStatus,
+} from '../../store/entities/meta/actions'
+import { search, clearSearchResults } from '../../store/entities/searchResults/actions'
+
+import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA } from '../../constants/configs'
 
 import DocumentList from '../../components/DocumentList/DocumentList'
 import Loading from '../../components/Loading/Loading'
 import Button from '../../components/Button/Button'
 import SearchResults from '../../components/SearchResults/SearchResults'
+import KendraResults from '../../components/KendraResults/KendraResults'
+import SearchTypeTabs from '../../components/SearchTypeTabs/SearchTypeTabs'
 
 import { fetchDocuments } from '../../store/entities/documents/actions'
 import { setDocumentsNextToken } from '../../store/entities/meta/actions'
@@ -34,15 +46,22 @@ import {
   getSearchStatus,
   getSearchTotalDocuments,
   getSearchTotalMatches,
+  getSearchPersona,
+  getKendraQueryId,
+  getKendraFilteredQueryId,
+  getKendraResultCount,
+  getKendraFilteredResultCount,
 } from '../../store/entities/meta/selectors'
 import { getDocuments } from '../../store/entities/documents/selectors'
-import { getSearchResults } from '../../store/entities/searchResults/selectors'
-import { getSelectedTrackId } from '../../store/ui/selectors'
+import { getSearchResults, getKendraResults, getKendraFilteredResults } from '../../store/entities/searchResults/selectors'
+import { getSelectedTrackId, getSelectedSearch } from '../../store/ui/selectors'
 
 import { makeDocumentLink } from '../../utils/link-generators'
 
 import css from './documents.scss'
 import SearchBar from '../../components/SearchBar/SearchBar'
+import { setHeaderProps } from '../../store/ui/actions'
+import Link from 'next/link'
 
 Documents.propTypes = {
   dispatch: PropTypes.func,
@@ -63,7 +82,7 @@ Documents.defaultProps = {
 
 Documents.getInitialProps = function() {
   return {
-    pageTitle: 'Your uploaded documents',
+    showNavigation: true
   }
 }
 
@@ -73,11 +92,19 @@ function Documents({
   documentsTotal,
   dispatch,
   searchQuery,
+  searchPersona,
   searchResults,
+  kendraResults,
+  kendraFilteredResults,
   searchStatus,
   searchTotalDocuments,
   searchTotalMatches,
+  kendraQueryId,
+  kendraFilteredQueryId,
+  kendraResultCount,
+  kendraFilteredResultCount,
   track,
+  selectedSearch
 }) {
   const [sentinelRef, isSentinelVisible] = useInView({ threshold: 1 })
   const { status } = useFetchDocuments({
@@ -85,6 +112,13 @@ function Documents({
     nextToken: documentsNextToken,
     isSentinelVisible,
   })
+
+
+  const doSearch = useSearchCallback(dispatch, searchPersona)
+
+  useEffect(() => {
+    doSearch(searchQuery)
+  }, [ searchQuery, doSearch ]);
 
   let files = documents.map(
     ({ documentId, documentName, documentStatus, documentCreatedOn, documentCompletedOn }) => {
@@ -105,6 +139,18 @@ function Documents({
   const listDetailsClassNames = classNames(css.listDetails)
   const introClassNames = classNames(css.intro)
 
+  useEffect(() => {
+    dispatch(setHeaderProps({
+      showNavigation: !!searchQuery
+    }))
+
+    return () => {
+      dispatch(setHeaderProps({
+        showNavigation: true
+      }))
+    }
+  }, [ searchQuery ])
+
   if (documentsTotal === 0 && status === 'success') {
     return (
       <div className={css.documents}>
@@ -116,23 +162,38 @@ function Documents({
     )
   }
 
+  const isQueryLongEnough = searchQuery && searchQuery.length >= MIN_SEARCH_QUERY_LENGTH
+
   return (
     <div className={css.documents}>
       <div className={introClassNames}>
-        <Button link={{ href: '/select' }}>+ Add a new Document</Button>
-        <SearchBar className={css.searchBar} />
+        {!searchQuery && <p>
+          Search through documents to find the information you are looking for
+        </p>}
+        <SearchBar
+          className={css.searchBar}
+          light
+          suggestions={ENABLE_KENDRA && searchQuery && [
+            'What are the testing guidelines for COVID-19?',
+            'How to prevent transmission of COVID-19',
+            'What is the recommended treatment for COVID-19?'
+          ]}
+          placeholder={ENABLE_KENDRA ? 'Type a Natural Language Query related to COVID-19' : null}
+        />
       </div>
 
       {status === 'pending' && !files.length && <Loading />}
       {(status === 'success' || !!files.length) && !searchQuery && (
         <Fragment>
-          {!!files.length && (
-            <div className={listDetailsClassNames}>
-              <p>
+          <div className={listDetailsClassNames}>
+            <p className={css.instructions}>Analyze a document from the list of documents below, or <Link href="/select"><a>upload your own documents</a></Link>.</p>
+
+            {!!files.length && (
+              <p className={css.fileCount}>
                 Showing {files.length} of {documentsTotal} document{documentsTotal !== 1 && 's'}
               </p>
-            </div>
-          )}
+            )}
+          </div>
           <DocumentList items={files} className={css.list} />
           {status === 'pending' && !!files.length && (
             <Loading size={64} overlay={false} className={css.loadingItems} />
@@ -147,13 +208,45 @@ function Documents({
         <p className="noContent">Something went wrong, please refresh the page to try again.</p>
       )}
 
-      <SearchResults
-        results={searchResults}
-        searchStatus={searchStatus}
-        searchQuery={searchQuery}
-        searchTotalDocuments={searchTotalDocuments}
-        searchTotalMatches={searchTotalMatches}
-      />
+      {searchQuery && <>
+
+        <div>
+          { ENABLE_KENDRA ?
+            <SearchTypeTabs />
+          : null }
+          <div className={css.searchResultContainer}>
+            { !ENABLE_KENDRA || selectedSearch === 'es' || selectedSearch === 'both' ?
+              <SearchResults
+                results={searchResults}
+                searchStatus={searchStatus}
+                searchQuery={searchQuery}
+                searchTotalDocuments={searchTotalDocuments}
+                searchTotalMatches={searchTotalMatches}
+                isComparing={selectedSearch === 'both'}
+              />
+            : null }
+
+            { ENABLE_KENDRA && (selectedSearch === 'kendra' || selectedSearch === 'both') ?
+              <KendraResults
+                results={kendraResults}
+                filteredResults={kendraFilteredResults}
+                searchStatus={searchStatus}
+                searchQuery={searchQuery}
+                kendraQueryId={kendraQueryId}
+                filteredQueryId={kendraFilteredQueryId}
+                resultCount={kendraResultCount}
+                filteredResultCount={kendraFilteredResultCount}
+                searchPersona={searchPersona}
+                showPersonaSelector={selectedSearch === 'kendra'}
+                isComparing={selectedSearch === 'both'}
+              />
+            : null }
+
+            {searchStatus === 'pending' && isQueryLongEnough && <Loading />}
+
+          </div>
+        </div>
+      </> }
     </div>
   )
 }
@@ -165,10 +258,18 @@ export default connect(function mapStateToProps(state) {
     documentsTotal: getDocumentsTotal(state),
     searchQuery: getCleanSearchQuery(state),
     searchStatus: getSearchStatus(state),
+    searchPersona: getSearchPersona(state),
     searchResults: getSearchResults(state),
+    kendraResults: getKendraResults(state),
+    kendraFilteredResults: getKendraFilteredResults(state),
     searchTotalDocuments: getSearchTotalDocuments(state),
     searchTotalMatches: getSearchTotalMatches(state),
+    kendraQueryId: getKendraQueryId(state),
+    kendraFilteredQueryId: getKendraFilteredQueryId(state),
+    kendraResultCount: getKendraResultCount(state),
+    kendraFilteredResultCount: getKendraFilteredResultCount(state),
     track: getSelectedTrackId(state),
+    selectedSearch: getSelectedSearch(state)
   }
 })(Documents)
 
@@ -211,4 +312,46 @@ function useFetchDocuments({ dispatch, nextToken, isSentinelVisible }) {
   useEffect(() => () => (isMounted.current = false), [])
 
   return { status }
+}
+
+
+
+/**
+ * Create a throttled search handler.
+ * Search query must be greater than or equal to MIN_SEARCH_QUERY_LENGTH.
+ *
+ * @param {Function} dispatch Redux dispatch function
+ * @return {Function} Returns a search handler
+ */
+function useSearchCallback(dispatch, persona) {
+  const isMounted = useRef(true)
+
+
+  // Ensure we don't try to set state after component unmount
+  useEffect(() => () => (isMounted.current = false), [])
+
+  const handleSearchChange = useCallback(
+    (k) => {
+      if (k && k.length >= MIN_SEARCH_QUERY_LENGTH) {
+        dispatch(setSearchStatus('pending'))
+        const params = reject(isNil, { k, persona })
+
+        // Clear out old search results
+        dispatch(clearSearchResults())
+
+        // Search documents
+        dispatch(search(params))
+          .then(() => {
+            isMounted.current && dispatch(setSearchStatus('success'))
+          })
+          .catch((err) => {
+            console.log(err);
+            isMounted.current && dispatch(setSearchStatus('error'))
+          })
+      }
+    },
+    [dispatch, persona]
+  )
+
+  return handleSearchChange
 }

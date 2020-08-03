@@ -72,3 +72,5 @@ $palettes: (
 @function color($palette, $tone: 'core') {
   @return map-get(map-get($palettes, $palette), $tone);
 }
+
+$link-blue: #00a1c9;

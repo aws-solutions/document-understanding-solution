@@ -26,32 +26,35 @@ import { getHeaderProps } from '../../store/ui/selectors'
 import css from './Header.scss'
 
 Header.propTypes = {
-  backHref: PropTypes.string,
-  heading: PropTypes.string,
+  showNavigation: PropTypes.string,
 }
 
-function Header({ backHref, backTitle, heading }) {
+function Header({ showNavigation }) {
   return (
     <header className={css.header}>
       <div>
         <Link href="/home">
           <a className={css.logoLink}>
-            <img className={css.logo} src="/static/images/logo_aws.svg" alt="AWS" />
+            <img className={css.logo} src="/static/images/DUS_DEMO_logo_WhiteBG.svg" alt="AWS" />
           </a>
         </Link>
 
-        {backHref && (
-          <Link href={backHref}>
-            <a className={css.backButton}>
-              {backTitle}
-            </a>
-          </Link>
+        {showNavigation && (
+          <>
+            <Link href="/documents">
+              <a className={css.backButton}>
+                Preloaded documents
+              </a>
+            </Link>
+            {' | '}
+            <Link href="/select">
+              <a className={css.backButton}>
+                Upload your own documents
+              </a>
+            </Link>
+          </>
         )}
       </div>
-
-      <h1>{heading}</h1>
-       
-      
 
       <div className={css.logoutlink}>
         <Button className={css.borderlessButton} inverted onClick={handleLogoutClick}>Log Out</Button>

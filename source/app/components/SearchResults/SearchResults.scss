@@ -2,14 +2,21 @@
 
 .searchResults {
   position: relative;
-  width: span(8);
+  width: rem(800);
   min-height: 300px;
-  margin: 0 auto;
 
-  header {
-    display: flex;
-    margin-bottom: 0.25em;
-    align-items: center;
+  > header {
+    &.comparing {
+      text-align: center;
+
+      h2 {
+        margin-bottom: 0;
+      }
+
+      p {
+        margin-top: 0;
+      }
+    }
   }
 
   svg {
@@ -17,11 +24,6 @@
     margin-top: rem(-2);
     margin-right: 0.5rem;
     fill: color(gray, 30);
-  }
-
-  h3 {
-    @include type-heading-h5;
-    margin: 0;
   }
 
   a {
@@ -76,6 +78,19 @@
   &:nth-child(even) {
     background: color(gray, 70);
   }
+
+  header {
+    display: flex;
+    margin-bottom: 0.25em;
+    align-items: center;
+  }
+
+  h3 {
+    font-size: 1.25em;
+    margin: 0;
+    padding-bottom: .25em;
+    color: $link-blue;
+  }
 }
 
 
@@ -92,7 +107,6 @@
 
 .lines {
   @include type-body-secondary(color(gray, 20));
-  margin-left: rem(32);
 
   li {
     margin-bottom: 0.25rem;
@@ -117,6 +131,7 @@
   @include all-caps;
   margin: 0.5rem 0;
   font-weight: 500;
+  line-height: 2;
 }
 
 .noContent {

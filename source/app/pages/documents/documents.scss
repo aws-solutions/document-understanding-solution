@@ -3,7 +3,6 @@
 .documents {
   position: relative;
   min-height: rem(320);
-  padding-top: rem(32);
   padding-bottom: rem(32);
 }
 
@@ -19,28 +18,35 @@
 }
 
 .intro {
-  width: span(8);
+  @include full-bleed;
+  @include site-gutters();
+  background: color(gray, 90);
   padding-bottom: 2em;
-  margin: 0 auto;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
 
-  > * + * {
-    margin-left: rem(20);
-  }
-
-  @include media-grid(8) {
-    width: span(6, $grid-8col);
-  }
-
-  @include media-grid(4) {
+  > * {
     width: 100%;
+  }
+
+  p {
+    max-width: span(8);
+    margin: 0;
   }
 }
 
 .searchBar {
-  flex: 1;
+  max-width: span(8);
+
+  @include media-grid(8) {
+    max-width: span(6, $grid-8col);
+  }
+
+  @include media-grid(4) {
+    max-width: 100%;
+  }
 }
 
 .loadingItems {
@@ -56,13 +62,10 @@
 }
 
 .listDetails {
-  @include type-body-supplemental(color(gray, 20));
   @include full-bleed();
   @include site-gutters();
-  @include all-caps();
   padding-top: 1em;
   padding-bottom: 1em;
-  font-weight: 500;
   background-color: rgba(color(gray, 80), 0.9);
   transition: none;
   position: sticky;
@@ -72,6 +75,17 @@
   p {
     width: span(8);
     margin: 0 auto;
+  }
+
+  .fileCount {
+    margin-top: 2em;
+    @include type-body-supplemental(color(gray, 20));
+    @include all-caps();
+    font-weight: 500;
+  }
+
+  a {
+    color: $link-blue;
   }
 
   @include media-grid(8) {
@@ -106,5 +120,21 @@
   a:focus &,
   a:hover & {
     color: color(orange, 40);
+  }
+}
+
+.searchResultContainer {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  justify-content: center;
+
+  > * {
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+
+  > * + * {
+    margin-left: rem(16);
   }
 }

@@ -18,7 +18,7 @@ import boto3
 import re
 import datetime
 
-ES_HIGHLIGHT_FRAGMENT_SIZE = 50
+ES_HIGHLIGHT_FRAGMENT_SIZE = 100
 
 def deleteESItem(elasticsearchDomain, documentId):
     host = elasticsearchDomain
@@ -82,13 +82,13 @@ def search(request):
             date_to = datetime.datetime.strptime(date_range.split(" TO ")[1],"%Y-%m-%d")
         elif len(date_range) > 1:
             raise ValueError("Searching for multiple date ranges at a time is not permitted")
-                
+
 
     if(keyword is not None):
         searchBody = {
                  "query" : {
-                    "query_string": { 
-                        "query": keyword 
+                    "query_string": {
+                        "query": keyword
                        }
                   },
                   "highlight" : {
@@ -115,7 +115,7 @@ def search(request):
             verify_certs=True,
             connection_class=RequestsHttpConnection
         )
-        
+
         output = es.search(
             index='textract',
             doc_type="document",
@@ -123,7 +123,7 @@ def search(request):
             _source = True,
             filter_path=['hits.hits._id', 'hits.hits._source','hits.hits.highlight']
         )
-        
+
         if("hits" in output):
             output = output["hits"]
             # subnested hits

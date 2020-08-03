@@ -22,7 +22,7 @@ import { Storage } from 'aws-amplify'
 
 import Loading from '../../components/Loading/Loading'
 import DocumentViewer from '../../components/DocumentViewer/DocumentViewer'
-import SearchBar from '../../components/SearchBar/SearchBar'
+import DocumentSearchBar from '../../components/DocumentSearchBar/DocumentSearchBar'
 import Tabs from '../../components/Tabs/Tabs'
 
 import {
@@ -31,13 +31,13 @@ import {
   clearRedactions,
   addHighlights,
   clearHighlights
-  
+
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
 import { setHeaderProps , setSelectedTrack} from '../../store/ui/actions'
 import { getSelectedTrackId } from '../../store/ui/selectors'
-import { setCurrentPageNumber, setSearchQuery } from '../../store/entities/meta/actions'
-import { getCleanSearchQuery, getCurrentPageNumber } from '../../store/entities/meta/selectors'
+import { setCurrentPageNumber, setDocumentSearchQuery } from '../../store/entities/meta/actions'
+import { getDocumentSearchQuery, getCurrentPageNumber } from '../../store/entities/meta/selectors'
 
 import {
   getDocumentPageCount,
@@ -85,8 +85,7 @@ Document.getInitialProps = function({ query, store }) {
   const { documentName } = getDocumentById(state, id) || {}
 
   const props = {
-    backHref: '/documents',
-    backTitle: 'Change Document',
+    showNavigation: true
   }
 
   return props
@@ -112,10 +111,10 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     }
   }, [dispatch, id])
 
-  
 
-  
-  
+
+
+
   // Set search results data
   const wordsMatchingSearch = useMemo(() => {
     return getPageWordsBySearch(document, currentPageNumber, searchQuery)
@@ -129,7 +128,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     const medicalEntities = getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE)
     return { pairs, tables, lines, entities , medicalEntities }
     // eslint-disable-next-line
-    
+
   }, [document, document.textractResponse ,document.medicalComprehendResponse, document.comprehendResponse])
 
   // Set the paged content for each tab
@@ -146,16 +145,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   const [tab, selectTab] = useState('search')
 
   const [trackTab, selectTrack] = useState('search')
-  // Update header props when we get a document response
-  useEffect(() => {
-    dispatch(
-      setHeaderProps(
-        reject(either(isNil, isEmpty))
-      )
-    )
-
-    return () => dispatch(setHeaderProps({}))
-  }, [dispatch, documentName, pageTitle, track])
 
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document
@@ -191,7 +180,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const redactMatches = useCallback(async () => {
     dispatch(addRedactions(id, currentPageNumber, wordsMatchingSearch))
-    dispatch(setSearchQuery(''))
+    dispatch(setDocumentSearchQuery(''))
   }, [currentPageNumber, dispatch, id, wordsMatchingSearch])
 
   const redact = useCallback(
@@ -275,7 +264,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
       ]
     }, [])
   }, [pageData.pairs])
-    
+
   const pageLinesAsMarks = useMemo(() => {
     return pageData.lines.map(({ id, boundingBox }) => {
       return {
@@ -295,7 +284,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     }
   }, [highlightedKv])
 
-  
+
 
   const switchPage = useCallback(
     pageNumber => {
@@ -344,11 +333,11 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               </div>
             ) : null}
 
-            
-              
-               
+
+
+
               <div>
-               
+
               <Tabs
               isTrackTab={true}
               selected={trackTab}
@@ -363,7 +352,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             </div>
           </div>
           <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
-            <SearchBar className={css.searchBar} />
+            <DocumentSearchBar className={css.searchBar} placeholder="Search current document…" />
             {track === 'redaction' ? <Button onClick={redactMatches}>Redact matches</Button> : null}
           </div>
           <div className={css.content} ref={contentRef}>
@@ -398,7 +387,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible 
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
               )}
             >
               <KeyValueList
@@ -486,7 +475,7 @@ export default connect(function mapStateToProps(state) {
     id,
     currentPageNumber: getCurrentPageNumber(state, id),
     document: getDocumentById(state, id),
-    searchQuery: getCleanSearchQuery(state),
+    searchQuery: getDocumentSearchQuery(state),
     track: getSelectedTrackId(state),
   }
 })(Document)

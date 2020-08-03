@@ -78,7 +78,7 @@ export default function Button({
       </a>
     </Link>
   ) : (
-    <button className={buttonClassNames} onClick={onClick} tabIndex={disabled ? -1 : null}>
+    <button className={buttonClassNames} onClick={onClick} tabIndex={disabled ? -1 : null} {...otherProps}>
       {children}
     </button>
   )
