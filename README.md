@@ -41,7 +41,7 @@ To deploy using this approach, you must first set few values inside the `package
 
 - Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile.
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
-- If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to ```false```. For [Kendra enabled mode](kendra-enabled-mode), set the flag as ```true```
+- If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to ```false```. For [Kendra-enabled mode](#kendra-enabled-mode), set the flag as ```true```
 -  If you want to use the [Read-only (RO) mode](#read-only-mode), set the is isROMode flag to ```true```. 
 
 Now switch to the source directory, and use yarn to deploy the solution:
@@ -115,7 +115,7 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 ### Classic Mode
 This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract, Amazon Comprehend and Amazon Comprehend Medical that allow digitization, information extraction and indexing in DUS.
 
-### Kendra Enabled Mode
+### Kendra-Enabled Mode
 
 In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
 In the kendra enabled mode, Amazon Kendra is added as an additional  capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
@@ -150,7 +150,7 @@ More info available in this [issue](https://github.com/awslabs/document-understa
 
 ## Delete demo application
 
-1. Dev Deploy:
+Dev Deploy:
 
 Make sure you are in the `source` directory, and then run `yarn destroy`.
 
