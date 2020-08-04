@@ -155,7 +155,7 @@ The approximate cost for the solution for 100 documents/day comes under $20/day 
 
 ## Delete demo application
 
-Dev Deploy:
+Development Deploy:
 
 Make sure you are in the `source` directory, and then run `yarn destroy`.
 
