@@ -53,7 +53,7 @@ import { CustomResource, Duration } from '@aws-cdk/core';
 import * as cr from '@aws-cdk/custom-resources';
 import { Runtime } from "@aws-cdk/aws-lambda";
 
-const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed parallelly
+const API_CONCURRENT_REQUESTS = 30; //approximate number of 1-2 page documents to be processed parallelly
 
 export interface TextractStackProps {
   email: string;
@@ -439,8 +439,7 @@ export class CdkTextractStack extends cdk.Stack {
 
 
 
-   // documentBulkProcessingQueue.addToResourcePolicy( sqsBulkDocumentProcessingQueuePolicyStatementForBucket);
-
+   
 
     const syncJobsDLQueue = new sqs.Queue(
       this,
@@ -760,7 +759,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.fromAsset("lambda/documentbulkprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
+        reservedConcurrentExecutions: API_CONCURRENT_REQUESTS / 3,
         timeout: cdk.Duration.seconds(300),
         tracing: lambda.Tracing.ACTIVE,
         environment: {
@@ -781,7 +780,7 @@ export class CdkTextractStack extends cdk.Stack {
     
     documentBulkProcessor.addEventSource(
       new SqsEventSource(documentBulkProcessingQueue, {
-        batchSize: 10,
+        batchSize: 5,
       })
     );
                   
@@ -875,7 +874,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
         timeout: cdk.Duration.seconds(900),
         tracing: lambda.Tracing.ACTIVE,
         environment: {
@@ -961,7 +960,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/asyncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
         timeout: cdk.Duration.seconds(120),
         tracing: lambda.Tracing.ACTIVE,
         environment: {
@@ -1013,7 +1012,7 @@ export class CdkTextractStack extends cdk.Stack {
         code: lambda.Code.asset("lambda/jobresultprocessor"),
         handler: "lambda_function.lambda_handler",
         memorySize: 2000,
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
         timeout: cdk.Duration.seconds(900),
         tracing: lambda.Tracing.ACTIVE,
         environment: {
