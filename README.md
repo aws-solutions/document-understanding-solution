@@ -38,7 +38,7 @@ To deploy using this approach, you must first set few values inside the `package
 
 - Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile. 
 
-  *Note* : The AWS services used in this solution are not all available in all AWS Regions. Supported regions include us-east-,us-west-2,eu-west-1. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for the most up to date information on which regions support the all services in DUS are available.
+  *Note* : The AWS services used in this solution are not all available in all AWS Regions. Supported regions include us-east-1,us-west-2,eu-west-1. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for the most up to date information on which regions support the all services in DUS are available.
 
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
 - If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to ```false```. For [Kendra-enabled mode](#kendra-enabled-mode), set the flag as ```true```
