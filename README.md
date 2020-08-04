@@ -120,6 +120,7 @@ This is first release of the DUS solution. The major services included in this m
 In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
 In the kendra enabled mode, Amazon Kendra is added as an additional  capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
 Simply set the ``` enableKendra: "true"```  in package.json
+*Note:* Amazon Kendra Developer edition is deployed as a part of this deployment.
 
 ### Read-Only Mode
 
@@ -142,11 +143,16 @@ More info available in this [issue](https://github.com/awslabs/document-understa
 
 ## Cost
 
-- As you deploy this sample application, it creates different resources (Amazon S3 bucket, Amazon DynamoDB table, and AWS Lambda functions etc.). When you analyze documents, it calls different APIs (Amazon Textract) in your AWS account. You will get charged for all the API calls made as part of the analysis as well as any AWS resources created as part of the deployment. To avoid any recurring charges, delete stack using "cdk destroy".
-
-- There are 3 SQS queues created as part of this solution, and every one of them has a Lambda that is polling them once every 4 seconds. This means that, after about 15 days, the solution will use up the 1,000,000 requests associated with the AWS free tier, and you will start receiving charges for every SQS request. Please follow this link for more information: https://aws.amazon.com/sqs/pricing/
+- As you deploy this sample application, it creates different resources (Amazon S3 bucket, Amazon SQS Queue, Amazon DynamoDB table, Elasticsearch (and potenitally Amazon Kendra) clsuter(s) and AWS Lambda functions etc.). When you analyze documents, it calls different APIs (Amazon Textract , Amazon Comprehend and Amazon Comprehend Medical) in your AWS account. You will get charged for all the API calls made as part of the analysis as well as any AWS resources created as part of the deployment. To avoid any recurring charges, delete stack using "yarn destroy".
 
 - The CDK Toolkit stacks that are created during deploy of this solution are not destroyed when you tear down the solution stacks. If you want to remove these resources, delete the S3 bucket that contains `staging-bucket` in the name, and then delete the `CDKToolkit` stack.
+
+- You are responsible for the cost of the AWS services used while running this reference
+deployment. The solution consists of some resources that have to be paid by the hour/size
+such as Amazon Elasticsearch, Amazon Kendra and Amazon S3 while others are serverless technologies where
+costs are incurred depending on the number of requests.
+The approximate cost for the solution for 100 documents/day comes under $20/day for the Classic Mode and under $80/day for Kendra-Enabled Mode. For accurate and most up-to-date pricing information, refer [AWS Pricing](https://aws.amazon.com/pricing/)
+
 
 ## Delete demo application
 
