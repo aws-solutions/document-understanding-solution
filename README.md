@@ -1,15 +1,16 @@
 # Document Understanding Solution
 
-DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical and Amazon Elasticsearch to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capaibilities.
+DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical Amazon Elasticsearch and Amazon Kendra to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capaibilities.
 
 Current document formats supported : **PDF,JPG,PNG**
 
 The instructions below cover installation on Unix-based Operating systems like macOS and Linux. 
 You can use a AWS Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
-To run the solution,first clone the project
+To run the solution,first clone the project and decide which region you would want to deploy the solution.
+*Note* : The AWS services used in this solution are not all available in all AWS Regions. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) and check where the services in DUS are available for choosing the deployment region region
 
 
-## 1. Development Deploy
+##  Development Deploy
 
 There is also a deploy option for developers, and those wishing to modify the source code. This deploy allows for running the client-side code on a local server.
 
@@ -40,6 +41,8 @@ To deploy using this approach, you must first set few values inside the `package
 
 - Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile.
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
+- If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to ```false```. For [Kendra enabled mode](kendra-enabled-mode), set the flag as ```true```
+-  If you want to use the [Read-only (RO) mode](#read-only-mode), set the is isROMode flag to ```true```. 
 
 Now switch to the source directory, and use yarn to deploy the solution:
 
@@ -109,15 +112,18 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 ## DUS Modes:
 
+### Classic Mode
+This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract, Amazon Comprehend and Amazon Comprehend Medical that allow digitization, information extraction and indexing in DUS.
+
+### Kendra Enabled Mode
+
+In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
+In the kendra enabled mode, Amazon Kendra is added as an additional  capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
+Simply set the ``` enableKendra: "true"```  in package.json
+
 ### Read-Only Mode
 
 In this mode, DUS will only be available in Read-Only mode and you will only be able to analyze the pre-loaded documents. You will not be able to upload documents from the web application UI. In order to enable the Read-Only mode, set ``` isROMode: "true"``` in package.json. By default, this mode is disabled.
-
-### Amazon Kendra Mode
-
-In the default classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
-In the kendra mode, Amazon Kendra is added as an additional  capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
-Simply set the ``` enableKendra: "true"```  in package.json
 
 ## Notes
 
