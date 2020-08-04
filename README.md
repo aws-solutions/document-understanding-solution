@@ -8,7 +8,6 @@ The instructions below cover installation on Unix-based Operating systems like m
 You can use a AWS Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
 To run the solution,first clone the project
 
-There are multiple options to deploy the solution. Please review them below-
 
 ## 1. Development Deploy
 
@@ -16,11 +15,26 @@ There is also a deploy option for developers, and those wishing to modify the so
 
 ### Requirements
 Please ensure you install all requirements before beginning the deployment
-- yarn
-- node 10+
 - aws cli
+  
+  ```sudo yum -y install aws-cli```
+
+- node 10+
+  
+  ```sudo yum -y install nodejs```
+
+- yarn
+
+  ```curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo```
+  ```sudo yum -y install yarn```
+
 - tsc
+
+  ``` npm install -g typescript ```
+
 - jq
+
+  ```sudo yum -y install jq```
 
 To deploy using this approach, you must first set few values inside the `package.json` file in the `source` folder.
 
@@ -41,11 +55,13 @@ The cli will prompt for approval on IAM Roles and Permissions twice in the full 
 
 Note:
 
-This will create 3 or 4 S3 buckets that will have to be manually deleted when the stack is destroyed (Cloudformation does not delete them, in order to avoid data loss).
+This will create 5 or 6 S3 buckets that will have to be manually deleted when the stack is destroyed (Cloudformation does not delete them, in order to avoid data loss).
 
-- 2 for documents (sample and general documents)
-- 1 for the client bucket
+- 2/3 for documents (sample and general documents and optionally 1 for COVID-19 sample documents if opting for Amazon Kendra Integration)
+- 1 for the client stack
+- 1 for document bulk processing pipeline
 - 1 for CDK toolkit (if this is your first time using CDK)
+
 
 The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
 
@@ -91,60 +107,29 @@ This project also uses ESLint and sass-lint to help find bugs and enforce code q
 Run `yarn license-report` to generate a license report for all npm packages. See output in `license-report.txt`.
 
 
-## 2. CICD Deploy
+## DUS Modes:
 
-### Requirements
+### Read-Only Mode
 
-- aws cli
+In this mode, DUS will only be available in Read-Only mode and you will only be able to analyze the pre-loaded documents. You will not be able to upload documents from the web application UI. In order to enable the Read-Only mode, set ``` isROMode: "true"``` in package.json. By default, this mode is disabled.
 
-### Getting Started with Full Deploy
+### Amazon Kendra Mode
 
-- Create a bucket to act as the target Amazon S3 distribution bucket
+In the default classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
+In the kendra mode, Amazon Kendra is added as an additional  capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
+Simply set the ``` enableKendra: "true"```  in package.json
 
-_Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. 
+## Notes
 
-For example, you create a bucket called `my-solutions-bucket-us-east-1`,
+### Document Bulk Processing 
 
-- Now build the distributable:
+DUS supports bulk processing of documents. During deploy, an S3 bucket for document bulk processing is created. To use the bulk processing mode, simply upload documents under the ```documentDrop/``` prefix.
+In Kendra mode, you can also upload the corresponding access control list under ```policy/``` prefix in the same bucket with the following name convention *\<document-name>\.metadata.json* Be sure to upload the access control policy first and then the document.
 
-```
-chmod +x ./deployment/build-s3-dist.sh
-./deployment/build-s3-dist.sh <bucket-name-minus-region> <solution-name> <version>
-```
 
-For example,
-
-```
-./deployment/build-s3-dist.sh my-solutions-bucket document-understanding-solution v1.0.0
-```
-
-- Deploy the distributable to an Amazon S3 bucket in your account. _Note:_ you must have the AWS Command Line Interface installed.
-
-```
-aws s3 cp ./deployment/global-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-```
-
-- Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
-- Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
-
-```
-aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
-```
-
-This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
-
-- 2 for CICD
-- 1 for solution specific CDK Toolkit
-- 2 for documents (sample and general documents)
-- 1 for the client bucket
-- 1 for access logs
-- 1 for CDK toolkit (if this is the customer's first try with CDK)
-
-The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
-
-### Notes
-
+### Other
+- To switch between the DUS Classic version and Amazon Kendra enabled version, please follow a fresh deploy (either in a different region/ deleting the stack) and avoid updating the CloudFormation stack for the existing mode. Currently, DUS does not have the feature to seamlessly switch between the 2 modes.
+More info available in this [issue](https://github.com/awslabs/document-understanding-solution/issues/83) 
 - Do NOT change the `cicd` in package.json. This field is for the deployment system to use in CodePipeline
 - Due to limitations of CodeCommit, you cannot use this deploy approach if you add a file to the solution that is above 6MB (for good measure, stay below 5MB)
 
@@ -163,13 +148,6 @@ The solution is set up to reserve lambda concurrency quota. This is both to limi
 
 Make sure you are in the `source` directory, and then run `yarn destroy`.
 
-2. Full CICD Deploy:
-
-Either run `aws cloudformation delete-stack --stack-name {CICD stack}`, or go to Cloudformation in the AWS Console and delete the stack that ends with "CICD". You will also have to go to CodeCommit in the console and manually delete the Repository that was created during the deploy.
-
-## Read-Only Mode
-
-In this mode, DUS will only be available in Read-Only mode and you will only be able to analyze the pre-loaded documents. You will not be able to upload documents from your device or use the camera capture feature. In order to enable the Read-Only mode, set ``` isROMode: "true"``` in package.json. By default, this mode is disabled.
 
 ## License
 
