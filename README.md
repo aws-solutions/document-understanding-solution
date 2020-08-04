@@ -6,13 +6,9 @@ Current document formats supported : **PDF,JPG,PNG**
 
 The instructions below cover installation on Unix-based Operating systems like macOS and Linux. 
 You can use a AWS Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
-To run the solution,first clone the project and decide which region you would want to deploy the solution.
-*Note* : The AWS services used in this solution are not all available in all AWS Regions. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) and check where the services in DUS are available for choosing the deployment region region
 
 
 ##  Development Deploy
-
-There is also a deploy option for developers, and those wishing to modify the source code. This deploy allows for running the client-side code on a local server.
 
 ### Requirements
 Please ensure you install all requirements before beginning the deployment
@@ -39,7 +35,10 @@ Please ensure you install all requirements before beginning the deployment
 
 To deploy using this approach, you must first set few values inside the `package.json` file in the `source` folder.
 
-- Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile.
+- Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile. 
+
+  *Note* : The AWS services used in this solution are not all available in all AWS Regions. Supported regions include us-east-,us-west-2,eu-west-1. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for the most up to date information on which regions support the all services in DUS are available.
+
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
 - If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to ```false```. For [Kendra-enabled mode](#kendra-enabled-mode), set the flag as ```true```
 -  If you want to use the [Read-only (RO) mode](#read-only-mode), set the is isROMode flag to ```true```. 
