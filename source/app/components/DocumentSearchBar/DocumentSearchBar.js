@@ -60,8 +60,12 @@ function DocumentSearchBar({
     dispatch(setDocumentSearchQuery(e.target.value));
   }, []);
 
+  const preventDefault = useCallback((e) => {
+    e.preventDefault();
+  }, []);
+
   return (
-    <form className={searchBarClassNames}>
+    <form className={searchBarClassNames} onSubmit={preventDefault}>
       <div className={css.wrapper}>
         <FormInput
           light={light}

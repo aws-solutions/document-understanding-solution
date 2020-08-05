@@ -76,6 +76,7 @@ function SearchBar({
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
     dispatch(setSearchQuery(input.current.value));
+    input.current.blur();
   }, []);
 
   const searchValueChange = useCallback((e) => {
@@ -124,7 +125,7 @@ function SearchBar({
             </svg>
           </Button>
         ) : null}
-        {!hasTerm && suggestions ? (
+        {suggestions ? (
           <div className={css.suggestions}>
             <ul>
               {suggestions.map((q) => (

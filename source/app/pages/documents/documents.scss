@@ -31,9 +31,18 @@
     width: 100%;
   }
 
-  p {
+  h3 {
     max-width: span(8);
     margin: 0;
+    margin-top: 2em;
+
+    + * {
+      margin-bottom: 3em;
+    }
+
+    @include media-grid(8) {
+      max-width: 100%;
+    }
   }
 }
 
@@ -41,10 +50,6 @@
   max-width: span(8);
 
   @include media-grid(8) {
-    max-width: span(6, $grid-8col);
-  }
-
-  @include media-grid(4) {
     max-width: 100%;
   }
 }
@@ -72,16 +77,31 @@
   top: 0;
   z-index: 1;
 
+  h3 {
+    width: span(8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+
+    @include media-grid(8) {
+      width: 100%;
+    }
+  }
+
   p {
     width: span(8);
     margin: 0 auto;
+
+    @include media-grid(8) {
+      width: 100%;
+    }
   }
 
   .fileCount {
-    margin-top: 2em;
-    @include type-body-supplemental(color(gray, 20));
-    @include all-caps();
+    @include type-body-supplemental(color(gray, 60));
+    @include all-caps;
     font-weight: 500;
+    float: right;
   }
 
   a {

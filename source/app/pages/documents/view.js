@@ -85,7 +85,8 @@ Document.getInitialProps = function({ query, store }) {
   const { documentName } = getDocumentById(state, id) || {}
 
   const props = {
-    showNavigation: true
+    showNavigation: false,
+    backButton: true
   }
 
   return props
@@ -110,9 +111,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
       dispatch(clearRedactions(id))
     }
   }, [dispatch, id])
-
-
-
 
 
   // Set search results data

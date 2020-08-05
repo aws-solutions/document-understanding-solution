@@ -26,10 +26,11 @@ import { getHeaderProps } from '../../store/ui/selectors'
 import css from './Header.scss'
 
 Header.propTypes = {
-  showNavigation: PropTypes.string,
+  showNavigation: PropTypes.bool,
+  backButton: PropTypes.bool
 }
 
-function Header({ showNavigation }) {
+function Header({ showNavigation, backButton }) {
   return (
     <header className={css.header}>
       <div>
@@ -43,7 +44,7 @@ function Header({ showNavigation }) {
           <>
             <Link href="/documents">
               <a className={css.backButton}>
-                Preloaded documents
+                Document list
               </a>
             </Link>
             {' | '}
@@ -54,6 +55,14 @@ function Header({ showNavigation }) {
             </Link>
           </>
         )}
+
+        {backButton && (
+          <Link href="/documents">
+            <a className={css.backButton}>
+              Start a new search
+            </a>
+          </Link>
+        )}
       </div>
 
       <div className={css.logoutlink}>
@@ -63,8 +72,8 @@ function Header({ showNavigation }) {
   )
 }
 
-export default connect(function mapStateToProps(state) {
-  return { ...getHeaderProps(state) }
+export default connect(function mapStateToProps(state, { ...originalProps }) {
+  return { ...getHeaderProps(state), ...originalProps }
 })(Header)
 
 async function handleLogoutClick(e) {
