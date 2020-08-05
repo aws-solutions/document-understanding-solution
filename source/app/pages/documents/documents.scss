@@ -158,3 +158,12 @@
     margin-left: rem(16);
   }
 }
+
+.compareButton {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 4em;
+  color: $link-blue;
+  font-style: italic;
+}

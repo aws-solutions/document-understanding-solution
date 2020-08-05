@@ -62,6 +62,7 @@ import css from './documents.scss'
 import SearchBar from '../../components/SearchBar/SearchBar'
 import { setHeaderProps } from '../../store/ui/actions'
 import Link from 'next/link'
+import TooltipButton from '../../components/TooltipButton/TooltipButton'
 
 Documents.propTypes = {
   dispatch: PropTypes.func,
@@ -165,7 +166,7 @@ function Documents({
         <SearchBar
           className={css.searchBar}
           light
-          suggestions={ENABLE_KENDRA && searchQuery && [
+          suggestions={ENABLE_KENDRA && [
             'Preventing COVID-19 spread',
             'Where can I get tested for COVID-19?',
             'Should children wear masks',
@@ -227,6 +228,17 @@ function Documents({
                 isComparing={selectedSearch === 'both'}
               />
             : null }
+
+            {selectedSearch === 'both' &&
+              <TooltipButton
+                tooltip={<>
+                  <p>In a traditional keyword search, the results are privided in a list. The user needs to go through the list, select a document that may have the answer, and then go find the answer within the document.</p>
+                  <p>Amazon Kendra is automating all of that to parse the results. It shortens the cycle of opening the link and directly extracts suggested answers, as well as frequently asked questions related to the search query.</p>
+                </>}
+              >
+                <div className={css.compareButton}>What's the difference?</div>
+              </TooltipButton>
+            }
 
             { ENABLE_KENDRA && (selectedSearch === 'kendra' || selectedSearch === 'both') ?
               <KendraResults

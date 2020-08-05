@@ -41,33 +41,6 @@ KendraResults.defaultProps = {
   results: [],
 };
 
-const WALKTHROUGH_STEPS = [
-  {
-    target: '[data-walkthrough="top-result"]',
-    title: "Amazon Kendra suggested answers",
-    content:
-      "When you type a question, Kendra uses machine learning algorithms to understand the context and return the most relevant results, whether that be a precise answer or an entire document. Kendra will map to the relevant documents and return a specific answer.",
-    disableBeacon: true,
-    placement: "top",
-  },
-  {
-    target: '[data-walkthrough="faq"]',
-    title: "Frequently asked questions",
-    content:
-      "You can upload a list of FAQs to Kendra to provide direct answers to common questions your end users are asking. Kendra will find the closest question to the search query and return the corresponding answer.",
-    disableBeacon: true,
-    placement: "top",
-  },
-  {
-    target: '[data-walkthrough="feedback"]',
-    title: "Promote",
-    content:
-      "Kendra supports boosting documents based on a vote or view count.",
-    disableBeacon: true,
-    placement: "top",
-  },
-];
-
 export default function KendraResults({
   className,
   results,
@@ -114,41 +87,8 @@ export default function KendraResults({
 
   const canShowSideBySide = useMemo(() => width >= 1000, [width]);
 
-  const hasDismissedWalkthrough = useSelector(getHasDismissedWalkthrough);
-
-  const [walkthroughRunning, setWalkthroughRunning] = useState(false);
-  useEffect(() => {
-    if (!hasDismissedWalkthrough) setWalkthroughRunning(true);
-  }, []);
-
-  const walkthroughCallback = useCallback(
-    (data) => {
-      if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data.status)) {
-        dispatch(dismissWalkthrough());
-        setWalkthroughRunning(false);
-      }
-    },
-    [dispatch]
-  );
-
   return (
     <div className={cs(css.base, hasFilteredResults && css.doubleWidth)}>
-      <Joyride
-        steps={WALKTHROUGH_STEPS}
-        run={walkthroughRunning}
-        callback={walkthroughCallback}
-        continuous
-        showSkipButton
-        locale={{ last: "Finish" }}
-        styles={{
-          options: {
-            backgroundColor: "#545b64",
-            arrowColor: "#545b64",
-            textColor: "#fff",
-            primaryColor: "#f6761d",
-          },
-        }}
-      />
       <nav {...rest} className={css.topNav}>
         <header className={cs(isComparing && css.comparing)}>
           <h2>Amazon Kendra{!isComparing ? " Results" : ""}</h2>
