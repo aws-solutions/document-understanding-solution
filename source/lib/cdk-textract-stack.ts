@@ -171,12 +171,14 @@ export class CdkTextractStack extends cdk.Stack {
             behaviors: [{ isDefaultBehavior: true }],
           },
         ],
-        errorConfigurations: [{
-          errorCode: 404,
-          responseCode: 200,
-          errorCachingMinTtl: 5,
-          responsePagePath: '/index.html'
-        }],
+        errorConfigurations: [
+          {
+            errorCode: 404,
+            responseCode: 200,
+            errorCachingMinTtl: 5,
+            responsePagePath: "/index.html",
+          },
+        ],
         priceClass: PriceClass.PRICE_CLASS_100,
         httpVersion: HttpVersion.HTTP2,
         enableIpV6: true,
@@ -231,11 +233,19 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
-    const esLogGroup = new LogGroup(
+    const esSearchLogGroup = new LogGroup(
       this,
-      this.resourceName("ElasticSearchLogGroup"),
+      this.resourceName("ElasticSearchSearchLogGroup"),
       {
-        logGroupName: this.resourceName("ElasticSearchLogGroup"),
+        logGroupName: this.resourceName("ElasticSearchSearchLogGroup"),
+      }
+    );
+
+    const esIndexLogGroup = new LogGroup(
+      this,
+      this.resourceName("ElasticSearchIndexLogGroup"),
+      {
+        logGroupName: this.resourceName("ElasticSearchIndexLogGroup"),
       }
     );
 
@@ -270,18 +280,6 @@ export class CdkTextractStack extends cdk.Stack {
         }
       );
     } else {
-      const serviceLinkedRole = new cdk.CfnResource(
-        this,
-        this.resourceName("es-service-linked-role"),
-        {
-          type: "AWS::IAM::ServiceLinkedRole",
-          properties: {
-            AWSServiceName: "es.amazonaws.com",
-            Description: "Role for ES to access resources in my VPC",
-          },
-        }
-      );
-
       elasticSearch = new es.CfnDomain(
         this,
         this.resourceName("ElasticSearchCluster"),
@@ -308,20 +306,8 @@ export class CdkTextractStack extends cdk.Stack {
           nodeToNodeEncryptionOptions: {
             enabled: true,
           },
-          logPublishingOptions: {
-            INDEX_SLOW_LOGS: {
-              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true,
-            },
-            SEARCH_SLOW_LOGS: {
-              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true,
-            },
-          },
         }
       );
-
-      elasticSearch.node.addDependency(serviceLinkedRole);
     }
 
     // SNS Topic
