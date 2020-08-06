@@ -418,7 +418,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("DocumentBulkProcessingQueue"),
       {
-        visibilityTimeout: cdk.Duration.seconds(300),
+        visibilityTimeout: cdk.Duration.seconds(600),
         retentionPeriod: cdk.Duration.seconds(1209600),
         encryption: QueueEncryption.KMS_MANAGED,
         encryptionMasterKey: bulkProcessingKey,
@@ -759,7 +759,7 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.fromAsset("lambda/documentbulkprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: API_CONCURRENT_REQUESTS / 3,
+        reservedConcurrentExecutions: 1,
         timeout: cdk.Duration.seconds(300),
         tracing: lambda.Tracing.ACTIVE,
         environment: {
