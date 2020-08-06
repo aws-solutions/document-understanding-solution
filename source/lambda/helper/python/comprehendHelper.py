@@ -125,9 +125,9 @@ class ComprehendHelper:
                 return
         
             except ClientError as e:
-                print("batchComprehendDetectEntitiesSync Exception ClientError: %s" % e)
+                print("batchComprehendDetectEntitiesSync Exception ClientError: %s" % str(e))
             except Exception as e:
-                print("batchComprehendDetectEntitiesSync Exception: %s" % e)
+                print("batchComprehendDetectEntitiesSync Exception: %s" % str(e))
         
             retries += 1
             time.sleep(retries * 2)
@@ -165,9 +165,9 @@ class ComprehendHelper:
                 return
             
             except ClientError as e:
-                print("comprehendMedicalDetectEntitiesSync ClientError: %s" % e)
+                print("comprehendMedicalDetectEntitiesSync ClientError: %s" % str(e))
             except Exception as e:
-                print("comprehendMedicalDetectEntitiesSync Exception: %s" % e)
+                print("comprehendMedicalDetectEntitiesSync Exception: %s" % str(e))
 
             retries += 1
             time.sleep(retries * 2)
@@ -207,9 +207,9 @@ class ComprehendHelper:
                 return
             
             except ClientError as e:
-                print("comprehendMedicalDetectICD10Sync ClientError: %s" % e)
+                print("comprehendMedicalDetectICD10Sync ClientError: %s" % str(e))
             except Exception as e:
-                print("comprehendMedicalDetectICD10Sync Exception: %s" % e)
+                print("comprehendMedicalDetectICD10Sync Exception: %s" % str(e))
 
             retries += 1
             time.sleep(retries * 2)
