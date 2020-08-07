@@ -344,11 +344,40 @@ export class CdkTextractStack extends cdk.Stack {
       elasticSearch.node.addDependency(serviceLinkedRole);
     }
 
+    const jobResultsKey = new kms.Key(
+      this,
+      this.resourceName("JobResultsKey"),
+      {
+        enableKeyRotation: true,
+        enabled: true,
+        trustAccountIdentities: true,
+        policy: new iam.PolicyDocument({
+          assignSids: true,
+          statements: [
+            new iam.PolicyStatement({
+              actions: ["kms:GenerateDataKey*", "kms:Decrypt"],
+              resources: ["*"], // Resource level permissions are not necessary in this policy statement, as it is automatically restricted to this key
+              effect: iam.Effect.ALLOW,
+              principals: [
+                new iam.ServicePrincipal("sns.amazonaws.com"),
+                new iam.ServicePrincipal("lambda.amazonaws.com"),
+                new iam.ServicePrincipal("textract.amazonaws.com"),
+                new iam.ServicePrincipal("sqs.amazonaws.com"),
+              ],
+            }),
+          ],
+        }),
+      }
+    );
+
     // SNS Topic
     const jobCompletionTopic = new sns.Topic(
       this,
-      this.resourceName("JobCompletion"),
-      {}
+      this.resourceName("JobCompletionTopic"),
+      {
+        displayName: "Job completion topic",
+        masterKey: jobResultsKey,
+      }
     );
 
     // Textract service IAM role
@@ -365,6 +394,13 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: ["sns:Publish"],
         resources: [jobCompletionTopic.topicArn],
+      })
+    );
+    textractServiceRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["kms:Decrypt", "kms:GenerateDataKey*"],
+        resources: [jobResultsKey.keyArn],
       })
     );
 
@@ -512,6 +548,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(900),
         retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED,
       }
     );
 
@@ -521,12 +558,16 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(900),
         retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS,
+        encryptionMasterKey: jobResultsKey,
+        dataKeyReuse: cdk.Duration.seconds(86400),
         deadLetterQueue: {
           maxReceiveCount: 3,
           queue: jobResultsDLQueue,
         },
       }
     );
+
     // trigger
     jobCompletionTopic.addSubscription(
       new snsSubscriptions.SqsSubscription(jobResultsQueue)
@@ -990,6 +1031,7 @@ export class CdkTextractStack extends cdk.Stack {
     jobResultProcessor.addLayers(textractorLayer);
     jobResultProcessor.addLayers(boto3Layer);
     jobResultProcessor.addLayers(elasticSearchLayer);
+    jobResultsKey.grantEncryptDecrypt(jobResultProcessor);
 
     // Triggers
     jobResultProcessor.addEventSource(
