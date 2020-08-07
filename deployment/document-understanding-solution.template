@@ -686,7 +686,10 @@ Resources:
                           "iam:Get*",
                           "iam:AttachRolePolicy",
                           "iam:PutRolePolicy",
-                          "iam:CreateServiceLinkedRole"
+                          "iam:DeleteRolePolicy",
+                          "iam:DetachRolePolicy",
+                          "iam:CreateServiceLinkedRole",
+                          "iam:DeleteServiceLinkedRole"
                         ]
                     },
                     {
