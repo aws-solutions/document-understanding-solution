@@ -25,8 +25,8 @@ MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
 # Comprehend batch API call has a limit of 25
 PAGES_PER_BATCH = 15
 
-# maximum retries of a comprehend and comprehend medical API call
-MAX_API_RETRIES = 5
+# maximum retries for comprehend and comprehend medical API call
+MAX_API_RETRIES = 4
 
 
 class ComprehendHelper:
@@ -100,11 +100,11 @@ class ComprehendHelper:
                                           comprehendEntities):
 
         retries = 0
+        client = boto3.client('comprehend')
         
-        while retries < MAX_API_RETRIES:
+        while retries <= MAX_API_RETRIES:
             try:
-                client = boto3.client('comprehend')
-
+               
                 textPages = []
                 endIndex = pageStartIndex + pagesToProcess
 
@@ -130,7 +130,7 @@ class ComprehendHelper:
                 print("batchComprehendDetectEntitiesSync Exception: %s" % str(e))
         
             retries += 1
-            time.sleep(retries * 2)
+            time.sleep(retries * retries)
 
         print("batchComprehendDetectEntitiesSync: unable to process, API max retries reached")
                 
@@ -144,11 +144,11 @@ class ComprehendHelper:
                                             comprehendMedicalEntities,
                                             mutex):
         retries = 0
+        client = boto3.client('comprehendmedical')
     
-        while retries < MAX_API_RETRIES:
+        while retries <= MAX_API_RETRIES:
             try:
-                client = boto3.client('comprehendmedical')
-
+               
                 # service limit is 10tps, sdk implements 3 retries with backoff
                 # if that's not enough then fail
                 response = client.detect_entities_v2(Text=rawPages[index])
@@ -170,7 +170,7 @@ class ComprehendHelper:
                 print("comprehendMedicalDetectEntitiesSync Exception: %s" % str(e))
 
             retries += 1
-            time.sleep(retries * 2)
+            time.sleep(retries * retries)
         
         print("comprehendMedicalDetectEntitiesSync: unable to process, API max retries reached")
         
@@ -185,14 +185,13 @@ class ComprehendHelper:
                                          mutex):
 
         retries = 0
+        client = boto3.client('comprehendmedical')
         
-        while retries < MAX_API_RETRIES:
+        while retries <= MAX_API_RETRIES:
             try:
-                client = boto3.client('comprehendmedical')
-
+                
                 # service limit is 10tps, sdk implements 3 retries with backoff
                 # if that's not enough then fail
-            
                 response = client.infer_icd10_cm(Text=rawPages[index])
                 
                 # save results for later processing
@@ -212,7 +211,7 @@ class ComprehendHelper:
                 print("comprehendMedicalDetectICD10Sync Exception: %s" % str(e))
 
             retries += 1
-            time.sleep(retries * 2)
+            time.sleep(retries * retries)
 
         print("comprehendMedicalDetectICD10Sync: unable to process, API max retries reached")
 
