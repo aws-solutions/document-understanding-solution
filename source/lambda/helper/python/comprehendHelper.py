@@ -18,6 +18,7 @@ import json
 import threading
 from helper import S3Helper
 import time
+from awsretry import AWSRetry
 
 # current service limit of Comprehend per page
 MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
@@ -26,8 +27,10 @@ MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
 PAGES_PER_BATCH = 15
 
 # maximum retries for comprehend and comprehend medical API call
-MAX_API_RETRIES = 4
+MAX_API_RETRIES = 5
 
+# the initial time to wait before retrying API call
+DELAY_IN_SECONDS = 2
 
 class ComprehendHelper:
 
@@ -93,127 +96,81 @@ class ComprehendHelper:
     # thread execution calling Comprehend synchronously by batch of up to
     # 25 pages
     #
+    @AWSRetry.backoff(tries=MAX_API_RETRIES, delay=DELAY_IN_SECONDS)
     def batchComprehendDetectEntitiesSync(self,
                                           rawPages,
                                           pagesToProcess,
                                           pageStartIndex,
                                           comprehendEntities):
 
-        retries = 0
+
         client = boto3.client('comprehend')
         
-        while retries <= MAX_API_RETRIES:
-            try:
-               
-                textPages = []
-                endIndex = pageStartIndex + pagesToProcess
+        textPages = []
+        endIndex = pageStartIndex + pagesToProcess
 
-                for i in range(pageStartIndex, endIndex):
-                    textPages.append(rawPages[i])
+        for i in range(pageStartIndex, endIndex):
+            textPages.append(rawPages[i])
 
-                # service limit is around 10tps, sdk implements 3 retries with backoff
-                # if that's not enough then fail
-                response = client.batch_detect_entities(
-                    TextList=textPages,
-                    LanguageCode="en")
+        # service limit is around 10tps, sdk implements 3 retries with backoff
+        # if that's not enough then fail
+        response = client.batch_detect_entities(
+            TextList=textPages,
+            LanguageCode="en")
 
-                # store results
-                for i in range(0, pagesToProcess):
-                    comprehendEntities[pageStartIndex +
-                                       i] = response['ResultList'][i]
-                # success
-                return
-        
-            except ClientError as e:
-                print("batchComprehendDetectEntitiesSync Exception ClientError: %s" % str(e))
-            except Exception as e:
-                print("batchComprehendDetectEntitiesSync Exception: %s" % str(e))
-        
-            retries += 1
-            time.sleep(retries * retries)
-
-        print("batchComprehendDetectEntitiesSync: unable to process, API max retries reached")
-                
+        # store results
+        for i in range(0, pagesToProcess):
+            comprehendEntities[pageStartIndex +
+                               i] = response['ResultList'][i]
+    
     #
     # thread execution calling ComprehendMedical Entities synchronously for each page
     #
-
+    @AWSRetry.backoff(tries=MAX_API_RETRIES, delay=DELAY_IN_SECONDS)
     def comprehendMedicalDetectEntitiesSync(self,
                                             rawPages,
                                             index,
                                             comprehendMedicalEntities,
                                             mutex):
-        retries = 0
+        
         client = boto3.client('comprehendmedical')
     
-        while retries <= MAX_API_RETRIES:
-            try:
-               
-                # service limit is 10tps, sdk implements 3 retries with backoff
-                # if that's not enough then fail
-                response = client.detect_entities_v2(Text=rawPages[index])
+        # service limit is 10tps, sdk implements 3 retries with backoff
+        # if that's not enough then fail
+        response = client.detect_entities_v2(Text=rawPages[index])
 
-                # save results for later processing
-                if 'Entities' not in response:
-                    return
+        # save results for later processing
+        if 'Entities' not in response:
+            return
 
-                mutex.acquire()
-                comprehendMedicalEntities[index] = response['Entities']
-                mutex.release()
+        mutex.acquire()
+        comprehendMedicalEntities[index] = response['Entities']
+        mutex.release()
 
-                # success
-                return
-            
-            except ClientError as e:
-                print("comprehendMedicalDetectEntitiesSync ClientError: %s" % str(e))
-            except Exception as e:
-                print("comprehendMedicalDetectEntitiesSync Exception: %s" % str(e))
-
-            retries += 1
-            time.sleep(retries * retries)
-        
-        print("comprehendMedicalDetectEntitiesSync: unable to process, API max retries reached")
-        
+    
     #
     # thread execution calling ComprehendMedical ICD10 synchronously for each page
     #
-
+    @AWSRetry.backoff(tries=MAX_API_RETRIES, delay=DELAY_IN_SECONDS)
     def comprehendMedicalDetectICD10Sync(self,
                                          rawPages,
                                          index,
                                          comprehendMedicalICD10,
                                          mutex):
 
-        retries = 0
         client = boto3.client('comprehendmedical')
-        
-        while retries <= MAX_API_RETRIES:
-            try:
-                
-                # service limit is 10tps, sdk implements 3 retries with backoff
-                # if that's not enough then fail
-                response = client.infer_icd10_cm(Text=rawPages[index])
-                
-                # save results for later processing
-                if 'Entities' not in response:
-                    return
-
-                mutex.acquire()
-                comprehendMedicalICD10[index] = response['Entities']
-                mutex.release()
-
-                # success
-                return
             
-            except ClientError as e:
-                print("comprehendMedicalDetectICD10Sync ClientError: %s" % str(e))
-            except Exception as e:
-                print("comprehendMedicalDetectICD10Sync Exception: %s" % str(e))
+        # service limit is 10tps, sdk implements 3 retries with backoff
+        # if that's not enough then fail
+        response = client.infer_icd10_cm(Text=rawPages[index])
+        
+        # save results for later processing
+        if 'Entities' not in response:
+            return
 
-            retries += 1
-            time.sleep(retries * retries)
-
-        print("comprehendMedicalDetectICD10Sync: unable to process, API max retries reached")
+        mutex.acquire()
+        comprehendMedicalICD10[index] = response['Entities']
+        mutex.release()
 
 
     #
