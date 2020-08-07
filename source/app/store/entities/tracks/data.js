@@ -49,7 +49,15 @@ export default {
     title: 'Compliance',
     subtitle: 'Redact information from a document',
     longDescription: `
-      Some description of the Compliance track goes here
+      In the compliance track, you can redact information from documents. You have the
+      capability to redact specific key-value pairs detected by Amazon Textract, entities
+      detected by Amazon Comprehend and medical entities detected by Comprehend
+      Medical. You also have the flexibility to redact specific word matches under the
+      Preview Tab.
+
+      These controls help you redact Protected Health Information (PHI) and other
+      sensitive information that may be critical to your use case. You also have the option
+      to download the redacted document before you would want to share it.
     `,
     icon: '/static/images/icon_redact.svg',
     palette: 'teal',
@@ -59,7 +67,9 @@ export default {
     title: 'Workflow automation',
     subtitle: 'Edit and transfer data to other tools',
     longDescription: `
-      Some description of the Workflow track goes here
+      This track focusses on how data from different AWS services in DUS can be
+      consumed. The data extracted from DUS is available in the backend storage
+      (Amazon S3) and then it can be consumed by your downstream dependencies.
     `,
     icon: '/static/images/icon_workflow.svg',
     palette: 'purple',

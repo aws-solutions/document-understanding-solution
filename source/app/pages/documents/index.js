@@ -62,6 +62,7 @@ import css from './documents.scss'
 import SearchBar from '../../components/SearchBar/SearchBar'
 import { setHeaderProps } from '../../store/ui/actions'
 import Link from 'next/link'
+import TooltipButton from '../../components/TooltipButton/TooltipButton'
 
 Documents.propTypes = {
   dispatch: PropTypes.func,
@@ -78,12 +79,6 @@ Documents.propTypes = {
 
 Documents.defaultProps = {
   documents: [],
-}
-
-Documents.getInitialProps = function() {
-  return {
-    showNavigation: true
-  }
 }
 
 function Documents({
@@ -117,6 +112,10 @@ function Documents({
   const doSearch = useSearchCallback(dispatch, searchPersona)
 
   useEffect(() => {
+    dispatch(setSearchQuery(''))
+  }, [])
+
+  useEffect(() => {
     doSearch(searchQuery)
   }, [ searchQuery, doSearch ]);
 
@@ -143,12 +142,6 @@ function Documents({
     dispatch(setHeaderProps({
       showNavigation: !!searchQuery
     }))
-
-    return () => {
-      dispatch(setHeaderProps({
-        showNavigation: true
-      }))
-    }
   }, [ searchQuery ])
 
   if (documentsTotal === 0 && status === 'success') {
@@ -167,18 +160,23 @@ function Documents({
   return (
     <div className={css.documents}>
       <div className={introClassNames}>
-        {!searchQuery && <p>
+        {!searchQuery && <h3>
           Search through documents to find the information you are looking for
-        </p>}
+        </h3>}
         <SearchBar
           className={css.searchBar}
           light
-          suggestions={ENABLE_KENDRA && searchQuery && [
-            'What are the testing guidelines for COVID-19?',
-            'How to prevent transmission of COVID-19',
-            'What is the recommended treatment for COVID-19?'
+          suggestions={ENABLE_KENDRA && [
+            'Preventing COVID-19 spread',
+            'Where can I get tested for COVID-19?',
+            'Should children wear masks',
+            'What is antibody testing?',
+            'What are the symptoms of COVID-19?',
+            'When is someone infectious?',
+            'Is there a COVID-19 vaccine?',
+            'Types of testing for COVID-19'
           ]}
-          placeholder={ENABLE_KENDRA ? 'Type a Natural Language Query related to COVID-19' : null}
+          placeholder={ENABLE_KENDRA ? 'Type a question related to COVID-19' : null}
         />
       </div>
 
@@ -186,13 +184,18 @@ function Documents({
       {(status === 'success' || !!files.length) && !searchQuery && (
         <Fragment>
           <div className={listDetailsClassNames}>
-            <p className={css.instructions}>Analyze a document from the list of documents below, or <Link href="/select"><a>upload your own documents</a></Link>.</p>
+            <h3>Document list</h3>
 
-            {!!files.length && (
-              <p className={css.fileCount}>
-                Showing {files.length} of {documentsTotal} document{documentsTotal !== 1 && 's'}
-              </p>
-            )}
+            <p className={css.instructions}>
+              {!!files.length && (
+                <span className={css.fileCount}>
+                  Showing {files.length} of {documentsTotal} document{documentsTotal !== 1 && 's'}
+                </span>
+              )}
+
+              Analyze a document from the list of documents below, or <Link href="/select"><a>upload your own documents</a></Link>.
+            </p>
+
           </div>
           <DocumentList items={files} className={css.list} />
           {status === 'pending' && !!files.length && (
@@ -225,6 +228,17 @@ function Documents({
                 isComparing={selectedSearch === 'both'}
               />
             : null }
+
+            {selectedSearch === 'both' &&
+              <TooltipButton
+                tooltip={<>
+                  <p>In a traditional keyword search, the results are provided in a list. The user needs to go through the list, select a document that may have the answer, and then go find the answer within the document.</p>
+                  <p>Amazon Kendra is automating all of that to parse the results. It shortens the cycle of opening the link and directly extracts suggested answers, as well as frequently asked questions related to the search query.</p>
+                </>}
+              >
+                <div className={css.compareButton}>What's the difference?</div>
+              </TooltipButton>
+            }
 
             { ENABLE_KENDRA && (selectedSearch === 'kendra' || selectedSearch === 'both') ?
               <KendraResults

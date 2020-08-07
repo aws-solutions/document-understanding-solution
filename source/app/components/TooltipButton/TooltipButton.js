@@ -11,41 +11,49 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React from "react";
-import KendraFAQItem from "../KendraFAQItem/KendraFAQItem";
-import TooltipButton from "../TooltipButton/TooltipButton";
+import React, { useCallback, useState } from "react";
+import Floater from "react-floater";
 
-import css from "./KendraFAQs.scss";
+import css from "./TooltipButton.scss";
+import { createPortal } from "react-dom";
 
-export default function KendraFAQs({ results, submitFeedback }) {
-  if (!results.length) return null;
+export default function TooltipButton({ tooltip, children }) {
+  const [ open, setOpen ] = useState(false);
+
+  const onClick = useCallback(() => {
+    setOpen(open => !open);
+  }, []);
 
   return (
-    <div className={css.faqs}>
-      <header>
-        <h2>
-          Frequently asked questions
-          <TooltipButton
-            tooltip={
-              <>
-                <h4>Frequently asked questions</h4>
-                <p>
-                You can upload a list of FAQs to Kendra to provide direct answers to common questions your end users are asking. Kendra will find the closest question to the search query and return the corresponding answer.
-                </p>
-              </>
-            }
-          >
-            <a>More info</a>
-          </TooltipButton>
-        </h2>
-      </header>
-      {results.map((item) => (
-        <KendraFAQItem
-          item={item}
-          key={item.Id}
-          submitFeedback={submitFeedback}
-        />
-      ))}
-    </div>
+    <>
+      <Floater
+        content={<div className={css.tip}>{tooltip}</div>}
+        placement="top"
+        open={open}
+        styles={{
+          container: {
+            backgroundColor: "#00a1c9",
+            color: "#fff",
+            borderRadius: 5,
+          },
+          arrow: {
+            color: "#00a1c9",
+          },
+          options: {
+            zIndex: 200
+          }
+        }}
+      >
+        {React.cloneElement(children, {
+          onClick,
+          style: { zIndex: 200 }
+        })}
+      </Floater>
+
+      {open && createPortal(
+        <div className={css.overlay} onClick={onClick} />,
+        document.body
+      )}
+    </>
   );
 }

@@ -16,6 +16,13 @@
     margin: 0;
     padding: 0;
   }
+
+  a {
+    color: $link-blue;
+    margin-left: 1em;
+    font-style: italic;
+    font-weight: normal;
+  }
 }
 
 .results {

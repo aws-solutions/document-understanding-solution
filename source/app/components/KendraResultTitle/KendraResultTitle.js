@@ -24,8 +24,12 @@ export default function KendraResultTitle({ result, submitFeedback }) {
   let resultTitle;
 
   if (result.DocumentTitle && result.DocumentTitle.Text) {
+    const truncatedTitle = {
+      ...result.DocumentTitle,
+      Text: result.DocumentTitle.Text.replace(/-searchable$/, ''),
+    }
     resultTitle = (
-      <KendraHighlightedText textWithHighlights={result.DocumentTitle} />
+      <KendraHighlightedText textWithHighlights={truncatedTitle} />
     );
   } else if (result.DocumentURI) {
     resultTitle = result.DocumentURI;

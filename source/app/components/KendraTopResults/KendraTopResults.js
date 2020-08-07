@@ -22,6 +22,7 @@ import React, {
 import KendraResultTitle from "../KendraResultTitle/KendraResultTitle";
 import KendraHighlightedText from "../KendraHighlightedText/KendraHighlightedText";
 import KendraResultFooter from "../KendraResultFooter/KendraResultFooter";
+import TooltipButton from "../TooltipButton/TooltipButton";
 
 import styles from "./KendraTopResults.scss";
 import cs from "classnames";
@@ -55,7 +56,6 @@ export default function KendraTopResults({ results, submitFeedback }) {
           <article
             key={result.id}
             className={styles.result}
-            data-walkthrough="top-result"
           >
             <KendraResultTitle
               result={result}
@@ -88,7 +88,17 @@ export default function KendraTopResults({ results, submitFeedback }) {
   return (
     <div className={styles.topResults}>
       <header>
-        <h2>Amazon Kendra suggested answers</h2>
+        <h2>Amazon Kendra suggested answers
+
+          <TooltipButton
+            tooltip={<>
+              <h4>Amazon Kendra suggested answers</h4>
+              <p>When you type a question, Kendra uses machine learning algorithms to understand the context and return the most relevant results, whether that be a precise answer or an entire document. Kendra will map to the relevant documents and return a specific answer.</p>
+            </>}
+          >
+            <a>More info</a>
+          </TooltipButton>
+        </h2>
       </header>
       <div className={styles.results}>
         {renderedResults[0]}
