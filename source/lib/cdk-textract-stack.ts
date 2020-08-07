@@ -361,8 +361,11 @@ export class CdkTextractStack extends cdk.Stack {
     // SNS Topic
     const jobCompletionTopic = new sns.Topic(
       this,
-      this.resourceName("JobCompletion"),
-      {}
+      this.resourceName("JobCompletionTopic"),
+      {
+        displayName: "Job completion topic",
+        masterKey: jobResultsKey,
+      }
     );
 
     // Textract service IAM role
