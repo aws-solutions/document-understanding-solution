@@ -15,12 +15,12 @@
   ],
   "stack": {
     "stackname": "DUS",
-    "region": "us-east-1"
+    "region": "%%REGION%%"
   },
   "cicd": "false",
   "isROMode": "false",
   "enableKendra": "true",
-  "email": "smehenda@amazon.com",
+  "email": "%%USER_EMAIL%%",
   "scripts": {
     "bootstrap": "AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk bootstrap --toolkit-stack-name DocumentUnderstandingCDKToolkit",
     "compile-ts-stacks": "yarn compile-ts-backend-stack && yarn compile-ts-client-stack",
