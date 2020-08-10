@@ -12,7 +12,7 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { connect } from 'react-redux'
 import Link from 'next/link'
 import PropTypes from 'prop-types'
@@ -20,17 +20,25 @@ import Router from 'next/router'
 import { Auth } from 'aws-amplify'
 
 import Button from '../Button/Button'
+import LinkWithClickHandler from '../LinkWithClickHandler/LinkWithClickHandler'
 
 import { getHeaderProps } from '../../store/ui/selectors'
 
 import css from './Header.scss'
+import { clearSearchQuery, setSearchPersona } from '../../store/entities/meta/actions'
 
 Header.propTypes = {
   showNavigation: PropTypes.bool,
   backButton: PropTypes.bool
 }
 
-function Header({ showNavigation, backButton }) {
+function Header({ showNavigation, backButton, dispatch }) {
+
+  const clearSearch = useCallback(() => {
+    dispatch(clearSearchQuery());
+    dispatch(setSearchPersona(undefined));
+  }, [])
+
   return (
     <header className={css.header}>
       <div>
@@ -42,11 +50,11 @@ function Header({ showNavigation, backButton }) {
 
         {showNavigation && (
           <>
-            <Link href="/documents">
+            <LinkWithClickHandler href="/documents" onClick={clearSearch}>
               <a className={css.backButton}>
                 Document list
               </a>
-            </Link>
+            </LinkWithClickHandler>
             {' | '}
             <Link href="/select">
               <a className={css.backButton}>
@@ -57,11 +65,11 @@ function Header({ showNavigation, backButton }) {
         )}
 
         {backButton && (
-          <Link href="/documents">
+          <LinkWithClickHandler href="/documents" onClick={clearSearch}>
             <a className={css.backButton}>
               Start a new search
             </a>
-          </Link>
+          </LinkWithClickHandler>
         )}
       </div>
 

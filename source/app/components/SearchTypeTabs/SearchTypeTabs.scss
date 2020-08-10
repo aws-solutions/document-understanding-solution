@@ -8,6 +8,9 @@ $header-bg-color: color(gray, 90);
   display: flex;
   align-items: center;
   justify-content: center;
+  position: sticky;
+  top: 70px;
+  z-index: 206;
 }
 
 .tab {

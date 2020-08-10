@@ -110,6 +110,9 @@
 
   li {
     margin-bottom: 0.25rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 
     &:last-child {
       margin-bottom: 0;
@@ -127,7 +130,7 @@
 }
 
 .searchSummary {
-  @include type-body-supplemental(color(gray, 60));
+  @include type-body-supplemental(color(orange, 20));
   @include all-caps;
   margin: 0.5rem 0;
   font-weight: 500;

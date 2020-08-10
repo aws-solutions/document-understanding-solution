@@ -17,7 +17,7 @@
     padding: 0;
   }
 
-  a {
+  > header a {
     color: $link-blue;
     margin-left: 1em;
     font-style: italic;
@@ -27,6 +27,7 @@
 
 .results {
   padding: 1em;
+  padding-top: 0;
 }
 
 .result {
@@ -35,6 +36,12 @@
   p {
     @include type-body-secondary(color(gray, 20));
     margin: .25em 0 0;
+    line-clamp: 5;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
   }
 }
 

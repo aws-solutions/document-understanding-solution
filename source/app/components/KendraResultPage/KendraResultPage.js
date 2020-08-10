@@ -22,7 +22,7 @@ import { submitKendraFeedback } from "../../store/entities/searchResults/actions
 
 import styles from "./KendraResultPage.scss";
 import KendraFAQs from "../KendraFAQs/KendraFAQs";
-import { setSearchPersona } from "../../store/entities/meta/actions";
+import PersonaLabel from "../PersonaLabel/PersonaLabel";
 
 KendraResultPage.propTypes = {
   className: PropTypes.string,
@@ -34,12 +34,6 @@ KendraResultPage.propTypes = {
 
 KendraResultPage.defaultProps = {
   results: [],
-};
-
-const PERSONAS = {
-  scientist: "Scientist",
-  healthcareprovider: "Healthcare Provider",
-  generalpublic: "General Public",
 };
 
 export default function KendraResultPage({
@@ -77,10 +71,6 @@ export default function KendraResultPage({
     [dispatch, queryId]
   );
 
-  const clearPersona = useCallback(() => {
-    dispatch(setSearchPersona(undefined));
-  }, []);
-
   return (
     <div className={styles.resultList}>
       {title && <h3>{title}</h3>}
@@ -90,15 +80,7 @@ export default function KendraResultPage({
           <>
             {" "}
             for{" "}
-            <div className={styles.personaLabel} onClick={clearPersona}>
-              {PERSONAS[persona]}
-              <a
-                className={styles.removePersona}
-                title="Click to remove filter"
-              >
-                &times;
-              </a>
-            </div>
+            <PersonaLabel persona={persona} />
           </>
         ) : null}
       </div>
