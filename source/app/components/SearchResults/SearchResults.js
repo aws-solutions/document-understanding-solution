@@ -12,7 +12,7 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import classNames from 'classnames'
 import Link from 'next/link'
 import PropTypes from 'prop-types'
@@ -53,6 +53,11 @@ export default function SearchResults({
 
   if (!searchStatus || !searchQuery) return null
 
+  const highlightRegex = useMemo(() => {
+    const words = searchQuery.split(/\W+/).filter(Boolean).map(x => `\\b${x}\\b`)
+    return new RegExp('(?:' + words.join('|') + ')', 'i');
+  }, [ searchQuery ])
+
   return (
     <nav className={searchResultsClassNames} {...rest}>
       <header className={classNames(isComparing && css.comparing)}>
@@ -92,12 +97,12 @@ export default function SearchResults({
                 <Link {...makeDocumentLink(id)}>
                   <a>
                     <header>
-                      <h3>{name}</h3>
+                      <h3><Highlight search={highlightRegex}>{name}</Highlight></h3>
                     </header>
                     <ul className={css.lines}>
                       {lines.slice(0, 4).map((line, i) => (
                         <li key={i}>
-                          &hellip;<Highlight search={searchQuery}>{line}</Highlight>&hellip;
+                          &hellip;<Highlight search={highlightRegex}>{line}</Highlight>&hellip;
                         </li>
                       ))}
                     </ul>

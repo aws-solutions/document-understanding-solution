@@ -79,6 +79,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
               type="radio"
               value="healthcareprovider"
               onChange={() => setSelectedPersona("healthcareprovider")}
+              checked={selectedPersona === 'healthcareprovider'}
             />
             <h4>Healthcare provider</h4>
             <p>Has access to information for Healthcare Professionals.</p>
@@ -90,6 +91,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
               type="radio"
               value="scientist"
               onChange={() => setSelectedPersona("scientist")}
+              checked={selectedPersona === 'scientist'}
             />
             <h4>Scientist</h4>
             <p>Has access to scientific papers and research documents.</p>
@@ -101,6 +103,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
               type="radio"
               value="generalpublic"
               onChange={() => setSelectedPersona("generalpublic")}
+              checked={selectedPersona === 'generalpublic'}
             />
             <h4>General public</h4>
             <p>
@@ -114,6 +117,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
               type="radio"
               value=""
               onChange={() => setSelectedPersona(undefined)}
+              checked={!selectedPersona}
             />
             <h4>No filter</h4>
             <p>Use this option for unfiltered search results.</p>
@@ -135,22 +139,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
             <li onClick={() => submit(q)}>{q}</li>
           ))}
         </ul>
-        <form className={css.searchForm} onSubmit={submitForm}>
-          <FormInput
-            type="search"
-            white
-            placeholder="Try one of these queries"
-            ref={inputRef}
-          />
-        </form>
       </section>
-
-      <div className={css.actions}>
-        <Button palette="black" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={() => submit()}>Filter Search Results</Button>
-      </div>
 
       <aside className={css.notes}>
         Please note, this demo allows you to upload your own documents. If you

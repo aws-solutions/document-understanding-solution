@@ -167,10 +167,7 @@ function Documents({
           className={css.searchBar}
           light
           suggestions={ENABLE_KENDRA && [
-            'Preventing COVID-19 spread',
             'Where can I get tested for COVID-19?',
-            'Should children wear masks',
-            'What is antibody testing?',
             'What are the symptoms of COVID-19?',
             'When is someone infectious?',
             'Is there a COVID-19 vaccine?',
