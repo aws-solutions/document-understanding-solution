@@ -125,19 +125,23 @@ class KendraHelper:
         print('Document {} will have the following membership policy in Kendra:{}'.format(documentId, json.dumps(accessControlList)))
     
         # get Kendra to index the document along with memberships
+        document = {}
+        document['Id'] = documentId
+        document['AccessControlList'] = accessControlList
+        document['ContentType'] = 'PDF'
+        s3Path = {}
+        s3Path['Bucket'] = s3bucket
+        s3Path['Key'] = s3key
+        document['S3Path'] = s3Path
+        
+        if documentTitle != None:
+            document['Title'] = documentTitle
+        
         kendraclient = client = boto3.client('kendra', region_name=os.environ['AWS_REGION'])
+        
         response = client.batch_put_document(IndexId=kendraIndexId,
                                              RoleArn=kendraRoleArn,
-                                             Documents=[
-                                                {
-                                                'Id': documentId,
-                                                'Title': documentTitle,
-                                                'S3Path': {
-                                                    'Bucket': s3bucket,
-                                                    'Key': s3key
-                                                        },
-                                                'AccessControlList': accessControlList,
-                                                'ContentType': 'PDF'}])
+                                             Documents=[document])
 
         return
 
