@@ -101,12 +101,18 @@ class KendraHelper:
         
         # if the policy file exists, it may contain additional membership tags.  Parsing
         # error may happen and will be caught
+        
+        documentTitle = None
+        
         try:
             if policyData != None:
                 
-                policyAccessList = json.loads(policyData)
+                policy = json.loads(policyData)
                 
-                for membership in policyAccessList['AccessControlList']:
+                if 'Title' in policy:
+                    documentTitle = policy['Title']
+                
+                for membership in policy['AccessControlList']:
                     
                     # no need for tags in the policy that may have been already added above
                     if membership['Name'] != 'everybody' and membership['Name'] != tag:
@@ -125,6 +131,7 @@ class KendraHelper:
                                              Documents=[
                                                 {
                                                 'Id': documentId,
+                                                'Title': documentTitle,
                                                 'S3Path': {
                                                     'Bucket': s3bucket,
                                                     'Key': s3key
