@@ -25,6 +25,7 @@ import {
   clearSearchQuery,
   setSearchQuery,
   setSearchStatus,
+  setSearchPersona,
 } from "../../store/entities/meta/actions";
 import {
   getSearchQuery,
@@ -76,6 +77,7 @@ function SearchBar({
   const handleSubmit = useCallback((e) => {
     e.preventDefault();
     dispatch(setSearchQuery(input.current.value));
+    dispatch(setSearchPersona(undefined))
     input.current.blur();
   }, []);
 
@@ -91,6 +93,7 @@ function SearchBar({
   const selectSuggestion = useCallback(
     (q) => {
       dispatch(setSearchQuery(q));
+      dispatch(setSearchPersona(undefined))
     },
     [dispatch]
   );

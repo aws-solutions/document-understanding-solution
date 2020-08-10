@@ -21,6 +21,7 @@
     align-items: center;
     font-size: 0.8em;
     text-align: center;
+    cursor: pointer;
   }
 
   img {
@@ -56,15 +57,6 @@
   li {
     cursor: pointer;
     color: color(blue, 20)
-  }
-
-  + form {
-    width: 80%;
-    margin: 1em auto;
-
-    label {
-      width: 100%;
-    }
   }
 }
 
