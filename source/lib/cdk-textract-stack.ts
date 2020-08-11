@@ -1,4 +1,4 @@
-/**********************************************************************************************************************
+  /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
  *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
@@ -255,8 +255,18 @@ export class CdkTextractStack extends cdk.Stack {
 
     const esSearchLogGroup = new LogGroup(
       this,
-      this.resourceName("ElasticSearchLogGroup"),
-      {}
+      this.resourceName("ElasticSearchSearchLogGroup"),
+      {
+        logGroupName: this.resourceName("ElasticSearchSearchLogGroup"),
+      }
+    );
+
+    const esIndexLogGroup = new LogGroup(
+      this,
+      this.resourceName("ElasticSearchIndexLogGroup"),
+      {
+        logGroupName: this.resourceName("ElasticSearchIndexLogGroup"),
+      }
     );
 
     // Elasticsearch
@@ -286,18 +296,6 @@ export class CdkTextractStack extends cdk.Stack {
           },
           nodeToNodeEncryptionOptions: {
             enabled: true,
-          },
-        }
-      );
-    } else {
-      const serviceLinkedRole = new cdk.CfnResource(
-        this,
-        this.resourceName("es-service-linked-role"),
-        {
-          type: "AWS::IAM::ServiceLinkedRole",
-          properties: {
-            AWSServiceName: "es.amazonaws.com",
-            Description: "Role for ES to access resources in my VPC",
           },
         }
       );
