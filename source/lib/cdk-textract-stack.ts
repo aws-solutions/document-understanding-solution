@@ -253,10 +253,20 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
-    const esLogGroup = new LogGroup(
+    const esSearchLogGroup = new LogGroup(
       this,
-      this.resourceName("ElasticSearchLogGroup"),
-      {}
+      this.resourceName("ElasticSearchSearchLogGroup"),
+      {
+        logGroupName: this.resourceName("ElasticSearchSearchLogGroup"),
+      }
+    );
+
+    const esIndexLogGroup = new LogGroup(
+      this,
+      this.resourceName("ElasticSearchIndexLogGroup"),
+      {
+        logGroupName: this.resourceName("ElasticSearchIndexLogGroup"),
+      }
     );
 
     // Elasticsearch
@@ -290,18 +300,6 @@ export class CdkTextractStack extends cdk.Stack {
         }
       );
     } else {
-      const serviceLinkedRole = new cdk.CfnResource(
-        this,
-        this.resourceName("es-service-linked-role"),
-        {
-          type: "AWS::IAM::ServiceLinkedRole",
-          properties: {
-            AWSServiceName: "es.amazonaws.com",
-            Description: "Role for ES to access resources in my VPC",
-          },
-        }
-      );
-
       elasticSearch = new es.CfnDomain(
         this,
         this.resourceName("ElasticSearchCluster"),
@@ -328,20 +326,8 @@ export class CdkTextractStack extends cdk.Stack {
           nodeToNodeEncryptionOptions: {
             enabled: true,
           },
-          logPublishingOptions: {
-            INDEX_SLOW_LOGS: {
-              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true,
-            },
-            SEARCH_SLOW_LOGS: {
-              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true,
-            },
-          },
         }
       );
-
-      elasticSearch.node.addDependency(serviceLinkedRole);
     }
 
     const jobResultsKey = new kms.Key(

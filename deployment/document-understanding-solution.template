@@ -170,6 +170,10 @@ Resources:
               commands:
                 - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:2.0"
                 - node --version
+                - echo "Installing jq package"
+                - wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+                - chmod +x ./jq
+                - cp jq /usr/bin
                 - npm install -g cdk@1.18.0
                 - cdk --version
                 - npm install -g typescript
@@ -541,9 +545,11 @@ Resources:
                         "Action": [
                           "logs:CreateLogGroup",
                           "logs:CreateLogStream",
+                          "logs:DeleteLogStream",
                           "logs:PutLogEvents",
                           "logs:Describe*",
-                          "logs:PutRetentionPolicy"
+                          "logs:PutRetentionPolicy",
+                          "logs:PutResourcePolicy"
                         ]
                     },
                     {
@@ -674,7 +680,8 @@ Resources:
                           "es:CreateElasticsearchServiceRole",
                           "es:DeleteElasticsearchDomain",
                           "es:DeleteElasticsearchServiceRole",
-                          "es:List*"
+                          "es:List*",
+                          "es:UpdateElasticsearchDomainConfig"
                         ]
                     },
                     {
