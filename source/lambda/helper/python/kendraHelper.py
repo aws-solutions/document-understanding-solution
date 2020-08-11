@@ -101,12 +101,18 @@ class KendraHelper:
         
         # if the policy file exists, it may contain additional membership tags.  Parsing
         # error may happen and will be caught
+        
+        documentTitle = None
+        
         try:
             if policyData != None:
                 
-                policyAccessList = json.loads(policyData)
+                policy = json.loads(policyData)
                 
-                for membership in policyAccessList['AccessControlList']:
+                if 'Title' in policy:
+                    documentTitle = policy['Title']
+                
+                for membership in policy['AccessControlList']:
                     
                     # no need for tags in the policy that may have been already added above
                     if membership['Name'] != 'everybody' and membership['Name'] != tag:
@@ -119,18 +125,23 @@ class KendraHelper:
         print('Document {} will have the following membership policy in Kendra:{}'.format(documentId, json.dumps(accessControlList)))
     
         # get Kendra to index the document along with memberships
+        document = {}
+        document['Id'] = documentId
+        document['AccessControlList'] = accessControlList
+        document['ContentType'] = 'PDF'
+        s3Path = {}
+        s3Path['Bucket'] = s3bucket
+        s3Path['Key'] = s3key
+        document['S3Path'] = s3Path
+        
+        if documentTitle != None:
+            document['Title'] = documentTitle
+        
         kendraclient = client = boto3.client('kendra', region_name=os.environ['AWS_REGION'])
+        
         response = client.batch_put_document(IndexId=kendraIndexId,
                                              RoleArn=kendraRoleArn,
-                                             Documents=[
-                                                {
-                                                'Id': documentId,
-                                                'S3Path': {
-                                                    'Bucket': s3bucket,
-                                                    'Key': s3key
-                                                        },
-                                                'AccessControlList': accessControlList,
-                                                'ContentType': 'PDF'}])
+                                             Documents=[document])
 
         return
 

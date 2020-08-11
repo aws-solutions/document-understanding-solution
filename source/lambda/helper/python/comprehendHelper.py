@@ -14,11 +14,12 @@
 
 import boto3
 from botocore.exceptions import ClientError
+from botocore.config import Config
 import json
 import threading
 from helper import S3Helper
 import time
-from awsretry import AWSRetry
+
 
 # current service limit of Comprehend per page
 MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
@@ -27,10 +28,7 @@ MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
 PAGES_PER_BATCH = 15
 
 # maximum retries for comprehend and comprehend medical API call
-MAX_API_RETRIES = 5
-
-# the initial time to wait before retrying API call
-DELAY_IN_SECONDS = 2
+MAX_API_RETRIES = 6
 
 class ComprehendHelper:
 
@@ -96,15 +94,21 @@ class ComprehendHelper:
     # thread execution calling Comprehend synchronously by batch of up to
     # 25 pages
     #
-    @AWSRetry.backoff(tries=MAX_API_RETRIES, delay=DELAY_IN_SECONDS)
+    
     def batchComprehendDetectEntitiesSync(self,
                                           rawPages,
                                           pagesToProcess,
                                           pageStartIndex,
                                           comprehendEntities):
 
-
-        client = boto3.client('comprehend')
+        config = Config(
+                        retries = {
+                        'max_attempts': MAX_API_RETRIES,
+                        'mode': 'standard'
+                        }
+        )
+                        
+        client = boto3.client('comprehend', config=config)
         
         textPages = []
         endIndex = pageStartIndex + pagesToProcess
@@ -126,14 +130,20 @@ class ComprehendHelper:
     #
     # thread execution calling ComprehendMedical Entities synchronously for each page
     #
-    @AWSRetry.backoff(tries=MAX_API_RETRIES, delay=DELAY_IN_SECONDS)
+    
     def comprehendMedicalDetectEntitiesSync(self,
                                             rawPages,
                                             index,
                                             comprehendMedicalEntities,
                                             mutex):
-        
-        client = boto3.client('comprehendmedical')
+        config = Config(
+                        retries = {
+                        'max_attempts': MAX_API_RETRIES,
+                        'mode': 'standard'
+                        }
+        )
+                        
+        client = boto3.client('comprehendmedical', config=config)
     
         # service limit is 10tps, sdk implements 3 retries with backoff
         # if that's not enough then fail
@@ -151,14 +161,21 @@ class ComprehendHelper:
     #
     # thread execution calling ComprehendMedical ICD10 synchronously for each page
     #
-    @AWSRetry.backoff(tries=MAX_API_RETRIES, delay=DELAY_IN_SECONDS)
+    
     def comprehendMedicalDetectICD10Sync(self,
                                          rawPages,
                                          index,
                                          comprehendMedicalICD10,
                                          mutex):
 
-        client = boto3.client('comprehendmedical')
+        config = Config(
+                        retries = {
+                        'max_attempts': MAX_API_RETRIES,
+                        'mode': 'standard'
+                        }
+        )
+
+        client = boto3.client('comprehendmedical', config=config)
             
         # service limit is 10tps, sdk implements 3 retries with backoff
         # if that's not enough then fail
