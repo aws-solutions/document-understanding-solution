@@ -46,7 +46,7 @@ import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
 import { LogGroupLogDestination } from "@aws-cdk/aws-apigateway";
 
-const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed parallelly
+const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed in parallell
 
 export interface TextractStackProps {
   email: string;
@@ -171,12 +171,14 @@ export class CdkTextractStack extends cdk.Stack {
             behaviors: [{ isDefaultBehavior: true }],
           },
         ],
-        errorConfigurations: [{
-          errorCode: 404,
-          responseCode: 200,
-          errorCachingMinTtl: 5,
-          responsePagePath: '/index.html'
-        }],
+        errorConfigurations: [
+          {
+            errorCode: 404,
+            responseCode: 200,
+            errorCachingMinTtl: 5,
+            responsePagePath: "/index.html",
+          },
+        ],
         priceClass: PriceClass.PRICE_CLASS_100,
         httpVersion: HttpVersion.HTTP2,
         enableIpV6: true,
@@ -231,11 +233,19 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
-    const esLogGroup = new LogGroup(
+    const esSearchLogGroup = new LogGroup(
       this,
-      this.resourceName("ElasticSearchLogGroup"),
+      this.resourceName("ElasticSearchSearchLogGroup"),
       {
-        logGroupName: this.resourceName("ElasticSearchLogGroup"),
+        logGroupName: this.resourceName("ElasticSearchSearchLogGroup"),
+      }
+    );
+
+    const esIndexLogGroup = new LogGroup(
+      this,
+      this.resourceName("ElasticSearchIndexLogGroup"),
+      {
+        logGroupName: this.resourceName("ElasticSearchIndexLogGroup"),
       }
     );
 
@@ -270,18 +280,6 @@ export class CdkTextractStack extends cdk.Stack {
         }
       );
     } else {
-      const serviceLinkedRole = new cdk.CfnResource(
-        this,
-        this.resourceName("es-service-linked-role"),
-        {
-          type: "AWS::IAM::ServiceLinkedRole",
-          properties: {
-            AWSServiceName: "es.amazonaws.com",
-            Description: "Role for ES to access resources in my VPC",
-          },
-        }
-      );
-
       elasticSearch = new es.CfnDomain(
         this,
         this.resourceName("ElasticSearchCluster"),
@@ -308,28 +306,43 @@ export class CdkTextractStack extends cdk.Stack {
           nodeToNodeEncryptionOptions: {
             enabled: true,
           },
-          logPublishingOptions: {
-            INDEX_SLOW_LOGS: {
-              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true,
-            },
-            SEARCH_SLOW_LOGS: {
-              cloudWatchLogsLogGroupArn: esLogGroup.logGroupArn,
-              enabled: true,
-            },
-          },
         }
       );
-
-      elasticSearch.node.addDependency(serviceLinkedRole);
     }
+
+    const jobResultsKey = new kms.Key(
+      this,
+      this.resourceName("JobResultsKey"),
+      {
+        enableKeyRotation: true,
+        enabled: true,
+        trustAccountIdentities: true,
+        policy: new iam.PolicyDocument({
+          assignSids: true,
+          statements: [
+            new iam.PolicyStatement({
+              actions: ["kms:GenerateDataKey*", "kms:Decrypt"],
+              resources: ["*"], // Resource level permissions are not necessary in this policy statement, as it is automatically restricted to this key
+              effect: iam.Effect.ALLOW,
+              principals: [
+                new iam.ServicePrincipal("sns.amazonaws.com"),
+                new iam.ServicePrincipal("lambda.amazonaws.com"),
+                new iam.ServicePrincipal("textract.amazonaws.com"),
+                new iam.ServicePrincipal("sqs.amazonaws.com"),
+              ],
+            }),
+          ],
+        }),
+      }
+    );
 
     // SNS Topic
     const jobCompletionTopic = new sns.Topic(
       this,
-      this.resourceName("JobCompletion"),
+      this.resourceName("JobCompletionTopic"),
       {
         displayName: "Job completion topic",
+        masterKey: jobResultsKey,
       }
     );
 
@@ -347,6 +360,13 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: ["sns:Publish"],
         resources: [jobCompletionTopic.topicArn],
+      })
+    );
+    textractServiceRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["kms:Decrypt", "kms:GenerateDataKey*"],
+        resources: [jobResultsKey.keyArn],
       })
     );
 
@@ -440,6 +460,7 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(900),
         retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED,
       }
     );
 
@@ -449,12 +470,16 @@ export class CdkTextractStack extends cdk.Stack {
       {
         visibilityTimeout: cdk.Duration.seconds(900),
         retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS,
+        encryptionMasterKey: jobResultsKey,
+        dataKeyReuse: cdk.Duration.seconds(86400),
         deadLetterQueue: {
           maxReceiveCount: 3,
           queue: jobResultsDLQueue,
         },
       }
     );
+
     // trigger
     jobCompletionTopic.addSubscription(
       new snsSubscriptions.SqsSubscription(jobResultsQueue)
@@ -874,6 +899,7 @@ export class CdkTextractStack extends cdk.Stack {
     jobResultProcessor.addLayers(textractorLayer);
     jobResultProcessor.addLayers(boto3Layer);
     jobResultProcessor.addLayers(elasticSearchLayer);
+    jobResultsKey.grantEncryptDecrypt(jobResultProcessor);
 
     // Triggers
     jobResultProcessor.addEventSource(
