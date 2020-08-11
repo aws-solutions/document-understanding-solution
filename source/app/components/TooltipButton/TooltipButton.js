@@ -40,13 +40,12 @@ export default function TooltipButton({ tooltip, children }) {
             color: "#00a1c9",
           },
           options: {
-            zIndex: 200
+            zIndex: open ? 600 : 100
           }
         }}
       >
         {React.cloneElement(children, {
-          onClick,
-          style: { zIndex: 200 }
+          onClick
         })}
       </Floater>
 

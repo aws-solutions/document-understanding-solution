@@ -28,7 +28,7 @@
   justify-content: center;
   position: sticky;
   top: 0;
-  z-index: 205;
+  z-index: 300;
 
   > * {
     width: 100%;
@@ -169,4 +169,10 @@
   top: 4em;
   color: $link-blue;
   font-style: italic;
+
+  img {
+    position: relative;
+    top: .2em;
+    margin-right: .5em;
+  }
 }
