@@ -233,7 +233,10 @@ function Documents({
                   <p>Amazon Kendra is automating all of that to parse the results. It shortens the cycle of opening the link and directly extracts suggested answers, as well as frequently asked questions related to the search query.</p>
                 </>}
               >
-                <div className={css.compareButton}>What's the difference?</div>
+                <div className={css.compareButton}>
+                  <img src="/static/images/icon_tip.svg" />
+                  What's the difference?
+                </div>
               </TooltipButton>
             }
 

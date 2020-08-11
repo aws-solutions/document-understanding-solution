@@ -30,12 +30,18 @@ export default function KendraFAQs({ results, submitFeedback }) {
               <>
                 <h4>Frequently asked questions</h4>
                 <p>
-                You can upload a list of FAQs to Kendra to provide direct answers to common questions your end users are asking. Kendra will find the closest question to the search query and return the corresponding answer.
+                  You can upload a list of FAQs to Kendra to provide direct
+                  answers to common questions your end users are asking. Kendra
+                  will find the closest question to the search query and return
+                  the corresponding answer.
                 </p>
               </>
             }
           >
-            <a>More info</a>
+            <a>
+              <img src="/static/images/icon_tip.svg" />
+              More info
+            </a>
           </TooltipButton>
         </h2>
       </header>

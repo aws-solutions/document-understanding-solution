@@ -53,10 +53,7 @@ export default function KendraTopResults({ results, submitFeedback }) {
         );
 
         return (
-          <article
-            key={result.id}
-            className={styles.result}
-          >
+          <article key={result.id} className={styles.result}>
             <KendraResultTitle
               result={result}
               submitFeedback={submitFeedback}
@@ -88,15 +85,26 @@ export default function KendraTopResults({ results, submitFeedback }) {
   return (
     <div className={styles.topResults}>
       <header>
-        <h2>Amazon Kendra suggested answers
-
+        <h2>
+          Amazon Kendra suggested answers
           <TooltipButton
-            tooltip={<>
-              <h4>Amazon Kendra suggested answers</h4>
-              <p>When you type a question, Kendra uses machine learning algorithms to understand the context and return the most relevant results, whether that be a precise answer or an entire document. Kendra will map to the relevant documents and return a specific answer.</p>
-            </>}
+            tooltip={
+              <>
+                <h4>Amazon Kendra suggested answers</h4>
+                <p>
+                  When you type a question, Kendra uses machine learning
+                  algorithms to understand the context and return the most
+                  relevant results, whether that be a precise answer or an
+                  entire document. Kendra will map to the relevant documents and
+                  return a specific answer.
+                </p>
+              </>
+            }
           >
-            <a>More info</a>
+            <a>
+              <img src="/static/images/icon_tip.svg" />
+              More info
+            </a>
           </TooltipButton>
         </h2>
       </header>
