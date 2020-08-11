@@ -169,9 +169,9 @@ function Documents({
           suggestions={ENABLE_KENDRA && [
             'Where can I get tested for COVID-19?',
             'What are the symptoms of COVID-19?',
-            'When is someone infectious?',
-            'Is there a COVID-19 vaccine?',
-            'Types of testing for COVID-19'
+            'Preventing COVID-19 spread',
+            'Can someone who had COVID-19 spread the illness?',
+            'Treatment options for COVID-19'
           ]}
           placeholder={ENABLE_KENDRA ? 'Type a question related to COVID-19' : null}
         />

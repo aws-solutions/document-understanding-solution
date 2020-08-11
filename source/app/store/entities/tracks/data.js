@@ -36,7 +36,7 @@ export default {
 
       Once you select a document, you'll be able to interact with Amazon Textract,
       Amazon Comprehend, and Amazon Comprehend Medical to experience the power
-      of document digitization and extration of sensitive information.
+      of document digitization and extraction of sensitive information.
 
       For demo purposes, we've loaded data related to COVID-19. Ask a question related
       to this topic and see the power of natural language search.
