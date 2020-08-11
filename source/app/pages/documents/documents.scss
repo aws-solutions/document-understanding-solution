@@ -169,4 +169,10 @@
   top: 4em;
   color: $link-blue;
   font-style: italic;
+
+  img {
+    position: relative;
+    top: .2em;
+    margin-right: .5em;
+  }
 }
