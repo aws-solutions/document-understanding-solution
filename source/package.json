@@ -96,7 +96,7 @@
     "redux-devtools-extension": "^2.13.8",
     "redux-promise": "^0.6.0",
     "redux-thunk": "^2.3.0",
-    "serialize-javascript": "2.1.1",
+    "serialize-javascript": "3.1.0",
     "short-uuid": "^3.1.1",
     "susy": "^3.0.5",
     "typescript": "^3.8.3"
