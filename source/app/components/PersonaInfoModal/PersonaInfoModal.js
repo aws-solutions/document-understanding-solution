@@ -57,7 +57,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
     >
       <p>
         Amazon Kendra can deliver highly relevant query results based on user
-        name or group membership associated with your content metadata. Follow these simple steps, and see how this
+        name or group membership associated with the content metadata. Follow these simple steps, and see how this
         feature works.
       </p>
 
