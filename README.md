@@ -34,6 +34,9 @@ Please ensure you install all requirements before beginning the deployment
 
   ```sudo yum -y install jq```
 
+- moto (Required for running the tests)
+``` pip install moto ```
+
 To deploy using this approach, you must first set few values inside the `package.json` file in the `source` folder.
 
 - Set your deployment region in the `stack->region` property, replacing `"%%REGION%%"`. This deployment will not pull the AWS region from your current AWS profile. 
