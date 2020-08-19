@@ -47,7 +47,7 @@ class TestDocumentStore(unittest.TestCase):
         response = self.ds.createDocument(documentId, bucketName, objectName)
         self.assertEqual(response, None)
     
-    def test_create_duplicate_documentid_throws_error(self):
+    def test_create_duplicate_document_id_throws_error(self):
         bucketName = "dusstack-sample-s3-bucket"
         objectName = "public/samples/Finance/report.pdf"
         documentId = "b1a54fda-1809-49d7-8f19-0d1688eb65b9"
@@ -59,7 +59,7 @@ class TestDocumentStore(unittest.TestCase):
         response = self.ds.updateDocumentStatus(documentId, "FAILED")
         self.assertEqual(response, None)
     
-    def test_update_document_status_throws_error_when_document_doesnot_exist(self):
+    def test_update_document_status_throws_error_when_document_does_not_exist(self):
         documentId = "b1333fda-1809-49d7-8f19-0d1688eb65b9"
         response = self.ds.updateDocumentStatus(documentId, "FAILED")
         self.assertEqual(response, {'Error': 'Document does not exist.'})
@@ -86,14 +86,31 @@ class TestDocumentStore(unittest.TestCase):
     def test_get_documents(self):
         response = self.ds.getDocuments()
         self.assertEqual(len(response['documents']),2)
+        document_ids = []
+        for document in response['documents']:
+            document_ids.append(document['documentId'])
+        self.assertTrue('b1a54fda-1809-49d7-8f19-0d1688eb65b9' in document_ids)
+        self.assertTrue('b1a99fda-1809-49d7-8f19-0d1688eb65b9' in document_ids)
+
     
     def test_get_document_count(self):
         response = self.ds.getDocumentCount()
         self.assertEqual(response, 2)
+    
+    def test_get_table(self):
+        response = self.ds.getTable()
+        self.assertEqual(response.name,DOCUMENTS_TABLE_NAME)
+        self.assertTrue("dynamodb.Table" in response.__class__.__name__)
+    
+    def test_get_document(self):
+        documentId = 'b1a99fda-1809-49d7-8f19-0d1688eb65b9'
+        response = self.ds.getDocument(documentId)
+        self.assertEqual(response['documentStatus'], 'IN_PROGRESS')
+        self.assertEqual(response['documentId'], documentId)
+        self.assertEqual(response['bucketName'], "dusstack-sample-s3-bucket")
 
     def tearDown(self):
         self.conn.delete_table(TableName=DOCUMENTS_TABLE_NAME)
-
 
 
 if __name__=='__main__':

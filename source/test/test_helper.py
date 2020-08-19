@@ -17,16 +17,16 @@ class TestS3Helper(unittest.TestCase):
         self.conn = boto3.resource('s3', region_name=REGION)
         self.conn.create_bucket(Bucket=BUCKET_NAME, CreateBucketConfiguration={'LocationConstraint': REGION})
 
-    def test_gets3BucketRegion(self):
+    def test_get_s3_bucket_region(self):
         bucketRegion = S3Helper.getS3BucketRegion(BUCKET_NAME)
         self.assertEqual(bucketRegion,REGION)
     
-    def test_writeToS3(self):
+    def test_write_to_s3(self):
         S3Helper.writeToS3("Hello World", BUCKET_NAME, S3_FILE_NAME, REGION)
         body = self.conn.Object(BUCKET_NAME, S3_FILE_NAME).get()['Body'].read().decode('utf-8')
         self.assertEqual(body, "Hello World")
     
-    def test_readFromS3(self):
+    def test_read_from_s3(self):
         self.conn.Object(BUCKET_NAME, S3_FILE_NAME).put(Body="Test")
         body = S3Helper.readFromS3(BUCKET_NAME, S3_FILE_NAME, REGION)
         self.assertEqual(body,"Test")
@@ -56,12 +56,12 @@ class TestDynamoDBHelper(unittest.TestCase):
             }
         )
 
-    def test_getItems(self):
+    def test_get_items(self):
         items = DynamoDBHelper.getItems(TABLE_NAME, "forum_name", "Test")
         expected_result = [{'forum_name': 'Test', 'subject': 'test subject'}]
         self.assertEqual(items, expected_result)
     
-    def test_insertItem(self):
+    def test_insert_item(self):
         new_item = {
                 "forum_name": "Test2",
                 "subject": "test subject2"
