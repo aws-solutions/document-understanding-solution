@@ -572,7 +572,9 @@ Resources:
                           "s3:GetBucketCORS",
                           "s3:PutBucketCORS",
                           "s3:GetBucketWebsite",
-                          "s3:PutBucketWebsite"
+                          "s3:PutBucketWebsite",
+                          "s3:PutLifecycleConfiguration",
+                          "s3:GetLifecycleConfiguration"
                           ]
                     },
                     {
@@ -679,7 +681,10 @@ Resources:
                           "iam:Get*",
                           "iam:AttachRolePolicy",
                           "iam:PutRolePolicy",
-                          "iam:CreateServiceLinkedRole"
+                          "iam:DetachRolePolicy",
+                          "iam:DeleteRolePolicy",
+                          "iam:CreateServiceLinkedRole",
+                          "iam:DeleteServiceLinkedRole"
                         ]
                     },
                     {
@@ -747,6 +752,19 @@ Resources:
                           "sqs:SetQueueAttributes"
                         ],
                         "Resource": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                          "states:CreateActivity",
+                          "states:DeleteActivity",
+                          "states:CreateStateMachine",
+                          "states:DeleteStateMachine",
+                          "states:Describe*",
+                          "states:TagResource",
+                          "states:UntagResource"
+                        ],
+                        "Resource": "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*",
                         "Effect": "Allow"
                     }
                 ]
