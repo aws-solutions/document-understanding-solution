@@ -4,7 +4,7 @@ DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehen
 
 ![img](./images/DUS_with_kendra.png)
 
-## Arch
+## Architecture Diagram
 
 
 ![img](./images/DUS_Arch.png)
