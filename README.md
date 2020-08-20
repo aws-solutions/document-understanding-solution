@@ -4,6 +4,11 @@ DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehen
 
 ![img](./images/DUS_with_kendra.png)
 
+## Architecture Diagram
+
+
+![img](./images/DUS_Arch.png)
+
 Current document formats supported : **PDF,JPG,PNG**
 
 The instructions below cover installation on Unix-based Operating systems like macOS and Linux. 
