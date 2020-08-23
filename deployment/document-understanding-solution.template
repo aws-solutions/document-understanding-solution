@@ -174,6 +174,11 @@ Resources:
                 - wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
                 - chmod +x ./jq
                 - cp jq /usr/bin
+                - echo "Installing pip"
+                - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+                - python get-pip.py
+                - echo "Installing moto for running tests"
+                - pip install moto
                 - npm install -g cdk@1.18.0
                 - cdk --version
                 - npm install -g typescript
@@ -253,7 +258,7 @@ Resources:
       Handler: index.handler
       Runtime: nodejs12.x
       Role: !GetAtt CICDHelperRole.Arn
-      Timeout: 600
+      Timeout: 900
       MemorySize: 2048
       Environment:
         Variables:
