@@ -2,13 +2,23 @@
 
 DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical Amazon Elasticsearch and Amazon Kendra to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capaibilities.
 
+![img](./images/DUS_with_kendra.png)
+
+## Architecture Diagram
+
+
+![img](./images/DUS_Arch.png)
+
+
+
 Current document formats supported : **PDF,JPG,PNG**
+
+
+##  Development Deploy
 
 The instructions below cover installation on Unix-based Operating systems like macOS and Linux. 
 You can use a AWS Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
 
-
-##  Development Deploy
 
 ### Requirements
 Please ensure you install all requirements before beginning the deployment
