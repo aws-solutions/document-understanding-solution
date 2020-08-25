@@ -135,7 +135,7 @@ Resources:
                 - Name: SourceApp
               Configuration:
                 RepositoryName: !Ref CodeCommitRepository
-                BranchName: fix-kendra-cicd
+                BranchName: master
                 PollForSourceChanges: false
         - Name: Deploy
           Actions:
