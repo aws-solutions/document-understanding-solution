@@ -179,7 +179,7 @@ Resources:
                 - python get-pip.py
                 - echo "Installing moto for running tests"
                 - pip install moto
-                - npm install -g cdk@1.18.0
+                - npm install -g cdk@1.42.0
                 - cdk --version
                 - npm install -g typescript
                 - tsc --version
