@@ -135,7 +135,7 @@ Resources:
                 - Name: SourceApp
               Configuration:
                 RepositoryName: !Ref CodeCommitRepository
-                BranchName: master
+                BranchName: fix-kendra-cicd
                 PollForSourceChanges: false
         - Name: Deploy
           Actions:
@@ -351,6 +351,11 @@ Resources:
                     ":*",
                   ],
                 ]
+          - Effect: "Allow"
+            Action:
+              - "logs:PutResourcePolicy"
+            Resource:
+              - "*" # PutResourcePolicy requires access to "*" resources
           - Effect: "Allow"
             Action:
               - "codecommit:CreateCommit"
