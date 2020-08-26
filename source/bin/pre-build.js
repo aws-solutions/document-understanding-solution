@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -127,6 +126,15 @@ const GetResources = new Promise((resolve, reject) => {
     resources.PdfGenLambda = stackDescriptionObj.find((x) =>
       /pdfgenerator/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
+    resources.ElasticSearchSearchLogGroup = stackDescriptionObj.find((x) =>
+      /ElasticSearchSearchLogGroup/i.test(x.LogicalResourceId)
+    ).PhysicalResourceId;
+    resources.ElasticSearchIndexLogGroup = stackDescriptionObj.find((x) =>
+      /ElasticSearchIndexLogGroup/i.test(x.LogicalResourceId)
+    ).PhysicalResourceId;
+    resources.ElasticSearchCluster = stackDescriptionObj.find((x) =>
+      /ElasticSearchCluster/i.test(x.LogicalResourceId)
+    ).PhysicalResourceId;
 
     resolve(resources);
   });
@@ -139,6 +147,6 @@ const setEnv = async () => {
     outputArray.push(`${key}=${data[key]}`);
   });
   fs.writeFileSync(".env", outputArray.join("\n"));
-  fs.appendFileSync(".env","\nisROMode="+isROMode);
+  fs.appendFileSync(".env", "\nisROMode=" + isROMode);
 };
 setEnv();

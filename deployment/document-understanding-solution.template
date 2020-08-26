@@ -170,7 +170,16 @@ Resources:
               commands:
                 - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:2.0"
                 - node --version
-                - npm install -g cdk@1.18.0
+                - echo "Installing jq package"
+                - wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+                - chmod +x ./jq
+                - cp jq /usr/bin
+                - echo "Installing pip"
+                - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+                - python get-pip.py
+                - echo "Installing moto for running tests"
+                - pip install moto
+                - npm install -g cdk@1.42.0
                 - cdk --version
                 - npm install -g typescript
                 - tsc --version
@@ -222,6 +231,11 @@ Resources:
   # CICD helper resources [start]
   CICDHelper:
     Type: "AWS::Lambda::Function"
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W58
+            reason: "Customer resource needs no additional permission to log to Cloudwatch"
     Properties:
       Description: "Document Understanding Solution CICD helper"
       Code:
@@ -244,7 +258,7 @@ Resources:
       Handler: index.handler
       Runtime: nodejs12.x
       Role: !GetAtt CICDHelperRole.Arn
-      Timeout: 600
+      Timeout: 900
       MemorySize: 2048
       Environment:
         Variables:
@@ -311,6 +325,8 @@ Resources:
             reason: "Reviewed, actions split per service, and which cannot be applied at resource level. Because of CDK deployment we do not know the exact resource ARN"
           - id: F5
             reason: "Reviewed, need permissions to delete various IAM resources"
+          - id: W12
+            reason: "Resource level permissions are not supported by those services"
     Properties:
       PolicyName: cicdhelperpolicy
       PolicyDocument:
@@ -534,9 +550,11 @@ Resources:
                         "Action": [
                           "logs:CreateLogGroup",
                           "logs:CreateLogStream",
+                          "logs:DeleteLogStream",
                           "logs:PutLogEvents",
                           "logs:Describe*",
-                          "logs:PutRetentionPolicy"
+                          "logs:PutRetentionPolicy",
+                          "logs:PutResourcePolicy"
                         ]
                     },
                     {
@@ -572,7 +590,9 @@ Resources:
                           "s3:GetBucketCORS",
                           "s3:PutBucketCORS",
                           "s3:GetBucketWebsite",
-                          "s3:PutBucketWebsite"
+                          "s3:PutBucketWebsite",
+                          "s3:PutLifecycleConfiguration",
+                          "s3:GetLifecycleConfiguration"
                           ]
                     },
                     {
@@ -665,7 +685,8 @@ Resources:
                           "es:CreateElasticsearchServiceRole",
                           "es:DeleteElasticsearchDomain",
                           "es:DeleteElasticsearchServiceRole",
-                          "es:List*"
+                          "es:List*",
+                          "es:UpdateElasticsearchDomainConfig"
                         ]
                     },
                     {
@@ -679,7 +700,10 @@ Resources:
                           "iam:Get*",
                           "iam:AttachRolePolicy",
                           "iam:PutRolePolicy",
-                          "iam:CreateServiceLinkedRole"
+                          "iam:DeleteRolePolicy",
+                          "iam:DetachRolePolicy",
+                          "iam:CreateServiceLinkedRole",
+                          "iam:DeleteServiceLinkedRole"
                         ]
                     },
                     {
@@ -747,6 +771,19 @@ Resources:
                           "sqs:SetQueueAttributes"
                         ],
                         "Resource": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                          "states:CreateActivity",
+                          "states:DeleteActivity",
+                          "states:CreateStateMachine",
+                          "states:DeleteStateMachine",
+                          "states:Describe*",
+                          "states:TagResource",
+                          "states:UntagResource"
+                        ],
+                        "Resource": "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*",
                         "Effect": "Allow"
                     }
                 ]

@@ -9,8 +9,12 @@ from helper import DynamoDBHelper
 
 BUCKET_NAME = "test-bucket"
 S3_FILE_NAME = "test_file_name.txt"
-REGION = 'us-west-2'
 TABLE_NAME = "TestsTable"
+
+current_session = boto3.session.Session()
+REGION = current_session.region_name
+print(f"Test region is {REGION}")
+
 @mock_s3
 class TestS3Helper(unittest.TestCase):
     def setUp(self):

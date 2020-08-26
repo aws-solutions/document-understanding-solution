@@ -8,7 +8,10 @@ import datastore
 
 DOCUMENTS_TABLE_NAME="DocumentsTestTable"
 OUTPUT_TABLE_NAME="OutputTestTable"
-REGION="us-west-2"
+
+current_session = boto3.session.Session()
+REGION = current_session.region_name
+print(f"Test region is {REGION}")
 
 @mock_dynamodb2
 class TestDocumentStore(unittest.TestCase):
