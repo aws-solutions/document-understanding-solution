@@ -31,7 +31,7 @@
     "deploy:setup-user": "AWS_REGION=$npm_package_stack_region node bin/user-setup.js",
     "deploy:setup-samples": "AWS_REGION=$npm_package_stack_region ENABLE_KENDRA=$npm_package_enableKendra bash ./bin/upload-samples.sh",
     "deploy-all": "yarn run:tests && yarn compile-ts-stacks && yarn bootstrap && yarn deploy:backend && yarn deploy:client && yarn deploy:setup-samples",
-    "deploy": "yarn deploy-all && yarn update-pdf-lambda-code",
+    "deploy": "yarn install-all && yarn deploy-all && yarn update-pdf-lambda-code",
     "deploy:frontend": "yarn deploy:client && yarn deploy:setup-samples",
     "destroy": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region cdk destroy -v true -a \"node bin/deploy-client-stack.js\" && STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk destroy -v true",
     "update-es-logs-and-stack-variables": "bash ../deployment/custom-deployment/bin/update-es-logs-and-client-stack-vars.sh",
