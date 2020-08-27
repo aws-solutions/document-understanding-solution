@@ -23,7 +23,7 @@ export const tracksSchema = new schema.Array(trackSchema)
 // Track Lenses
 export const lensTracks = lensPath(['entities', 'tracks'])
 export const lensTrack = id => lensPath(['entities', 'tracks', id])
-const discoveryTrackDescription = ENABLE_KENDRA? `
+const kendraModeDescription = `
 In this track, you can search through multiple documents and find information faster
 and more efficiently, using  traditional search based technologies such as Amazon 
 Elasticsearch as well using state-of-the-art machine learning and natural language
@@ -35,12 +35,14 @@ of document digitization and extraction of sensitive information.
 
 For demo purposes, we've loaded data related to COVID-19. Ask a question related
 to this topic and see the power of natural language search.
-`: `In this track, you can search through multiple documents and find information faster
+`
+const classicModeDescription = `In this track, you can search through multiple documents and find information faster
 and more efficiently, using Amazon Elasticsearch.
 
 Once you select a document, you'll be able to interact with Amazon Textract,
 Amazon Comprehend, and Amazon Comprehend Medical to experience the power
 of document digitization and extraction of sensitive information.`
+const discoveryTrackDescription = ENABLE_KENDRA? kendraModeDescription:classicModeDescription;
 ;
 // Initial Data
 export default {
