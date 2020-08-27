@@ -14,6 +14,7 @@
 
 import { schema } from 'normalizr'
 import { lensPath } from 'ramda'
+import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA } from '../../../constants/configs'
 
 // Track Schemas
 export const trackSchema = new schema.Entity('tracks')
@@ -22,25 +23,32 @@ export const tracksSchema = new schema.Array(trackSchema)
 // Track Lenses
 export const lensTracks = lensPath(['entities', 'tracks'])
 export const lensTrack = id => lensPath(['entities', 'tracks', id])
+const discoveryTrackDescription = ENABLE_KENDRA? `
+In this track, you can search through multiple documents and find information faster
+and more efficiently, using  traditional search based technologies such as Amazon 
+Elasticsearch as well using state-of-the-art machine learning and natural language
+with Amazon Kendra.
 
+Once you select a document, you'll be able to interact with Amazon Textract,
+Amazon Comprehend, and Amazon Comprehend Medical to experience the power
+of document digitization and extraction of sensitive information.
+
+For demo purposes, we've loaded data related to COVID-19. Ask a question related
+to this topic and see the power of natural language search.
+`: `In this track, you can search through multiple documents and find information faster
+and more efficiently, using Amazon Elasticsearch.
+
+Once you select a document, you'll be able to interact with Amazon Textract,
+Amazon Comprehend, and Amazon Comprehend Medical to experience the power
+of document digitization and extraction of sensitive information.`
+;
 // Initial Data
 export default {
   search: {
     id: 'search',
     title: 'Discovery',
     subtitle: 'Search across many documents, or within a single document',
-    longDescription: `
-      In this track, you can search through multiple documents and find information faster
-      and more efficiently, using state-of-the-art machine learning and natural language
-      with Amazon Kendra.
-
-      Once you select a document, you'll be able to interact with Amazon Textract,
-      Amazon Comprehend, and Amazon Comprehend Medical to experience the power
-      of document digitization and extraction of sensitive information.
-
-      For demo purposes, we've loaded data related to COVID-19. Ask a question related
-      to this topic and see the power of natural language search.
-    `,
+    longDescription: discoveryTrackDescription,
     icon: '/static/images/icon_cloud-search.svg',
     palette: 'blue',
   },
