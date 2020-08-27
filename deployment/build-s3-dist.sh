@@ -84,10 +84,7 @@ cd $template_dir
 echo "------------------------------------------------------------------------------"
 echo "Installing packages"
 echo "------------------------------------------------------------------------------"
-if [ ! -f $template_dir/source/lambda/elasticsearch/es.zip ]
-then
-    cd $template_dir/source/ && bash bin/install_packages.sh
-fi
+cd $template_dir/source/ && bash bin/install_packages.sh
 cd $template_dir
 echo "Creating zip file of project source..."
 zip -r $build_dist_dir/document-understanding-solution.zip ./* -x "*pdfgenerator*" \
