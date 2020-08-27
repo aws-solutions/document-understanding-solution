@@ -85,6 +85,7 @@ echo "--------------------------------------------------------------------------
 echo "Installing packages"
 echo "------------------------------------------------------------------------------"
 cd $template_dir/source/ && bash bin/install_packages.sh
+echo "Installed packages for boto3 and elasticsearch"
 cd $template_dir
 echo "Creating zip file of project source..."
 zip -r $build_dist_dir/document-understanding-solution.zip ./* -x "*pdfgenerator*" \
