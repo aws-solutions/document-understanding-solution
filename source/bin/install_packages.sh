@@ -5,12 +5,12 @@ if [ ! -d $current_dir/lambda/boto3/python ]
 then
     echo "Installing boto3 and its dependencies..."
     mkdir $current_dir/lambda/boto3/python
-    pip install -r $current_dir/lambda/boto3/requirements.txt --target=$current_dir/lambda/boto3/python --no-deps --no-cache-dir
+    pip3 install -r $current_dir/lambda/boto3/requirements.txt --target=$current_dir/lambda/boto3/python --no-deps --no-cache-dir
     rm -r $current_dir/lambda/boto3/python/__pycache__ && rm -r $current_dir/lambda/boto3/python/bin
 else
     rm -r $current_dir/lambda/boto3/python/
     mkdir $current_dir/lambda/boto3/python
-    pip install -r $current_dir/lambda/boto3/requirements.txt --target=$current_dir/lambda/boto3/python --no-deps --no-cache-dir
+    pip3 install -r $current_dir/lambda/boto3/requirements.txt --target=$current_dir/lambda/boto3/python --no-deps --no-cache-dir
     rm -r $current_dir/lambda/boto3/python/__pycache__ && rm -r $current_dir/lambda/boto3/python/bin
 fi
 cd $current_dir/lambda/boto3
@@ -23,11 +23,11 @@ if [ ! -d $current_dir/lambda/elasticsearch/python ]
 then
     echo "Installing elasticsearch and its dependencies..."
     mkdir $current_dir/lambda/elasticsearch/python
-    pip install -r $current_dir/lambda/elasticsearch/requirements.txt --target=$current_dir/lambda/elasticsearch/python --no-deps --no-cache-dir
+    pip3 install -r $current_dir/lambda/elasticsearch/requirements.txt --target=$current_dir/lambda/elasticsearch/python --no-deps --no-cache-dir
 else
     rm -r $current_dir/lambda/elasticsearch/python/
     mkdir $current_dir/lambda/elasticsearch/python
-    pip install -r $current_dir/lambda/elasticsearch/requirements.txt --target=$current_dir/lambda/elasticsearch/python --no-deps --no-cache-dir
+    pip3 install -r $current_dir/lambda/elasticsearch/requirements.txt --target=$current_dir/lambda/elasticsearch/python --no-deps --no-cache-dir
 fi
 cd $current_dir/lambda/elasticsearch
 if [ ! -f es.zip ]
