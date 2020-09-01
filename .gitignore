@@ -16,6 +16,10 @@ deployment/regional-s3-assets/
 deployment/build-dist/
 deployment/build-dist/*
 
+# compressed files
+*.zip
+source/lambda/boto3/python/*
+source/lambda/elasticsearch/python/*
 
 # misc
 .DS_Store
