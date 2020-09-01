@@ -353,6 +353,11 @@ Resources:
                 ]
           - Effect: "Allow"
             Action:
+              - "logs:PutResourcePolicy"
+            Resource:
+              - "*" # PutResourcePolicy requires access to "*" resources
+          - Effect: "Allow"
+            Action:
               - "codecommit:CreateCommit"
               - "codecommit:PutFile"
               - "codecommit:GetBranch"

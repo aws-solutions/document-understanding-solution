@@ -19,11 +19,19 @@ print(f"Test region is {REGION}")
 class TestS3Helper(unittest.TestCase):
     def setUp(self):
         self.conn = boto3.resource('s3', region_name=REGION)
-        self.conn.create_bucket(Bucket=BUCKET_NAME, CreateBucketConfiguration={'LocationConstraint': REGION})
+        # according to the documentation https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.ServiceResource.create_bucket
+        # buckets in region us-east-1 do not require the region to be specified and have a location constraint of null
+        if(REGION=='us-east-1'):
+            self.conn.create_bucket(Bucket=BUCKET_NAME)
+        else:
+            self.conn.create_bucket(Bucket=BUCKET_NAME, CreateBucketConfiguration={'LocationConstraint': REGION})
 
     def test_get_s3_bucket_region(self):
         bucketRegion = S3Helper.getS3BucketRegion(BUCKET_NAME)
-        self.assertEqual(bucketRegion,REGION)
+        if(REGION=='us-east-1'):
+            self.assertEqual(bucketRegion, None)
+        else:
+            self.assertEqual(bucketRegion,REGION)
     
     def test_write_to_s3(self):
         S3Helper.writeToS3("Hello World", BUCKET_NAME, S3_FILE_NAME, REGION)

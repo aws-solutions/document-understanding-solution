@@ -72,10 +72,25 @@ else
     echo "sed -i -e $replace $template_dist_dir/document-understanding-solution.template"
     sed -i -e $replace $template_dist_dir/document-understanding-solution.template
 fi
-
+echo "------------------------------------------------------------------------------"
+echo "Creating a zip file of document-understanding-cicd..."
+echo "------------------------------------------------------------------------------"
+if [ ! -f ./deployment/document-understanding-cicd.zip ]
+then
+    cd $template_dir/deployment/document-understanding-cicd && npm run build:zip
+fi
+echo "Created document-understanding-cicd.zip"
+cd $template_dir
+echo "------------------------------------------------------------------------------"
+echo "Installing packages"
+echo "------------------------------------------------------------------------------"
+cd $template_dir/source/ && bash ../deployment/install_packages.sh
+echo "Installed packages for boto3 and elasticsearch"
+cd $template_dir
 echo "Creating zip file of project source..."
 zip -r $build_dist_dir/document-understanding-solution.zip ./* -x "*pdfgenerator*" \
 -x "*boto3*" \
+-x "source/lambda/elasticsearch/python/*" \
 -x "*.git*" \
 -x "*node_modules*" \
 -x "*cdk.out*" \
