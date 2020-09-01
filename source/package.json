@@ -46,7 +46,7 @@
     "lint:css": "sass-lint --verbose --no-exit",
     "lint:js": "eslint './**/*.js' --max-warnings 0",
     "run:tests": "bash bin/run-tests.sh",
-    "install-all": "bash bin/install_packages.sh"
+    "install-all": "bash ../deployment/install_packages.sh"
   },
   "dependencies": {
     "@aws-cdk/aws-apigateway": "^1.42.0",
