@@ -842,6 +842,7 @@ export class CdkTextractStack extends cdk.Stack {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
+        vpc: vpc
       }
     );
 
@@ -929,6 +930,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
+        vpc: vpc
       }
     );
 
@@ -986,6 +988,7 @@ export class CdkTextractStack extends cdk.Stack {
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
           SNS_ROLE_ARN: textractServiceRole.roleArn,
         },
+        vpc: vpc,
       }
     );
 
@@ -1031,6 +1034,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
+        vpc: vpc,
       }
     );
 
