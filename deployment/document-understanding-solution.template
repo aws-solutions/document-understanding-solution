@@ -194,6 +194,8 @@ Resources:
                 - sed -i -e "s/SOLUTION_NAME/$SOLUTION_NAME/g" ./source/lib/cdk-textract-stack.ts
                 - sed -i -e "s/\"email\":.*/\"email\":\ \"$USER_EMAIL\",/g" "./source/package.json"
                 - sed -i -e "s/\"region\":.*/\"region\":\ \"$AWS_REGION\"/g" "./source/package.json"
+                - sed -i -e "s/\"isROMode\":.*/\"isROMode\":\ \"false\",/g" "./source/package.json"
+                - sed -i -e "s/\"enableKendra\":.*/\"enableKendra\":\ \"true\",/g" "./source/package.json"
                 - sed -i -e "s/\"stackname\":.*/\"stackname\":\ \"$MAIN_STACK_NAME\",/g" "./source/package.json"
                 - sed -i -e "s/\"cicd\":.*/\"cicd\":\ \"true\",/g" "./source/package.json"
             build:
