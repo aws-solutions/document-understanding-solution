@@ -9,13 +9,13 @@
     "main": "./logger.common.js",
     "dependencies": {},
     "devDependencies": {
-        "chai": "*",
-        "sinon": "*",
-        "sinon-chai": "*",
-        "mocha": "*",
         "aws-sdk-mock": "*",
+        "chai": "*",
+        "mocha": "^8.1.3",
         "npm-run-all": "*",
-        "proxyquire": "*"
+        "proxyquire": "*",
+        "sinon": "*",
+        "sinon-chai": "*"
     },
     "scripts": {
         "pretest": "rm -rf package-lock.json && rm -rf node_modules && npm install",
