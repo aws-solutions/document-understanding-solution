@@ -40,8 +40,8 @@ def deleteESItem(elasticsearchDomain, documentId):
             connection_class=RequestsHttpConnection
         )
 
-        if es.exists(index="textract", doc_type="document", id=documentId):
-            es.delete(index="textract", doc_type="document", id=documentId)
+        if es.exists(index="textract", id=documentId):
+            es.delete(index="textract", id=documentId)
             print("Deleted document: {}".format(documentId))
 
 
@@ -118,7 +118,6 @@ def search(request):
 
         output = es.search(
             index='textract',
-            doc_type="document",
             body=searchBody,
             _source = True,
             filter_path=['hits.hits._id', 'hits.hits._source','hits.hits.highlight']
