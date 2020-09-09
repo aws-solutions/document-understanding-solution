@@ -10,7 +10,7 @@ DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehen
 
 Current document formats supported : **PDF,JPG,PNG**
 
-## 2. CICD Deploy
+## 1. CICD Deploy
 
 ### Requirements
 
@@ -22,7 +22,7 @@ Current document formats supported : **PDF,JPG,PNG**
 
   `curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py`
 
-### Getting Started with Full Deploy
+### Getting Started with CICD Deploy
 
 - Create a bucket to act as the target Amazon S3 distribution bucket
 
@@ -61,10 +61,11 @@ This solutions will create 7 S3 buckets that need to be manually deleted when th
 
 - 2 for CICD
 - 1 for solution specific CDK Toolkit
-- 2 for documents (sample and general documents)
+- 2/3 for documents ((sample and general documents and optionally 1 for COVID-19 sample documents if opting for Amazon Kendra Integration)
 - 1 for the client bucket
 - 1 for access logs
 - 1 for CDK toolkit (if this is the customer's first try with CDK)
+- 1 for document bulk processing pipeline
 
 The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
 
@@ -230,7 +231,7 @@ In Kendra mode, you can also upload the corresponding access control list under 
 
 ## Delete demo application
 
-1. Full CICD Deploy:
+1. CICD Deploy:
 
 Either run `aws cloudformation delete-stack --stack-name {CICD stack}`, or go to Cloudformation in the AWS Console and delete the stack that ends with "CICD". You will also have to go to CodeCommit in the console and manually delete the Repository that was created during the deploy.
 
