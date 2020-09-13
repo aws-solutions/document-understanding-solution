@@ -52,6 +52,7 @@ aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<sol
 
 - Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
 - Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
+- If you wish to manually choose whether to enable Kendra or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=KendraEnabled,ParameterValue=<true_or_false>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
 
 ```
 aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
