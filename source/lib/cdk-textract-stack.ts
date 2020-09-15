@@ -23,6 +23,7 @@ import sns = require("@aws-cdk/aws-sns");
 import snsSubscriptions = require("@aws-cdk/aws-sns-subscriptions");
 import sqs = require("@aws-cdk/aws-sqs");
 import apigateway = require("@aws-cdk/aws-apigateway");
+import ec2 = require("@aws-cdk/aws-ec2");
 import {
   DynamoEventSource,
   SqsEventSource,
@@ -50,6 +51,7 @@ import * as s3n from "@aws-cdk/aws-s3-notifications";
 import { CustomResource, Duration } from "@aws-cdk/core";
 import * as cr from "@aws-cdk/custom-resources";
 import { Runtime } from "@aws-cdk/aws-lambda";
+import { Peer, Port } from "@aws-cdk/aws-ec2";
 
 const API_CONCURRENT_REQUESTS = 30; //approximate number of 1-2 page documents to be processed parallelly
 
@@ -253,6 +255,22 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
+    /****                      VPC Configuration                         ****/
+
+    const vpc = new ec2.Vpc(this, this.resourceName('ElasticSearchVPC'), {
+      cidr: "172.62.0.0/16"
+    })
+
+    const subnetIds = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE}).subnetIds;
+
+    const securityGroup = new ec2.SecurityGroup(this, this.resourceName('ESSecurityGroup'), {
+      allowAllOutbound: true,
+      vpc: vpc,
+      securityGroupName: "ElasticSearch from lambda"
+    })
+
+    securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
+
     const esSearchLogGroup = new LogGroup(
       this,
       this.resourceName("ElasticSearchSearchLogGroup"),
@@ -326,6 +344,10 @@ export class CdkTextractStack extends cdk.Stack {
           nodeToNodeEncryptionOptions: {
             enabled: true,
           },
+          vpcOptions: {
+            subnetIds: [subnetIds[0], subnetIds[1]],
+            securityGroupIds: [securityGroup.securityGroupId]
+          }
         }
       );
     }
@@ -820,6 +842,7 @@ export class CdkTextractStack extends cdk.Stack {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
+        vpc: vpc
       }
     );
 
@@ -907,6 +930,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
+        vpc: vpc
       }
     );
 
@@ -964,6 +988,7 @@ export class CdkTextractStack extends cdk.Stack {
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
           SNS_ROLE_ARN: textractServiceRole.roleArn,
         },
+        vpc: vpc,
       }
     );
 
@@ -1009,6 +1034,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
+        vpc: vpc,
       }
     );
 
@@ -1145,6 +1171,7 @@ export class CdkTextractStack extends cdk.Stack {
           DOCUMENTS_TABLE: documentsTable.tableName,
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
         },
+        vpc: vpc,
       }
     );
 

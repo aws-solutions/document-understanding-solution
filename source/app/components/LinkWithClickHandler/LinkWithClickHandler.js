@@ -15,7 +15,7 @@ import React, { forwardRef, useCallback } from "react";
 import Link from "next/link";
 
 const WrappedLink = forwardRef(function WrappedLink(
-  { customClick, onClick, ...rest },
+  { customClick, onClick, children, ...rest },
   ref
 ) {
   const handleClick = useCallback(
@@ -26,7 +26,11 @@ const WrappedLink = forwardRef(function WrappedLink(
     [customClick, onClick]
   );
 
-  return <a ref={ref} {...rest} onClick={handleClick} />;
+  return React.cloneElement(React.Children.only(children), {
+    ref,
+    onClick: handleClick,
+    ...rest
+  });
 });
 
 export default function LinkWithClickHandler({ onClick, children, ...rest }) {
