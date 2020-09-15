@@ -80,6 +80,7 @@
     "minimist": "^1.2.3",
     "next": "^9.4.4",
     "next-redux-wrapper": "^3.0.0-alpha.3",
+    "node-fetch": "^2.6.1",
     "node-sass": "^4.14.1",
     "normalizr": "^3.4.0",
     "query-string": "^6.8.1",
@@ -119,6 +120,7 @@
   },
   "resolutions": {
     "@aws-amplify/analytics": "1.2.16",
-    "@aws-amplify/ui": "1.0.19"
+    "@aws-amplify/ui": "1.0.19",
+    "node-fetch": "2.6.1"
   }
 }
