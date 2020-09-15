@@ -201,20 +201,17 @@ class OutputGenerator:
                                     }
                                 },
                                 "mappings":{
-                                    "document":{
-                                        "properties":{
-                                        "date":{ 
-                                            "type": "date",
-                                            "format": "M'/'dd'/'yyyy||date||year||year_month||dd MMM yyyy||dd'/'MM'/'yyyy||yyyy'/'MM'/'dd||dd'/'MM'/'YY||year_month_day||MM'/'dd'/'yy||dd MMM||MM'/'yyyy||M-dd-yyyy||MM'/'dd'/'yyyy||M||d'/'MM'/'yyyy||MM'/'dd'/'yy"
-                                        }
+                                    "properties":{
+                                    "date":{
+                                        "type": "date",
+                                        "format": "M'/'dd'/'yyyy||date||year||year_month||dd MMM yyyy||dd'/'MM'/'yyyy||yyyy'/'MM'/'dd||dd'/'MM'/'YY||year_month_day||MM'/'dd'/'yy||dd MMM||MM'/'yyyy||M-dd-yyyy||MM'/'dd'/'yyyy||M||d'/'MM'/'yyyy||MM'/'dd'/'yy"
                                     }
                                 }
                             }
                         }
                     )
 
-                    es.index(index="textract", doc_type="document",
-                            id=self.documentId, body=json.loads(json.dumps(document)))
+                    es.index(index="textract", id=self.documentId, body=document)
 
                     print("Indexed document: {}".format(self.objectName))
                 except Exception as E:

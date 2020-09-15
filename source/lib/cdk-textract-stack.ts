@@ -299,7 +299,7 @@ export class CdkTextractStack extends cdk.Stack {
         this,
         this.resourceName("ElasticSearchCluster"),
         {
-          elasticsearchVersion: "6.5",
+          elasticsearchVersion: "7.4",
           elasticsearchClusterConfig: {
             instanceType: "m5.large.elasticsearch",
           },
@@ -322,7 +322,7 @@ export class CdkTextractStack extends cdk.Stack {
         this,
         this.resourceName("ElasticSearchCluster"),
         {
-          elasticsearchVersion: "6.5",
+          elasticsearchVersion: "7.4",
           elasticsearchClusterConfig: {
             instanceType: "m5.large.elasticsearch",
             instanceCount: 2,
