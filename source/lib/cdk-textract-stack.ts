@@ -1238,14 +1238,6 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    const authorizer = new apigateway.CfnAuthorizer(this, "Authorizer", {
-      identitySource: "method.request.header.Authorization",
-      name: "Authorization",
-      type: "COGNITO_USER_POOLS",
-      providerArns: [textractUserPool.attrArn],
-      restApiId: api.restApiId,
-    });
-
     function addCorsOptionsAndMethods(
       apiResource: apigateway.IResource | apigateway.Resource,
       methods: string[] | []
@@ -1293,10 +1285,7 @@ export class CdkTextractStack extends cdk.Stack {
 
       methods.forEach((method) => {
         apiResource.addMethod(method, undefined, {
-          authorizationType: apigateway.AuthorizationType.COGNITO,
-          authorizer: {
-            authorizerId: `${authorizer.ref}`,
-          },
+          authorizationType: apigateway.AuthorizationType.IAM
         });
       });
     }
