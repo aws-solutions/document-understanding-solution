@@ -1,5 +1,4 @@
-source/app/components/Loading.js:51
-source/app/components/Loading.js:52
+source/app/components/Loading/Loading.js:51
 source/lambda/apiprocessor/search.py:31
 source/lambda/apiprocessor/search.py:32
 source/lambda/helper/python/comprehendHelper.py:352
