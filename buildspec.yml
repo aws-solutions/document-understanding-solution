@@ -10,13 +10,16 @@ phases:
   pre_build:
     commands:
       - echo "Installing dependencies and executing unit tests - `pwd`"
+      - echo "python -m pip install moto"
       - python -m pip install moto
+      - echo "cd source && chmod +x ./bin/run-tests.sh && ./bin/run-tests.sh"
       - cd source && chmod +x ./bin/run-tests.sh && ./bin/run-tests.sh
       - cd ../deployment
       - echo "Installing dependencies and executing unit tests completed `date`"
   build:
     commands:
       - echo "Starting build `date` in `pwd`"
+      - cd ..
       - chmod +x ./build-s3-dist.sh && ./build-s3-dist.sh $DIST_OUTPUT_BUCKET $SOLUTION_NAME $VERSION
       - echo "Build completed `date`"
       - echo "Starting open-source-dist `date` in `pwd`"
