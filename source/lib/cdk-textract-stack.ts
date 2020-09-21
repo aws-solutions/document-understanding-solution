@@ -60,6 +60,7 @@ export interface TextractStackProps {
   isCICDDeploy: boolean;
   description: string;
   enableKendra: boolean;
+  isReadonly: boolean;
 }
 
 export class CdkTextractStack extends cdk.Stack {
@@ -1307,7 +1308,7 @@ export class CdkTextractStack extends cdk.Stack {
     cognitoPolicy.addStatements(
       new iam.PolicyStatement({
         actions: ["execute-api:Invoke"],
-        resources: [api.arnForExecuteApi()],
+        resources: [props.isReadonly ? api.arnForExecuteApi('GET') : api.arnForExecuteApi()],
         effect: iam.Effect.ALLOW,
       })
     );
@@ -1390,6 +1391,19 @@ export class CdkTextractStack extends cdk.Stack {
 
       const searchKendraResource = api.root.addResource("searchkendra");
       addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
+
+
+      // In readonly mode we only granted access to GET resources, but
+      // the searchkendra endpoint uses the POST method, so we need to re-add here
+      if (props.isReadonly) {
+        cognitoPolicy.addStatements(
+          new iam.PolicyStatement({
+            actions: ["execute-api:Invoke"],
+            resources: [api.arnForExecuteApi('*', '/searchkendra')],
+            effect: iam.Effect.ALLOW,
+          })
+        );
+      }
     }
 
     /*** CFN NAG SUPPRESSIONS - These do not affect the functionality of the solution ***/

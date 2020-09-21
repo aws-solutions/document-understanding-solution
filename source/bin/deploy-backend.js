@@ -28,10 +28,12 @@ const userEmail =
 
 const isCICDDeploy = process.env.ISCICD == "false" ? false : true;
 const enableKendra = process.env.ENABLE_KENDRA == "true"? true : false;
+const isReadonly = process.env.READONLY === "true" ? true : false;
 // // eslint-disable-next-line no-new
 new CdkTextractStack.CdkTextractStack(app, stackName, {
   description : "MLSLD-S0001. Document Understanding Solution. This stack deploys the backend for DUS",
   email: userEmail,
   isCICDDeploy: isCICDDeploy,
-  enableKendra: enableKendra
+  enableKendra: enableKendra,
+  isReadonly
 });
