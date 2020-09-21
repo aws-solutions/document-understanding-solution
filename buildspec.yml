@@ -20,10 +20,11 @@ phases:
     commands:
       - echo "Starting build `date` in `pwd`"
       - cd ..
-      - chmod +x ./build-s3-dist.sh && ./build-s3-dist.sh $DIST_OUTPUT_BUCKET $SOLUTION_NAME $VERSION
+      - chmod +x ./deployment/build-s3-dist.sh && ./deployment/build-s3-dist.sh $DIST_OUTPUT_BUCKET $SOLUTION_NAME $VERSION
       - echo "Build completed `date`"
       - echo "Starting open-source-dist `date` in `pwd`"
-      - chmod +x ./build-open-source-dist.sh && ./build-open-source-dist.sh $SOLUTION_NAME
+      - chmod +x ./deployment/build-open-source-dist.sh && ./deployment/build-open-source-dist.sh $SOLUTION_NAME
+      - cd ./deployment
       - echo "Open Source Dist completed `date`"
 
   post_build:

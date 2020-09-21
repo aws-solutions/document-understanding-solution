@@ -18,9 +18,9 @@ fi
 
 # Get reference for all important folders
 source_template_dir="$PWD"
-dist_dir="$source_template_dir/open-source"
+dist_dir="$source_template_dir/deployment/open-source"
 dist_template_dir="$dist_dir/deployment"
-source_dir="$source_template_dir/../source"
+source_dir="$source_template_dir/source"
 
 echo "------------------------------------------------------------------------------"
 echo "[Init] Clean old open-source folder"

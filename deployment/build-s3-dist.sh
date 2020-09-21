@@ -106,8 +106,8 @@ cp $template_dir/source/lambda/boto3/boto3-layer.zip $build_dist_dir/boto3-layer
 echo "Copying CloudFormation template and deployment helper lambda code"
 cp ./deployment/document-understanding-cicd.zip $build_dist_dir/document-understanding-cicd.zip
 
-echo "Copying solution code"
-cp $build_dist_dir/document-understanding-solution.zip $build_dist_dir/document-understanding-solution.zip
+# echo "Copying solution code"
+# cp $build_dist_dir/document-understanding-solution.zip $build_dist_dir/document-understanding-solution.zip
 
 
 # aws s3 cp ./deployment/global-s3-assets/ s3://gwprice-solutions-us-east-1/document-understanding-solution/v1.0.0/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
