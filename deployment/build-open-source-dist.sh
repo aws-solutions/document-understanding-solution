@@ -2,9 +2,8 @@
 #
 # This assumes all of the OS-level configuration has been completed and git repo has already been cloned
 #
-# This script should be run from the repo's deployment directory
-# cd deployment
-# ./build-s3-dist.sh solution-name
+# This script should be run from the repo's top-level directory
+# ./build-open-source-dist.sh solution-name
 #
 # Paramenters:
 #  - solution-name: name of the solution for consistency
