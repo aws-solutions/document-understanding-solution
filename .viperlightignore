@@ -1,11 +1,15 @@
-source/app/components/Loading.js:52
+source/app/components/Loading/Loading.js:51
+source/lambda/apiprocessor/search.py:31
 source/lambda/apiprocessor/search.py:32
+source/lambda/helper/python/comprehendHelper.py:352
 source/lambda/helper/python/comprehendHelper.py:349
+source/lambda/textractor/python/og.py:157
 source/lambda/textractor/python/og.py:158
 
 source/package-lock.json
 source/yarn.lock
 THIRD-PARTY-LICENSES.txt
-source/samples/Medical/HIPAA Release Form.pdf
-source/samples/Medical/Medical Insurance Claim Form.pdf
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+source/samples/*
 

@@ -106,11 +106,3 @@ cp $template_dir/source/lambda/boto3/boto3-layer.zip $build_dist_dir/boto3-layer
 echo "Copying CloudFormation template and deployment helper lambda code"
 cp ./deployment/document-understanding-cicd.zip $build_dist_dir/document-understanding-cicd.zip
 
-echo "Copying solution code"
-cp $build_dist_dir/document-understanding-solution.zip $build_dist_dir/document-understanding-solution.zip
-
-
-# aws s3 cp ./deployment/global-s3-assets/ s3://gwprice-solutions-us-east-1/document-understanding-solution/v1.0.0/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-# aws s3 cp ./deployment/regional-s3-assets/ s3://gwprice-solutions-us-east-1/document-understanding-solution/v1.0.0/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-
-# aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://gwprice-solutions-us-east-1.s3.amazonaws.com/document-understanding-solution/v1.0.0/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback

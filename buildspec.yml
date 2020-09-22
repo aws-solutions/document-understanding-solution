@@ -1,0 +1,41 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 12
+      python: 3.8
+    commands:
+      - echo "nothing to do in install"
+  pre_build:
+    commands:
+      - echo "Installing dependencies and executing unit tests - `pwd`"
+      - echo "python -m pip install moto"
+      - python -m pip install moto
+      - echo "cd source && chmod +x ./bin/run-tests.sh && ./bin/run-tests.sh"
+      - cd source && chmod +x ./bin/run-tests.sh && ./bin/run-tests.sh
+      - cd ../deployment
+      - echo "Installing dependencies and executing unit tests completed `date`"
+  build:
+    commands:
+      - echo "Starting build `date` in `pwd`"
+      - cd ..
+      - chmod +x ./deployment/build-s3-dist.sh && ./deployment/build-s3-dist.sh $DIST_OUTPUT_BUCKET $SOLUTION_NAME $VERSION
+      - echo "Build completed `date`"
+      - echo "Starting open-source-dist `date` in `pwd`"
+      - chmod +x ./deployment/build-open-source-dist.sh && ./deployment/build-open-source-dist.sh $SOLUTION_NAME
+      - cd ./deployment
+      - echo "Open Source Dist completed `date`"
+
+  post_build:
+    commands:
+      - echo "Retrieving next stage buildspec `date` in `pwd`"
+      - aws s3 cp s3://solutions-build-assets/changelog-spec.yml ../buildspec.yml
+      - echo "Retrieving next stage buildspec complete"
+      - echo "Post build completed on `date`"
+
+artifacts:
+  files:
+    - deployment/**/*
+    - CHANGELOG.md
+    - buildspec.yml
