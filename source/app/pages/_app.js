@@ -26,6 +26,7 @@ import initStore from "../store/store";
 import Header from "../components/Header/Header";
 
 import { setSelectedTrack, dismissWalkthrough } from "../store/ui/actions";
+import { DEMO_MODE } from '../constants/configs';
 
 import "../styles/global.scss";
 import css from "./app.scss";
@@ -165,8 +166,7 @@ function Page({ children, pageProps, pathname }) {
 
   // Don't render the app unless the user is logged in, or this is a public route,
   // or this is the login route and the user is not logged in.
-  const shouldRenderApp =
-    isLoggedIn === true || isPublicRoute || (isLoginRoute && !isLoggedIn);
+  const shouldRenderApp = DEMO_MODE || isLoggedIn === true || isPublicRoute || (isLoginRoute && !isLoggedIn);
 
   // Authorize user
   // NOTE: This method of authorization is not sufficient to protect static content.
@@ -177,6 +177,13 @@ function Page({ children, pageProps, pathname }) {
   useEffect(() => {
     // If this is a public route, we don't need to authorize.
     if (isPublicRoute) return;
+
+    if (DEMO_MODE) {
+      if (isLoginRoute) {
+        Router.push('/home')
+      }
+      return;
+    }
 
     // Try to get the user's session info
     Auth.currentSession()

@@ -60,8 +60,10 @@ export interface TextractStackProps {
   isCICDDeploy: boolean;
   description: string;
   enableKendra: boolean;
+  demoMode: boolean;
   isReadonly: boolean;
 }
+
 
 export class CdkTextractStack extends cdk.Stack {
   uuid: string;
@@ -584,147 +586,221 @@ export class CdkTextractStack extends cdk.Stack {
 
     // ####### Cognito User Authentication #######
 
-    const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
-      autoVerifiedAttributes: ["email"],
-      aliasAttributes: ["email"],
-      mfaConfiguration: "OFF",
-      userPoolAddOns: {
-        advancedSecurityMode: "ENFORCED",
-      },
-      policies: {
-        passwordPolicy: {
-          minimumLength: 8,
-          requireLowercase: true,
-          requireNumbers: true,
-          requireSymbols: true,
-          requireUppercase: true,
+    let cognitoPolicy, textractIdentityPool;
+
+    if (!props.demoMode) {
+
+      const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
+        autoVerifiedAttributes: ["email"],
+        aliasAttributes: ["email"],
+        mfaConfiguration: "OFF",
+        userPoolAddOns: {
+          advancedSecurityMode: "ENFORCED",
         },
-      },
-      adminCreateUserConfig: {
-        allowAdminCreateUserOnly: true,
-        inviteMessageTemplate: {
-          emailSubject: "Your DUS login",
-          emailMessage: `<p>You are invited to try the Document Understanding Solution. Your credentials are:</p> \
-                <p> \
-                Username: <strong>{username}</strong><br /> \
-                Password: <strong>{####}</strong> \
-                </p> \
-                <p>\
-                Please wait until the deployent has completed for both DUS and DUSClient stacks before accessing the website \
-                </p>\
-                <p> \
-                Please sign in with the user name and your temporary password provided above at: <br /> \
-                https://${distribution.domainName} \
-                </p>\
-                `,
+        policies: {
+          passwordPolicy: {
+            minimumLength: 8,
+            requireLowercase: true,
+            requireNumbers: true,
+            requireSymbols: true,
+            requireUppercase: true,
+          },
         },
-        unusedAccountValidityDays: 60,
-      },
-    });
-
-    // Depends upon all other parts of the stack having been created.
-    const textractUserPoolUser = new CfnUserPoolUser(
-      this,
-      "textract-user-pool-user",
-      {
-        desiredDeliveryMediums: ["EMAIL"],
-        forceAliasCreation: false,
-        userPoolId: textractUserPool.ref,
-        userAttributes: [
-          {
-            name: "email",
-            value: props.email,
+        adminCreateUserConfig: {
+          allowAdminCreateUserOnly: true,
+          inviteMessageTemplate: {
+            emailSubject: "Your DUS login",
+            emailMessage: `<p>You are invited to try the Document Understanding Solution. Your credentials are:</p> \
+                  <p> \
+                  Username: <strong>{username}</strong><br /> \
+                  Password: <strong>{####}</strong> \
+                  </p> \
+                  <p>\
+                  Please wait until the deployent has completed for both DUS and DUSClient stacks before accessing the website \
+                  </p>\
+                  <p> \
+                  Please sign in with the user name and your temporary password provided above at: <br /> \
+                  https://${distribution.domainName} \
+                  </p>\
+                  `,
           },
-        ],
-        username: props.email.replace(/@/, "."),
-      }
-    );
+          unusedAccountValidityDays: 60,
+        },
+      });
 
-    const textractUserPoolClient = new CfnUserPoolClient(
-      this,
-      "textract-user-pool-client",
-      {
-        userPoolId: textractUserPool.ref,
-      }
-    );
-
-    const textractIdentityPool = new CfnIdentityPool(
-      this,
-      "textract-identity-pool",
-      {
-        allowUnauthenticatedIdentities: false,
-        cognitoIdentityProviders: [
-          {
-            clientId: textractUserPoolClient.ref,
-            providerName: textractUserPool.attrProviderName,
-            serverSideTokenCheck: false,
-          },
-        ],
-      }
-    );
-
-    const textractCognitoAuthenticatedRole = new iam.Role(
-      this,
-      "textract-cognito-authenticated-role",
-      {
-        assumedBy: new iam.FederatedPrincipal(
-          "cognito-identity.amazonaws.com",
-          {
-            StringEquals: {
-              "cognito-identity.amazonaws.com:aud": textractIdentityPool.ref,
+      // Depends upon all other parts of the stack having been created.
+      const textractUserPoolUser = new CfnUserPoolUser(
+        this,
+        "textract-user-pool-user",
+        {
+          desiredDeliveryMediums: ["EMAIL"],
+          forceAliasCreation: false,
+          userPoolId: textractUserPool.ref,
+          userAttributes: [
+            {
+              name: "email",
+              value: props.email,
             },
-            "ForAnyValue:StringLike": {
-              "cognito-identity.amazonaws.com:amr": "authenticated",
+          ],
+          username: props.email.replace(/@/, "."),
+        }
+      );
+
+      const textractUserPoolClient = new CfnUserPoolClient(
+        this,
+        "textract-user-pool-client",
+        {
+          userPoolId: textractUserPool.ref,
+        }
+      );
+
+      textractIdentityPool = new CfnIdentityPool(
+        this,
+        "textract-identity-pool",
+        {
+          allowUnauthenticatedIdentities: false,
+          cognitoIdentityProviders: [
+            {
+              clientId: textractUserPoolClient.ref,
+              providerName: textractUserPool.attrProviderName,
+              serverSideTokenCheck: false,
             },
+          ],
+        }
+      );
+
+      const textractCognitoAuthenticatedRole = new iam.Role(
+        this,
+        "textract-cognito-authenticated-role",
+        {
+          assumedBy: new iam.FederatedPrincipal(
+            "cognito-identity.amazonaws.com",
+            {
+              StringEquals: {
+                "cognito-identity.amazonaws.com:aud": textractIdentityPool.ref,
+              },
+              "ForAnyValue:StringLike": {
+                "cognito-identity.amazonaws.com:amr": "authenticated",
+              },
+            },
+            "sts:AssumeRoleWithWebIdentity"
+          ),
+          path: "/",
+        }
+      );
+
+      cognitoPolicy = new iam.Policy(this, "textract-cognito-policy");
+
+      cognitoPolicy.attachToRole(textractCognitoAuthenticatedRole);
+
+      const textractIdentityPoolRoleAttachment = new CfnIdentityPoolRoleAttachment(
+        this,
+        "textract-identity-role-pool-attachment",
+        {
+          identityPoolId: textractIdentityPool.ref,
+          roles: {
+            authenticated: textractCognitoAuthenticatedRole.roleArn,
           },
-          "sts:AssumeRoleWithWebIdentity"
-        ),
-        path: "/",
-      }
+        }
+      );
+
+    } else {
+
+      textractIdentityPool = new CfnIdentityPool(
+        this,
+        "textract-identity-pool",
+        {
+          allowUnauthenticatedIdentities: true,
+        }
+      );
+
+
+      const textractCognitoUnauthenticatedRole = new iam.Role(
+        this,
+        "textract-cognito-unauthenticated-role",
+        {
+          assumedBy: new iam.FederatedPrincipal(
+            "cognito-identity.amazonaws.com",
+            {
+              StringEquals: {
+                "cognito-identity.amazonaws.com:aud": textractIdentityPool.ref,
+              },
+              "ForAnyValue:StringLike": {
+                "cognito-identity.amazonaws.com:amr": "unauthenticated",
+              },
+            },
+            "sts:AssumeRoleWithWebIdentity"
+          ),
+          path: "/",
+        }
+      );
+
+      cognitoPolicy = new iam.Policy(this, "textract-cognito-policy");
+
+      cognitoPolicy.attachToRole(textractCognitoUnauthenticatedRole);
+
+      const textractIdentityPoolRoleAttachment = new CfnIdentityPoolRoleAttachment(
+        this,
+        "textract-identity-role-pool-attachment",
+        {
+          identityPoolId: textractIdentityPool.ref,
+          roles: {
+            unauthenticated: textractCognitoUnauthenticatedRole.roleArn,
+          },
+        }
+      );
+    }
+
+
+    cognitoPolicy.addStatements(
+      new iam.PolicyStatement({
+        actions: ["cognito-identity:GetId"],
+        resources: [
+          `arn:aws:cognito-identity:${CdkTextractStack.of(this).region}:${
+            CdkTextractStack.of(this).account
+          }:identitypool/${textractIdentityPool.ref}`,
+        ],
+        effect: iam.Effect.ALLOW,
+      })
     );
 
-    const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy", {
-      statements: [
+    cognitoPolicy.addStatements(
+      new iam.PolicyStatement({
+        actions: ["s3:GetObject*", "s3:List*"],
+        resources: [
+          samplesS3Bucket.bucketArn,
+          `${samplesS3Bucket.bucketArn}/*`,
+        ],
+        effect: iam.Effect.ALLOW,
+      })
+    );
+
+    cognitoPolicy.addStatements(
+      new iam.PolicyStatement({
+        actions: ["s3:GetObject*", "s3:List*"],
+        resources: [
+          documentsS3Bucket.bucketArn,
+          `${documentsS3Bucket.bucketArn}/*`,
+        ],
+        effect: iam.Effect.ALLOW,
+      })
+    );
+
+    if (!(props.isReadonly || props.demoMode)) {
+      cognitoPolicy.addStatements(
         new iam.PolicyStatement({
-          actions: ["cognito-identity:GetId"],
-          resources: [
-            `arn:aws:cognito-identity:${CdkTextractStack.of(this).region}:${
-              CdkTextractStack.of(this).account
-            }:identitypool/${textractIdentityPool.ref}`,
-          ],
-          effect: iam.Effect.ALLOW,
-        }),
-        new iam.PolicyStatement({
-          actions: ["s3:GetObject*", "s3:List*"],
-          resources: [
-            samplesS3Bucket.bucketArn,
-            `${samplesS3Bucket.bucketArn}/*`,
-          ],
-          effect: iam.Effect.ALLOW,
-        }),
-        new iam.PolicyStatement({
-          actions: ["s3:GetObject*", "s3:List*", "s3:PutObject"],
+          actions: ["s3:PutObject"],
           resources: [
             documentsS3Bucket.bucketArn,
             `${documentsS3Bucket.bucketArn}/*`,
           ],
           effect: iam.Effect.ALLOW,
-        }),
-      ],
-    });
+        })
+      );
+    }
 
-    cognitoPolicy.attachToRole(textractCognitoAuthenticatedRole);
 
-    const textractIdentityPoolRoleAttachment = new CfnIdentityPoolRoleAttachment(
-      this,
-      "textract-identity-role-pool-attachment",
-      {
-        identityPoolId: textractIdentityPool.ref,
-        roles: {
-          authenticated: textractCognitoAuthenticatedRole.roleArn,
-        },
-      }
-    );
+
 
     /* ### Lambda ### */
 
@@ -1308,7 +1384,10 @@ export class CdkTextractStack extends cdk.Stack {
     cognitoPolicy.addStatements(
       new iam.PolicyStatement({
         actions: ["execute-api:Invoke"],
-        resources: [props.isReadonly ? api.arnForExecuteApi('GET') : api.arnForExecuteApi()],
+        resources: [
+          (props.isReadonly || props.demoMode)
+            ? api.arnForExecuteApi('GET')
+            : api.arnForExecuteApi()],
         effect: iam.Effect.ALLOW,
       })
     );
@@ -1424,16 +1503,16 @@ export class CdkTextractStack extends cdk.Stack {
       },
     };
 
-    textractUserPool.cfnOptions.metadata = {
-      cfn_nag: {
-        rules_to_suppress: [
-          {
-            id: "F78",
-            reason: "MFA Configuration is not required for this solution",
-          },
-        ],
-      },
-    };
+    // textractUserPool.cfnOptions.metadata = {
+    //   cfn_nag: {
+    //     rules_to_suppress: [
+    //       {
+    //         id: "F78",
+    //         reason: "MFA Configuration is not required for this solution",
+    //       },
+    //     ],
+    //   },
+    // };
 
     const cognitoPolicyResource = cognitoPolicy.node.findChild(
       "Resource"

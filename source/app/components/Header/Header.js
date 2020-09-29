@@ -25,6 +25,9 @@ import LinkWithClickHandler from '../LinkWithClickHandler/LinkWithClickHandler'
 
 import { getHeaderProps } from '../../store/ui/selectors'
 
+import { DEMO_MODE } from '../../constants/configs';
+
+
 import css from './Header.scss'
 import { clearSearchQuery, setSearchPersona } from '../../store/entities/meta/actions'
 
@@ -82,9 +85,11 @@ function Header({ showNavigation, backButton, dispatch }) {
         )}
       </div>
 
-      <div className={css.logoutlink}>
-        <Button className={css.borderlessButton} inverted onClick={handleLogoutClick}>Log Out</Button>
-      </div>
+      { !DEMO_MODE && (
+        <div className={css.logoutlink}>
+          <Button className={css.borderlessButton} inverted onClick={handleLogoutClick}>Log Out</Button>
+        </div>
+      )}
 
       <div className={cs(css.mobileMenu, menuOpen && css.open)}>
         {showNavigation && (
