@@ -61,7 +61,7 @@ export default function SearchResults({
   return (
     <nav className={searchResultsClassNames} {...rest}>
       <header className={classNames(isComparing && css.comparing)}>
-        <h2>Elasticsearch{!isComparing ? ' Results' : ''}</h2>
+        <h2>Amazon Elasticsearch Service{!isComparing ? ' Results' : ''}</h2>
         { isComparing ?
           <p>Keyword search results</p>
         : null }

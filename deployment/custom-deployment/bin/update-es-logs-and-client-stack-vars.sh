@@ -10,7 +10,7 @@ echo "==update %%CLIENT_APP_BUCKET%% in stack with $2=="
 replace="s/%%CLIENT_APP_BUCKET%%/$ClientAppBucketName/g"
 sed -i -e $replace ./lib/cdk-textract-client-stack.js
 
-echo "==update Elastic Search Cluster ($ElasticSearchCluster) with log streams to Log Groups: $ElasticSearchSearchLogGroup and $ElasticSearchIndexLogGroup"
+echo "==update Amazon Elastic Search Cluster ($ElasticSearchCluster) with log streams to Log Groups: $ElasticSearchSearchLogGroup and $ElasticSearchIndexLogGroup"
 INDEX_LOG_ARN=$(aws logs describe-log-groups --region $AWS_REGION --log-group-name $ElasticSearchIndexLogGroup | jq -r '.logGroups[0].arn')
 SEARCH_LOG_ARN=$(aws logs describe-log-groups --region $AWS_REGION --log-group-name $ElasticSearchSearchLogGroup | jq -r '.logGroups[0].arn')
 
