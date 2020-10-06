@@ -148,5 +148,6 @@ const setEnv = async () => {
   });
   fs.writeFileSync(".env", outputArray.join("\n"));
   fs.appendFileSync(".env", "\nisROMode=" + isROMode);
+  fs.appendFileSync(".env", "\nregion=" + region);
 };
 setEnv();

@@ -28,7 +28,7 @@ import {
 } from '../../store/entities/meta/actions'
 import { search, clearSearchResults } from '../../store/entities/searchResults/actions'
 
-import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA } from '../../constants/configs'
+import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA, READONLY } from '../../constants/configs'
 
 import DocumentList from '../../components/DocumentList/DocumentList'
 import Loading from '../../components/Loading/Loading'
@@ -148,8 +148,11 @@ function Documents({
     return (
       <div className={css.documents}>
         <p className="noContent">
-          No documents found. <br />
-          <Button link={{ href: '/select' }}>+ Add a new Document</Button>
+          No documents found.
+          {!READONLY && <>
+            <br />
+            <Button link={{ href: '/select' }}>+ Add a new Document</Button>
+          </>}
         </p>
       </div>
     )
@@ -190,7 +193,8 @@ function Documents({
                 </span>
               )}
 
-              Analyze a document from the list of documents below, or <Link href="/select"><a>upload your own documents</a></Link>.
+              Analyze a document from the list of documents below
+              {!READONLY && <>, or <Link href="/select"><a>upload your own documents</a></Link>.</> }
             </p>
 
           </div>

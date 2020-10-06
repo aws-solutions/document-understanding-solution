@@ -15,3 +15,11 @@
 export const MIN_SEARCH_QUERY_LENGTH = 4
 export const ENABLE_KENDRA = process.env.NEXT_PUBLIC_ENABLE_KENDRA === 'true'
 export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+
+import getConfig from 'next/config'
+const {
+  publicRuntimeConfig:{
+    isROMode
+  }
+} = getConfig();
+export const READONLY = isROMode === 'true';

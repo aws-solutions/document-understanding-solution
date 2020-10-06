@@ -107,6 +107,12 @@ export class CdkTextractStack extends cdk.Stack {
       );
     }
 
+    if (props.demoMode && !props.isReadonly) {
+      throw Error(
+        "demoMode requires isROMode to also be set. Please set isROMode to true in package.json"
+      );
+    }
+
     // S3 buckets
     const logsS3Bucket = new s3.Bucket(
       this,

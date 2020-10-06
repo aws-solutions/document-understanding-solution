@@ -164,6 +164,8 @@ function Page({ children, pageProps, pathname }) {
   const isLoginRoute = pathname === "/";
   const [isLoggedIn, setLoggedIn] = useState("pending");
 
+  const isStaticRender = typeof window === 'undefined';
+
   // Don't render the app unless the user is logged in, or this is a public route,
   // or this is the login route and the user is not logged in.
   const shouldRenderApp = DEMO_MODE || isLoggedIn === true || isPublicRoute || (isLoginRoute && !isLoggedIn);
@@ -200,7 +202,7 @@ function Page({ children, pageProps, pathname }) {
   }, [isLoginRoute, isPublicRoute]);
 
   return (
-    shouldRenderApp && (
+    shouldRenderApp && !isStaticRender && (
       <div className={css.container}>
         <Header {...reject(isNil, { heading, showNavigation, backButton })} />
 

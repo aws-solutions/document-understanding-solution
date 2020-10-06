@@ -20,6 +20,7 @@ import classNames from 'classnames'
 
 import Loading from '../Loading/Loading'
 import { fetchSingleDocument, deleteDocument } from '../../store/entities/documents/actions'
+import { READONLY } from '../../constants/configs'
 
 import css from './DocumentListItem.scss'
 
@@ -39,7 +40,7 @@ export default function DocumentListItem({ id, title, link, basename, extension,
   )
   const fileProcessFailed =  documentStatus == 'FAILED'
   const { target, ...linkProps } = link || {}
-    
+
   return (
     <li>
       {pending ? (
@@ -49,7 +50,7 @@ export default function DocumentListItem({ id, title, link, basename, extension,
           </span>
           <span className={css.filename}>{basename}</span>
           <span className={css.extension}>{extension}</span>
-          <span className={css.processing}>Processing&hellip;</span>
+          {!READONLY && <span className={css.processing}>Processing&hellip;</span>}
           <span className={css.deleteSpacer} />
         </a>
       ) : fileProcessFailed?(
@@ -63,8 +64,8 @@ export default function DocumentListItem({ id, title, link, basename, extension,
             </span>
             <span className={css.filename}>{basename}</span>
             <span className={css.extension}>{extension}</span>
-            <span className={css.failed}>Failed</span>
-            <button onClick={doDelete} className={css.deleteButton} />
+            {!READONLY && <span className={css.failed}>Failed</span>}
+            {READONLY ? <span className={css.deleteSpacer} /> : <button onClick={doDelete} className={css.deleteButton} />}
           </a>
       ) :(
         <Link {...linkProps}>
@@ -79,8 +80,8 @@ export default function DocumentListItem({ id, title, link, basename, extension,
             </span>
             <span className={css.filename}>{basename}</span>
             <span className={css.extension}>{extension}</span>
-            <span className={css.ready}>Ready</span>
-            <button onClick={doDelete} className={css.deleteButton} />
+            {!READONLY && <span className={css.ready}>Ready</span>}
+            {READONLY ? <span className={css.deleteSpacer} /> : <button onClick={doDelete} className={css.deleteButton} />}
           </a>
         </Link>
       )}

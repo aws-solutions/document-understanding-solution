@@ -19,6 +19,7 @@ import classNames from 'classnames'
 
 import Loading from '../Loading/Loading'
 import DocumentListItem from '../DocumentListItem/DocumentListItem'
+import { READONLY } from '../../constants/configs'
 
 import css from './DocumentList.scss'
 
@@ -57,7 +58,7 @@ export default function DocumentList({ className, items }) {
           <span className={css.leftSpace} />
           <span className={css.nameHeader}>File Name</span>
           <span className={css.typeHeader}>Type</span>
-          <span className={css.statusHeader}>Status</span>
+          {!READONLY && <span className={css.statusHeader}>Status</span>}
           <span className={css.rightSpace} />
         </header>
         <ul>
@@ -76,7 +77,7 @@ export default function DocumentList({ className, items }) {
                   title,
                   basename,
                   extension,
-                  
+
                   documentStatus,
                   link,
                 }}
