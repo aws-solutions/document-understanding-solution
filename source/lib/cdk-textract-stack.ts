@@ -592,7 +592,9 @@ export class CdkTextractStack extends cdk.Stack {
 
     // ####### Cognito User Authentication #######
 
-    let cognitoPolicy, textractIdentityPool;
+    const cognitoPolicy = new iam.Policy(this, "textract-cognito-policy")
+
+    let textractIdentityPool;
 
     if (!props.demoMode) {
 
@@ -695,8 +697,6 @@ export class CdkTextractStack extends cdk.Stack {
         }
       );
 
-      cognitoPolicy = new iam.Policy(this, "textract-cognito-policy");
-
       cognitoPolicy.attachToRole(textractCognitoAuthenticatedRole);
 
       const textractIdentityPoolRoleAttachment = new CfnIdentityPoolRoleAttachment(
@@ -740,8 +740,6 @@ export class CdkTextractStack extends cdk.Stack {
           path: "/",
         }
       );
-
-      cognitoPolicy = new iam.Policy(this, "textract-cognito-policy");
 
       cognitoPolicy.attachToRole(textractCognitoUnauthenticatedRole);
 
@@ -1393,7 +1391,8 @@ export class CdkTextractStack extends cdk.Stack {
         resources: [
           (props.isReadonly || props.demoMode)
             ? api.arnForExecuteApi('GET')
-            : api.arnForExecuteApi()],
+            : api.arnForExecuteApi()
+        ],
         effect: iam.Effect.ALLOW,
       })
     );
