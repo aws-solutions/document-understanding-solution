@@ -23,7 +23,7 @@ from kendraHelper import KendraHelper
 
 def lambda_handler(event, context):
 
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
 
     result = {}
 

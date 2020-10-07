@@ -13,7 +13,7 @@ def on_create(event, context):
     is_complete = False
     status = response['Status']
     if status == "CREATING":
-        print("still creating kendra index")
+        print("Still creating kendra index")
     elif status == "ACTIVE":
         print("Kendra index is now active")
         return { 'IsComplete': True }
@@ -21,7 +21,6 @@ def on_create(event, context):
         # throw an error
         raise Exception("Kendra index creation failed with reason: {}".format(response['ErrorMessage']))
     elif status == "DELETING" or status == "SYSTEM_UPDATING":
-        #print("Kendra index creation shows inconsistent status code, please fix and try again")
         raise Exception("Kendra index creation shows inconsistent status code, please fix and try again. Reason:{}".format(response['ErrorMessage']))
     return { 'IsComplete': is_complete }
 
@@ -56,7 +55,7 @@ def on_update(event, context):
     is_complete = False
     status = response['Status']
     if status == "UPDATING":
-        print("still updating kendra index")
+        print("Still updating kendra index")
     elif status == "ACTIVE":
         print("Kendra index is now updated & active")
         return { 'IsComplete': True }
@@ -67,7 +66,7 @@ def on_update(event, context):
     return { 'IsComplete': is_complete }
 
 def lambda_handler(event, context):
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     event_type = event['RequestType']
     if event_type == 'Create': return on_create(event, context)
     if event_type == 'Delete': return on_delete(event, context)

@@ -55,7 +55,7 @@ class DocumentStore:
                 }
             )
         except ClientError as e:
-            print(e)
+            print("Error : {}".format(e))
             if e.response['Error']['Code'] == "ConditionalCheckFailedException":
                 print(e.response['Error']['Message'])
                 err = {'Error': 'Document already exist.'}
@@ -182,7 +182,6 @@ class DocumentStore:
 
         if 'LastEvaluatedKey' in response:
             nextToken = response['LastEvaluatedKey']['documentId']
-            print("nexToken: {}".format(nextToken))
             documents["nextToken"] = nextToken
 
         return documents

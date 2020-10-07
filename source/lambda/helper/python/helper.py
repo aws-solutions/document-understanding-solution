@@ -53,15 +53,13 @@ class DynamoDBHelper:
             ddb = AwsHelper().getResource("dynamodb")
             table = ddb.Table(tableName)
             for item in items:
-                print("Deleting...")
-                print("{} : {}".format(key, item[key]))
-                print("{} : {}".format(sk, item[sk]))
+                print("Deleting Items")
                 table.delete_item(
                     Key={
                         key: value,
                         sk : item[sk]
                     })
-                print("Deleted...")
+                print("Deleted items")
 
 class AwsHelper:
     def getClient(self, name, awsRegion=None):
