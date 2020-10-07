@@ -37,6 +37,11 @@ export const submitDocument = createAction(
   SUBMIT_DOCUMENT,
   async ({ sample, key }) => {
     const response = await API.post("TextractDemoTextractAPI", "document", {
+      headers: {
+        Authorization: `Bearer ${(await Auth.currentSession())
+          .getIdToken()
+          .getJwtToken()}`
+      },
       response: true,
       body: {
         sample: !!sample,
@@ -53,6 +58,11 @@ export const submitDocuments = createAction(
   SUBMIT_DOCUMENTS,
   async ({ objects }) => {
     const response = await API.post("TextractDemoTextractAPI", "document", {
+      headers: {
+        Authorization: `Bearer ${(await Auth.currentSession())
+          .getIdToken()
+          .getJwtToken()}`
+      },
       response: true,
       body: {
         objects
@@ -71,6 +81,11 @@ export const fetchDocuments = createAction(
   FETCH_DOCUMENTS,
   async ({ nextToken: nexttoken } = {}) => {
     const response = await API.get("TextractDemoTextractAPI", "documents", {
+      headers: {
+        Authorization: `Bearer ${(await Auth.currentSession())
+          .getIdToken()
+          .getJwtToken()}`
+      },
       response: true,
       queryStringParameters: reject(either(isNil, isEmpty), {
         nexttoken,
@@ -93,6 +108,11 @@ export const fetchSingleDocument = createAction(
   FETCH_DOCUMENT,
   async documentid => {
     const response = await API.get("TextractDemoTextractAPI", "document", {
+      headers: {
+        Authorization: `Bearer ${(await Auth.currentSession())
+          .getIdToken()
+          .getJwtToken()}`
+      },
       response: true,
       queryStringParameters: {
         documentid
@@ -110,6 +130,11 @@ export const fetchSingleDocument = createAction(
  */
 export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const response = await API.get("TextractDemoTextractAPI", "document", {
+    headers: {
+      Authorization: `Bearer ${(await Auth.currentSession())
+        .getIdToken()
+        .getJwtToken()}`
+    },
     response: true,
     queryStringParameters: {
       documentid
@@ -190,6 +215,11 @@ const comprehendRespone = JSON.parse(
 
 export const deleteDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const response = await API.del("TextractDemoTextractAPI", "document", {
+    headers: {
+      Authorization: `Bearer ${(await Auth.currentSession())
+        .getIdToken()
+        .getJwtToken()}`
+    },
     response: true,
     queryStringParameters: {
       documentid
