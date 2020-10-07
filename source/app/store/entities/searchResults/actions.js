@@ -24,13 +24,21 @@ import { searchResultsSchema, kendraResultsSchema,kendraFilteredResultsSchema } 
  * Get documents from TextractDemoTextractAPI
  */
 export const search = createAction(SEARCH, async params => {
+  const headers = {
+    Authorization: `Bearer ${(await Auth.currentSession())
+      .getIdToken()
+      .getJwtToken()}`
+  }
+
   const [ esResponse, kendraResponse, kendraFilteredResponse ] = await Promise.all([
     API.get("TextractDemoTextractAPI", "search", {
+      headers,
       response: true,
       queryStringParameters: { ...params }
     }),
 
     ENABLE_KENDRA ? API.post("TextractDemoTextractAPI", "searchkendra", {
+      headers,
       response: true,
       queryStringParameters: {},
       body: {
@@ -41,6 +49,7 @@ export const search = createAction(SEARCH, async params => {
     }) : null,
 
     ENABLE_KENDRA && params.persona ? API.post("TextractDemoTextractAPI", "searchkendra", {
+      headers,
       response: true,
       queryStringParameters: {},
       body: {
@@ -88,6 +97,11 @@ export const search = createAction(SEARCH, async params => {
 
 export const submitKendraFeedback = createAction(SUBMIT_FEEDBACK, async ({ relevance, queryId, resultId }) => {
   const response = await API.post("TextractDemoTextractAPI", "feedbackkendra", {
+    headers: {
+      Authorization: `Bearer ${(await Auth.currentSession())
+        .getIdToken()
+        .getJwtToken()}`
+    },
     response: true,
     body: {
       relevance,
