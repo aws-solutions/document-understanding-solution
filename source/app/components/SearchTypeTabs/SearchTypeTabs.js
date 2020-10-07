@@ -59,7 +59,7 @@ function SearchTypeTabs({ selectedSearch, setSelectedSearch }) {
         className={cs(styles.tab, selectedSearch === "es" && styles.selected)}
         onClick={selectES}
       >
-        Elasticsearch
+        Amazon ES
         <span>Keyword Search Results</span>
       </a>
       <a
@@ -80,7 +80,7 @@ function SearchTypeTabs({ selectedSearch, setSelectedSearch }) {
           )}
           onClick={selectBoth}
         >
-          Elasticsearch and Amazon Kendra
+          Amazon ES and Amazon Kendra
           <span>Compare Search Technologies</span>
         </a>
       ) : null}

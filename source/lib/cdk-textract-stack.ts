@@ -266,7 +266,7 @@ export class CdkTextractStack extends cdk.Stack {
     const securityGroup = new ec2.SecurityGroup(this, this.resourceName('ESSecurityGroup'), {
       allowAllOutbound: true,
       vpc: vpc,
-      securityGroupName: "ElasticSearch from lambda"
+      securityGroupName: "Elasticsearch from lambda"
     })
 
     securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
