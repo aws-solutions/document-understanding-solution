@@ -92,6 +92,6 @@ def getDocuments(request):
 
         response = paginateDocuments(table, pageSize, nextToken)
         if("Items" in response):
-            print(len(response["Items"]))
+            print("Total items in  response {}".format(len(response["Items"])))
 
     return response

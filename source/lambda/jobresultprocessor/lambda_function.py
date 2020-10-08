@@ -87,7 +87,7 @@ def processRequest(request):
 
     output = ""
 
-    print(request)
+    print("Request : {}".format(request))
 
     jobId = request['jobId']
     documentId = request['jobTag']
@@ -192,5 +192,5 @@ def lambda_handler(event, context):
     return processRequest(request)
 
 def lambda_handler_local(event, context):
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     return processRequest(event)

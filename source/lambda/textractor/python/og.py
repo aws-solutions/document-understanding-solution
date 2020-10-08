@@ -185,7 +185,7 @@ class OutputGenerator:
                                 if(key not in document):
                                     document[key] = []
                                 document[key].append(date_object.strftime("%Y-%m-%d"))
-                        print("Document with Converted dates: {}".format(document))
+                        print("Document updated with Converted dates")
                     else:
                         document[key] = val
                     

@@ -45,8 +45,8 @@ def generatePdf(documentId, bucketName, objectName, responseBucketName, outputPa
         Payload=json.dumps(data)
     )
 
-    print(response["Payload"].read())
 
+    
 
 def callTextract(bucketName, objectName, detectText, detectForms, detectTables):
     textract = AwsHelper().getClient('textract')
@@ -122,8 +122,7 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
                                    documentId,
                                    fileExtension)
 
-    print("DocumentId: {}".format(documentId))
-    print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))
+    print("Processed Comprehend data for document: {}".format(documentId))
 
     for key, val in opg_output[KVPAIRS].items():
         if key not in comprehendAndMedicalEntities:
@@ -142,7 +141,7 @@ def processRequest(request):
 
     output = ""
 
-    print("request: {}".format(request))
+    print("Request: {}".format(request))
 
     bucketName = request['bucketName']
     objectName = request['objectName']
@@ -172,7 +171,7 @@ def processRequest(request):
 
 def lambda_handler(event, context):
 
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     message = json.loads(event['Records'][0]['body'])
     print("Message: {}".format(message))
 

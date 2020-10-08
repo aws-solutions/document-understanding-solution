@@ -41,14 +41,14 @@ def downloadDocument(bucketName, documentKey, filename, s3Client):
 
     # system error
     if datafile == None:
-        print("downloadDocument: failed to open local file: " + filename)
+        print("Download Document: failed to open local file: " + filename)
         return False
 
     # download s3 object into local file
     try:
         s3Client.download_fileobj(bucketName, documentKey, datafile)
     except Exception as e:
-        print("downloadDocument: " + str(e))
+        print("Download Document: " + str(e))
         return False
 
     return True
@@ -60,7 +60,7 @@ def uploadDocument(bucketName, documentKey, filename, s3Client):
     datafile = open('/tmp/' + filename, 'rb')
     
     if datafile == None:
-        print("uploadDocument: failed to open local file: " + filename)
+        print("UploadDocument: failed to open local file: " + filename)
         return False
     
     # upload local file to s3
@@ -70,7 +70,7 @@ def uploadDocument(bucketName, documentKey, filename, s3Client):
 
 def processDocument(record):
     
-    print(str(record['s3']['object']['key']))
+    print("Document object : {}".format(str(record['s3']['object']['key'])))
 
     ingestionBucketName = record['s3']['bucket']['name']
     ingestionDocumentKey = record['s3']['object']['key']
@@ -86,7 +86,7 @@ def processDocument(record):
 
     # error trying to dowload document, exit
     if ret == False:
-        print("processDocument: failed to download locally document:" + ingestionDocumentKey)
+        print("ProcessDocument: failed to download locally document:" + ingestionDocumentKey)
         return
     
     # attempt to get an optional document Kendra policy json file
@@ -110,14 +110,14 @@ def processDocument(record):
         policyData = None
         # NoSuchKey is the expected exception when no policy provided
         if e.response['Error']['Code'] == 'NoSuchKey':
-            print("no kendra policy file found, skipping")
+            print("No kendra policy file found, skipping")
         else:
             print("ClientError exception from s3helper.readFromS3() for policy file: " + str(e))
 
     # an error that should be investigated
     except Exception as e:
         policyData = None
-        print("unspecified exception from s3helper.readFromS3() for policy file: " + str(e))
+        print("Unspecified exception from s3helper.readFromS3() for policy file: " + str(e))
                                     
     # generate UUID for document
     documentId = generateDocumentID(os.environ['DOCUMENTS_BUCKET'], s3Client)
@@ -132,13 +132,13 @@ def processDocument(record):
 
     # in case of error uploading document, we exit
     if ret == False:
-        print("failed to upload document into output bucket: " + destinationDocumentKey)
+        print("Failed to upload document into output bucket: " + destinationDocumentKey)
         return
 
     # if optional Kendra policy was present, upload it to document folder
     # alongside document
     if policyData != None:
-        print("copying over the kendra policy file for document " + documentId)
+        print("Copying over the kendra policy file for document " + documentId)
         s3helper.writeToS3(policyData,
                            os.environ['DOCUMENTS_BUCKET'],
                            "public/" + documentId + "/" + policyFilename,
@@ -174,7 +174,7 @@ def processQueueRecord(queueRecord):
 
 def lambda_handler(event, context):
 
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     
     if 'Records' in event:
         for queueRecord in event['Records']:

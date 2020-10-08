@@ -47,7 +47,7 @@ def processRequest(request):
 
     output = ""
 
-    print("request: {}".format(request))
+    print("Request: {}".format(request))
 
     documentId = request["documentId"]
     bucketName = request["bucketName"]
@@ -129,7 +129,7 @@ def lambda_handler(event, context):
 
     try:
 
-        print("event: {}".format(event))
+        print("Event: {}".format(event))
 
         syncQueueUrl = os.environ['SYNC_QUEUE_URL']
         asyncQueueUrl = os.environ['ASYNC_QUEUE_URL']

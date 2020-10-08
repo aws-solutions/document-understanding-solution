@@ -17,7 +17,7 @@ import os
 def on_create(event, context):
     kendra_client = boto3.client('kendra')
     kendraIndexId = os.environ['KENDRA_INDEX_ID']
-    print("indexing covid-19 documents for kendra index id: {}".format(kendraIndexId))
+    print("Indexing Documents for kendra index id: {}".format(kendraIndexId))
     dataBucketName = os.environ['DATA_BUCKET_NAME']
     roleArn = os.environ['KENDRA_ROLE_ARN']
     
@@ -32,7 +32,7 @@ def on_create(event, context):
         RoleArn=roleArn
     )
     
-    print("covid FAQ created")
+    print("Document FAQ created")
     
     # create s3 folders
     s3_client = boto3.client('s3', region_name=os.environ['AWS_REGION'])
@@ -49,7 +49,7 @@ def on_update(event, context):
 
 
 def lambda_handler(event, context):
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     request_type = event['RequestType']
     if(request_type == 'Create'): return on_create(event, context)
     if(request_type == 'Update'): return on_update(event, context)
