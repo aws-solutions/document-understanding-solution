@@ -1,19 +1,20 @@
 
 ######################################################################################################################
- #  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
- #                                                                                                                    #
- #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
- #  with the License. A copy of the License is located at                                                             #
- #                                                                                                                    #
- #      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
- #                                                                                                                    #
- #  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
- #  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
- #  and limitations under the License.                                                                                #
- #####################################################################################################################
+#  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+#                                                                                                                    #
+#  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
+#  with the License. A copy of the License is located at                                                             #
+#                                                                                                                    #
+#      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
+#                                                                                                                    #
+#  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
+#  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
+#  and limitations under the License.                                                                                #
+#####################################################################################################################
 
 import json
 import os
+import filetype
 from helper import FileHelper, AwsHelper
 
 ASYNC_JOB_TIMEOUT_SECONDS = 900
@@ -32,6 +33,16 @@ def postMessage(client, qUrl, jsonMessage, delaySeconds=0):
     print("Submitted message to queue: {}".format(message))
 
 
+def is_invalid_mime_type(object_name):
+    """
+    Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
+    """
+    mime_type = filetype.guess(object_name)
+    if mime_type in ['application/pdf', 'image/png', 'image/png']:
+        return False
+    return True
+
+
 def processRequest(request):
 
     output = ""
@@ -45,11 +56,12 @@ def processRequest(request):
 
     print("Input Object: {}/{}".format(bucketName, objectName))
 
-    ext = FileHelper.getFileExtenstion(objectName.lower())
-    
+    ext = FileHelper.getFileExtension(objectName.lower())
+    is_bad_mime_type = is_invalid_mime_type(objectName.lower())
+
     client = AwsHelper().getClient('sqs')
     # If not expected extension, change status to FAILED and exit
-    if(ext and ext not in ["jpg", "jpeg", "png", "pdf"]):
+    if(is_bad_mime_type and ext and ext not in ["jpg", "jpeg", "png", "pdf"]):
         jsonErrorHandlerMessage = {
             'documentId': documentId
         }
@@ -79,7 +91,7 @@ def processRequest(request):
 
     output = "Completed routing for documentId: {}, object: {}/{}".format(
         documentId, bucketName, objectName)
-    
+
 
 def processRecord(record, syncQueueUrl, asyncQueueUrl, errorHandlerQueueUrl):
 

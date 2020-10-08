@@ -847,6 +847,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     documentProcessor.addLayers(helperLayer);
+    documentProcessor.addLayers(boto3Layer);
 
     //Trigger
     documentProcessor.addEventSource(
