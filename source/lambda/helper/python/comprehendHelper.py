@@ -449,12 +449,12 @@ class ComprehendHelper:
             for index, thread in enumerate(threads):
                 thread.join()
 
-            print("all threads joined...")
+            print("All threads joined...")
 
             # check success of threads
             for i in range(pageStartIndex, pagesToProcess):
                 if (comprehendEntities[pageStartIndex + i] == None) or (comprehendMedicalEntities[pageStartIndex + i] == None):
-                    print("a page failed to process" + str(i))
+                    print("Page failed to process" + str(i))
                     return False
 
             # increment the number of pages processed for the next batch

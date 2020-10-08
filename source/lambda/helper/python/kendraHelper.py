@@ -70,7 +70,7 @@ class KendraHelper:
             policyData = None
             # NoSuchKey is the expected exception, any other means an error
             if e.response['Error']['Code'] == 'NoSuchKey':
-                print("no kendra policy file found, only default membership will be applied")
+                print("No kendra policy file found, only default membership will be applied")
             else:
                 print("ClientError exception from s3helper.readFromS3: " + str(e))
                     
@@ -120,7 +120,7 @@ class KendraHelper:
         
         # indexing will proceed without the membership tags in the policy file
         except Exception as e:
-            print("exception while processing policy file " + policyFilepath + str(e))
+            print("Exception while processing policy file " + policyFilepath + str(e))
     
         print('Document {} will have the following membership policy in Kendra:{}'.format(documentId, json.dumps(accessControlList)))
     

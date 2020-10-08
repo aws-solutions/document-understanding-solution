@@ -534,9 +534,7 @@ class Page:
                         self._content.append(f)
                     else:
                         print("WARNING: Detected K/V where key does not have content. Excluding key from output.")
-                        print(f)
-                        print(item)
-
+                        
     def getLinesInReadingOrder(self):
         columns = []
         lines = []

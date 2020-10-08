@@ -44,7 +44,6 @@ def createDocument(request):
         documentId = generateDocumentID(bucketName)
     else:
         documentId=objectRootPrefix
-    print(objectName)
     ds.createDocument(documentId, bucketName, objectName)
     output = {
         "documentId": documentId

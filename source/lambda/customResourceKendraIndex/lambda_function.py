@@ -69,8 +69,7 @@ def on_update(event, context):
 
 
 def lambda_handler(event, context):
-    print("event: {}".format(event))
-    print(boto3.__version__)
+    print("Event: {}".format(event))
     request_type = event['RequestType']
     if(request_type == 'Create'): return on_create(event, context)
     if(request_type == 'Delete'): return on_delete(event, context)
