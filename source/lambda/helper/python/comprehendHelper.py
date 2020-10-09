@@ -379,7 +379,9 @@ class ComprehendHelper:
             numOfPages = maxPages
 
         # iterate over results page by page and extract raw text for comprehend
-        rawPages = [""] * numOfPages
+        # initialize rawPages with atleast a 1 character string helps prevent errors produced by comprehend and comprehend medical
+        # comprehend and comprehend medical need text with atleast 1 character and infer_icd10_cm() needs a non empty string
+        rawPages = ["."] * numOfPages
         if self.extractTextByPages(textract, rawPages, numOfPages) == False:
             return False
 

@@ -176,18 +176,19 @@ class OutputGenerator:
                 }
 
                 # add comprehend entities while indexing the document
-                for key, val in entitiesToIndex.items():
-                    key = key.lower()
-                    if(key == "date"):
-                        for date in val:
-                            date_object = format_date(date)
-                            if(date_object!= UNSUPPORTED_DATE_FORMAT):
-                                if(key not in document):
-                                    document[key] = []
-                                document[key].append(date_object.strftime("%Y-%m-%d"))
-                        print("Document updated with Converted dates")
-                    else:
-                        document[key] = val
+                if entitiesToIndex:
+                    for key, val in entitiesToIndex.items():
+                        key = key.lower()
+                        if(key == "date"):
+                            for date in val:
+                                date_object = format_date(date)
+                                if(date_object!= UNSUPPORTED_DATE_FORMAT):
+                                    if(key not in document):
+                                        document[key] = []
+                                    document[key].append(date_object.strftime("%Y-%m-%d"))
+                            print("Document with Converted dates: {}".format(document))
+                        else:
+                            document[key] = val
                     
                 try:
                     if not es_index_client.exists(index='textract'):
