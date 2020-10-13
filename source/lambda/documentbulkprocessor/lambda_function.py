@@ -19,7 +19,6 @@ import os
 import uuid
 from helper import FileHelper, AwsHelper, S3Helper
 from datastore import DocumentStore
-import filetype
 
 
 def generateDocumentID(bucketName, s3Client):
@@ -69,17 +68,6 @@ def uploadDocument(bucketName, documentKey, filename, s3Client):
     return True
 
 
-def is_invalid_mime_type(filename):
-    """
-    Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
-    """
-    file_type = filetype.guess(f"/tmp/{filename}")
-
-    if file_type.mime in ['application/pdf', 'image/png', 'image/jpeg']:
-        return False
-    return True
-
-
 def processDocument(record):
 
     print("Document object : {}".format(str(record['s3']['object']['key'])))
@@ -99,12 +87,6 @@ def processDocument(record):
     # error trying to dowload document, exit
     if ret == False:
         print("ProcessDocument: failed to download locally document:" +
-              ingestionDocumentKey)
-        return
-
-    # check is file type is of a valid type (png, jpg, or pdf)
-    if is_invalid_mime_type(ingestionDocumentFilename):
-        print("ProcessDocument: Document skipped due to invalid file type:" +
               ingestionDocumentKey)
         return
 

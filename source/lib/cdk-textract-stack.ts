@@ -805,7 +805,6 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
     documentBulkProcessor.addLayers(helperLayer);
-    documentBulkProcessor.addLayers(boto3Layer);
     documentsTable.grantReadWriteData(documentBulkProcessor);
     outputTable.grantReadWriteData(documentBulkProcessor);
     documentsS3Bucket.grantReadWrite(documentBulkProcessor);
