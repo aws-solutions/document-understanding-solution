@@ -328,7 +328,14 @@ function uploadFiles({ fileNames = [], files = {}, onSuccess, onError, onProgres
       fileName,
       file,
     })
- 
+    if(!["application/pdf","image/png","image/jpeg"].includes(file.type)){
+      alert(fileName + " : File format not supported. Supported formats : JPG,PNG,PDF");
+      return onError({ fileName })
+    }
+    if (file.size/(1000000)<150){  //Maximum File size supported is 150MB
+      alert(fileName + " : File size is too big. Please split the document or upload a file lesser than 150MB");
+      return onError({ fileName })
+    }
     getUniqueDocumentId()
       .then((result) => {   
         const key = [result, fileName].join('/')
