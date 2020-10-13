@@ -9,7 +9,7 @@ DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehen
 ![img](./images/DUS_Arch.png)
 
 Current document formats supported : **PDF,JPG,PNG**
-
+Current maximum document file size supported : **150MB**
 ## 1. CICD Deploy
 
 ### Requirements
