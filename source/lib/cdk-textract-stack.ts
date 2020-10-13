@@ -805,6 +805,7 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
     documentBulkProcessor.addLayers(helperLayer);
+    documentBulkProcessor.addLayers(boto3Layer);
     documentsTable.grantReadWriteData(documentBulkProcessor);
     outputTable.grantReadWriteData(documentBulkProcessor);
     documentsS3Bucket.grantReadWrite(documentBulkProcessor);
@@ -862,6 +863,8 @@ export class CdkTextractStack extends cdk.Stack {
     syncJobsQueue.grantSendMessages(documentProcessor);
     asyncJobsQueue.grantSendMessages(documentProcessor);
     jobErrorHandlerQueue.grantSendMessages(documentProcessor);
+    documentsS3Bucket.grantRead(documentProcessor);
+    samplesS3Bucket.grantRead(documentProcessor);
     //------------------------------------------------------------
 
     const jobErrorHandler = new lambda.Function(

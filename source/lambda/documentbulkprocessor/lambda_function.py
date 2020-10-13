@@ -1,16 +1,16 @@
 
 ######################################################################################################################
- #  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
- #                                                                                                                    #
- #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
- #  with the License. A copy of the License is located at                                                             #
- #                                                                                                                    #
- #      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
- #                                                                                                                    #
- #  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
- #  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
- #  and limitations under the License.                                                                                #
- #####################################################################################################################
+#  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+#                                                                                                                    #
+#  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
+#  with the License. A copy of the License is located at                                                             #
+#                                                                                                                    #
+#      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
+#                                                                                                                    #
+#  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
+#  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
+#  and limitations under the License.                                                                                #
+#####################################################################################################################
 
 import boto3
 from botocore.exceptions import ClientError
@@ -19,15 +19,16 @@ import os
 import uuid
 from helper import FileHelper, AwsHelper, S3Helper
 from datastore import DocumentStore
+import filetype
 
 
 def generateDocumentID(bucketName, s3Client):
     documentId = str(uuid.uuid4())
-    
-    response = s3Client.list_objects_v2(Bucket = bucketName,
-                                        Prefix = 'public/{}'.format(documentId),
-                                        MaxKeys = 1)
-        
+
+    response = s3Client.list_objects_v2(Bucket=bucketName,
+                                        Prefix='public/{}'.format(documentId),
+                                        MaxKeys=1)
+
     if response.get('Contents') is not None:
         return generateDocumentID(bucketName)
 
@@ -35,7 +36,7 @@ def generateDocumentID(bucketName, s3Client):
 
 
 def downloadDocument(bucketName, documentKey, filename, s3Client):
-    
+
     # create a local file
     datafile = open('/tmp/' + filename, 'wb')
 
@@ -58,18 +59,29 @@ def uploadDocument(bucketName, documentKey, filename, s3Client):
 
     # open local file
     datafile = open('/tmp/' + filename, 'rb')
-    
+
     if datafile == None:
         print("UploadDocument: failed to open local file: " + filename)
         return False
-    
+
     # upload local file to s3
     s3Client.upload_fileobj(datafile, bucketName, documentKey)
     return True
 
 
+def is_invalid_mime_type(filename):
+    """
+    Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
+    """
+    file_type = filetype.guess(f"/tmp/{filename}")
+
+    if file_type.mime in ['application/pdf', 'image/png', 'image/jpeg']:
+        return False
+    return True
+
+
 def processDocument(record):
-    
+
     print("Document object : {}".format(str(record['s3']['object']['key'])))
 
     ingestionBucketName = record['s3']['bucket']['name']
@@ -77,7 +89,7 @@ def processDocument(record):
     ingestionDocumentFilename = record['s3']['object']['key'].split('/')[1]
 
     s3Client = boto3.client('s3', region_name=os.environ['AWS_REGION'])
-    
+
     # get document from bulk bucket
     ret = downloadDocument(ingestionBucketName,
                            ingestionDocumentKey,
@@ -86,9 +98,16 @@ def processDocument(record):
 
     # error trying to dowload document, exit
     if ret == False:
-        print("ProcessDocument: failed to download locally document:" + ingestionDocumentKey)
+        print("ProcessDocument: failed to download locally document:" +
+              ingestionDocumentKey)
         return
-    
+
+    # check is file type is of a valid type (png, jpg, or pdf)
+    if is_invalid_mime_type(ingestionDocumentFilename):
+        print("ProcessDocument: Document skipped due to invalid file type:" +
+              ingestionDocumentKey)
+        return
+
     # attempt to get an optional document Kendra policy json file
     policyFilename = ingestionDocumentFilename + ".metadata.json"
     policyKey = "kendraPolicyDrop/" + policyFilename
@@ -98,11 +117,10 @@ def processDocument(record):
 
     # try to fetch amd load the policy
     try:
-        
-        policyData = s3helper.readFromS3(ingestionBucketName,
-                                       policyKey,
-                                       os.environ['AWS_REGION'])
 
+        policyData = s3helper.readFromS3(ingestionBucketName,
+                                         policyKey,
+                                         os.environ['AWS_REGION'])
 
     # the normal case of a file not provided is handled.  If any other error
     # occur the indexing will proceed without the membership tags in the policy file
@@ -112,13 +130,14 @@ def processDocument(record):
         if e.response['Error']['Code'] == 'NoSuchKey':
             print("No kendra policy file found, skipping")
         else:
-            print("ClientError exception from s3helper.readFromS3() for policy file: " + str(e))
+            print(
+                "ClientError exception from s3helper.readFromS3() for policy file: " + str(e))
 
     # an error that should be investigated
     except Exception as e:
         policyData = None
         print("Unspecified exception from s3helper.readFromS3() for policy file: " + str(e))
-                                    
+
     # generate UUID for document
     documentId = generateDocumentID(os.environ['DOCUMENTS_BUCKET'], s3Client)
 
@@ -132,7 +151,8 @@ def processDocument(record):
 
     # in case of error uploading document, we exit
     if ret == False:
-        print("Failed to upload document into output bucket: " + destinationDocumentKey)
+        print("Failed to upload document into output bucket: " +
+              destinationDocumentKey)
         return
 
     # if optional Kendra policy was present, upload it to document folder
@@ -175,14 +195,10 @@ def processQueueRecord(queueRecord):
 def lambda_handler(event, context):
 
     print("Event: {}".format(event))
-    
+
     if 'Records' in event:
         for queueRecord in event['Records']:
             try:
                 processQueueRecord(queueRecord)
             except Exception as e:
                 print("Failed to process queue record. Exception: {}".format(e))
-
-
-
-

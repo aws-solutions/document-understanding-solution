@@ -16,6 +16,7 @@ import json
 import os
 import filetype
 from helper import FileHelper, AwsHelper
+import boto3
 
 ASYNC_JOB_TIMEOUT_SECONDS = 900
 SYNC_JOB_TIMEOUT_SECONDS = 180
@@ -33,12 +34,17 @@ def postMessage(client, qUrl, jsonMessage, delaySeconds=0):
     print("Submitted message to queue: {}".format(message))
 
 
-def is_invalid_mime_type(object_name):
+def is_invalid_mime_type(request):
     """
     Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
     """
-    mime_type = filetype.guess(object_name)
-    if mime_type in ['application/pdf', 'image/png', 'image/png']:
+    client = boto3.client('s3')
+    local_path = f"/tmp/{request['objectName'].rsplit('/',1)[-1]}"
+    client.download_file(request['bucketName'],
+                         request['objectName'], local_path)
+    file_type = filetype.guess(local_path)
+
+    if file_type.mime in ['application/pdf', 'image/png', 'image/jpeg']:
         return False
     return True
 
@@ -57,11 +63,11 @@ def processRequest(request):
     print("Input Object: {}/{}".format(bucketName, objectName))
 
     ext = FileHelper.getFileExtension(objectName.lower())
-    is_bad_mime_type = is_invalid_mime_type(objectName.lower())
+    is_bad_mime_type = is_invalid_mime_type(request)
 
     client = AwsHelper().getClient('sqs')
     # If not expected extension, change status to FAILED and exit
-    if(is_bad_mime_type and ext and ext not in ["jpg", "jpeg", "png", "pdf"]):
+    if(is_bad_mime_type or (ext and ext not in ["jpg", "jpeg", "png", "pdf"])):
         jsonErrorHandlerMessage = {
             'documentId': documentId
         }
