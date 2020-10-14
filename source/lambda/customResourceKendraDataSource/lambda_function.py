@@ -24,10 +24,10 @@ def on_create(event, context):
     create_faq_response = kendra_client.create_faq(
         IndexId=kendraIndexId,
         Name="DUSCovidFAQ",
-        Description='covid-19 questions and answers',
+        Description='medical questions and answers',
         S3Path={
            'Bucket': dataBucketName,
-           'Key': 'faqs/covid_faq.csv'
+           'Key': 'faqs/medical_faq.csv'
         },
         RoleArn=roleArn
     )
