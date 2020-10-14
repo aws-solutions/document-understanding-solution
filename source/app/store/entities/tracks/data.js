@@ -33,7 +33,7 @@ Once you select a document, you'll be able to interact with Amazon Textract,
 Amazon Comprehend, and Amazon Comprehend Medical to experience the power
 of document digitization and extraction of sensitive information.
 
-For demo purposes, we've loaded data related to certain medical condition. Ask a question related
+For demo purposes, we've loaded data related to certain medical conditions. Ask a question related
 to this topic and see the power of natural language search.
 `
 const classicModeDescription = `In this track, you can search through multiple documents and find information faster
