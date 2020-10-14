@@ -23,7 +23,7 @@ def on_create(event, context):
     
     create_faq_response = kendra_client.create_faq(
         IndexId=kendraIndexId,
-        Name="Medical FAQ",
+        Name="MedicalFAQ",
         Description='medical questions and answers',
         S3Path={
            'Bucket': dataBucketName,
