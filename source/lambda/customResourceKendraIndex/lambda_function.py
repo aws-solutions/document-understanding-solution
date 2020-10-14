@@ -16,7 +16,7 @@ def on_create(event, context):
             ServerSideEncryptionConfiguration= {
                 'KmsKeyId': kmsKeyId
             },
-            Description='Indexes COVID-19 pdf data from data source.',
+            Description='Indexes medical pdf data from data source.',
             ClientToken=kendraIndexClientToken,
         )
         kendraIndexId = response['Id']
@@ -57,7 +57,7 @@ def on_update(event, context):
                 Id=DUSKendraIndexId,
                 Name='DUSKendraIndex'+kendraIndexClientToken,
                 RoleArn=roleArn,
-                Description="Indexes COVID-19 pdf data from a data source."
+                Description="Indexes medical pdf data from a data source."
             )
         except:
             # if the update_index operation fails due to some other error
