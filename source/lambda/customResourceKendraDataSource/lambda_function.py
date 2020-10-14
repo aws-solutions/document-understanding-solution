@@ -39,7 +39,7 @@ def on_create(event, context):
     s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('documentDrop' +'/'))
     s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
     
-    #copying of the covid the files is done by upload-sample.sh
+    #copying of the medical the files is done by upload-sample.sh
     
     return
 
