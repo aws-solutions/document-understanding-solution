@@ -167,13 +167,11 @@ function Documents({
           className={css.searchBar}
           light
           suggestions={ENABLE_KENDRA && [
-            'Where can I get tested for COVID-19?',
-            'What are the symptoms of COVID-19?',
-            'Preventing COVID-19 spread',
-            'Can someone who had COVID-19 spread the illness?',
-            'Treatment options for COVID-19'
+            'How does a herniated disk occur?',
+            'How to relieve carpal tunnel?',
+            'What is a stress fracture?',
+            'What is anemia?',
           ]}
-          placeholder={ENABLE_KENDRA ? 'Type a question related to COVID-19' : null}
         />
       </div>
 

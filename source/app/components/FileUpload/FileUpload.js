@@ -318,8 +318,27 @@ async function getUniqueDocumentId(){
  * @param {Function} config.onProgress  A callback that fires on progress of a single upload
  */
 function uploadFiles({ fileNames = [], files = {}, onSuccess, onError, onProgress }) {
+  const fileLengthExceeded = Boolean (fileNames.length > 100);
+  if(fileLengthExceeded){
+    alert(" Supported no. of files upload limit : less than 100");
+  }
   return fileNames.map(fileName => {
     const file = files[fileName]
+    if(fileLengthExceeded){
+      return onError({ fileName })
+    }
+    if(!["application/pdf","image/png","image/jpeg"].includes(file.type)){
+      alert(fileName + " : Supported file formats : JPG,PNG,PDF");
+      return onError({ fileName })
+    }
+    if (file.type =="application/pdf" && file.size/(1000000)>=150){  //Maximum File size supported is 150MB
+      alert(fileName + " : Supported PDF size : less than 150MB");
+      return onError({ fileName })
+    }
+    if (["image/png","image/jpeg"].includes(file.type) && file.size/(1000000)>=5){  //Maximum File size supported is 5MB
+      alert(fileName + " : Supported Image size : less than 5MB");
+      return onError({ fileName })
+    }
     onProgress({
       progress: {
         loaded: 0,
@@ -328,7 +347,6 @@ function uploadFiles({ fileNames = [], files = {}, onSuccess, onError, onProgres
       fileName,
       file,
     })
- 
     getUniqueDocumentId()
       .then((result) => {   
         const key = [result, fileName].join('/')

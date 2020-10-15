@@ -8,7 +8,13 @@ DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehen
 
 ![img](./images/DUS_Arch.png)
 
+### Note
+
 Current document formats supported : **PDF,JPG,PNG**
+
+Current maximum document file size supported : **150MB**
+
+Current concurrent document uploads (via UI ) supported : **100**
 
 ## 1. CICD Deploy
 
@@ -62,7 +68,7 @@ This solutions will create 7 S3 buckets that need to be manually deleted when th
 
 - 2 for CICD
 - 1 for solution specific CDK Toolkit
-- 2/3 for documents ((sample and general documents and optionally 1 for COVID-19 sample documents if opting for Amazon Kendra Integration)
+- 2/3 for documents ((sample and general documents and optionally 1 for Medical sample documents if opting for Amazon Kendra Integration)
 - 1 for the client bucket
 - 1 for access logs
 - 1 for CDK toolkit (if this is the customer's first try with CDK)
@@ -138,7 +144,7 @@ Note:
 
 This will create 5 or 6 S3 buckets that will have to be manually deleted when the stack is destroyed (Cloudformation does not delete them, in order to avoid data loss).
 
-- 2/3 for documents (sample and general documents and optionally 1 for COVID-19 sample documents if opting for Amazon Kendra Integration)
+- 2/3 for documents (sample and general documents and optionally 1 for Medical sample documents if opting for Amazon Kendra Integration)
 - 1 for the client stack
 - 1 for document bulk processing pipeline
 - 1 for CDK toolkit (if this is your first time using CDK)
