@@ -34,7 +34,7 @@ def postMessage(client, qUrl, jsonMessage, delaySeconds=0):
     print("Submitted message to queue: {}".format(message))
 
 
-def is_invalid_mime_type(request):
+def get_mime_type(request):
     """
     Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
     """
@@ -42,11 +42,8 @@ def is_invalid_mime_type(request):
     local_path = f"/tmp/{request['objectName'].rsplit('/',1)[-1]}"
     client.download_file(request['bucketName'],
                          request['objectName'], local_path)
-    file_type = filetype.guess(local_path)
 
-    if file_type.mime in ['application/pdf', 'image/png', 'image/jpeg']:
-        return False
-    return True
+    return filetype.guess(local_path)
 
 
 def processRequest(request):
@@ -62,22 +59,22 @@ def processRequest(request):
 
     print("Input Object: {}/{}".format(bucketName, objectName))
 
-    ext = FileHelper.getFileExtension(objectName.lower())
-    is_bad_mime_type = is_invalid_mime_type(request)
-
     client = AwsHelper().getClient('sqs')
+
+    file_type = get_mime_type(request)
+
     # If not expected extension, change status to FAILED and exit
-    if(is_bad_mime_type or (ext and ext not in ["jpg", "jpeg", "png", "pdf"])):
+    if(file_type and file_type not in ['application/pdf', 'image/png', 'image/jpeg']):
         jsonErrorHandlerMessage = {
             'documentId': documentId
         }
         postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage)
         return
 
-    if(ext and ext in ["jpg", "jpeg", "png"]):
+    if(file_type and file_type in ['image/png', 'image/jpeg']):
         qUrl = request['syncQueueUrl']
         errorHandlerTimeoutSeconds = SYNC_JOB_TIMEOUT_SECONDS
-    elif (ext in ["pdf"]):
+    elif (file_type in ['application/pdf']):
         qUrl = request['asyncQueueUrl']
         errorHandlerTimeoutSeconds = ASYNC_JOB_TIMEOUT_SECONDS
 
