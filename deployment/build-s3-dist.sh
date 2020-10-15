@@ -96,7 +96,8 @@ zip -r $build_dist_dir/document-understanding-solution.zip ./* -x "*pdfgenerator
 -x "*cdk.out*" \
 -x "source/app/out/*" \
 -x "source/app/.next/*" \
--x "*document-understanding-cicd*"
+-x "*document-understanding-cicd*" \
+-x "*open-source*"
 echo "Created document-understanding-solution.zip"
 
 echo "Copying lambda code that is too large to add to CodeCommit (6MB limit)"

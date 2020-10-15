@@ -35,9 +35,7 @@ source/app/static/pdf.worker.min.js
 
 # CDK
 source/cdk.out/
-source/lib/cdk-textract-stack.js
-source/lib/cdk-textract-client-stack.js
-source/lib/cdk-textract-client-stack.js-e
+source/lib/*.js*
 
 # Brazil
 Config

@@ -202,6 +202,8 @@ Resources:
                 - cfn_nag --version
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
+                - echo "Bootstrapping lambda edge stack in us-east-1"
+                - cdk bootstrap aws://$AWS_ACCOUNT/us-east-1 --toolkit-stack-name DUSLambdaEdgeCDKToolkit
                 - echo "Injecting values for Deploy Type, Region, Email, Version, and boto/pdf lambda code S3 location to the project"
                 - sed -i -e "s/SOURCE_BUCKET/$SOURCE_BUCKET-$AWS_REGION/g" ./source/lib/cdk-textract-stack.ts
                 - sed -i -e "s/CODE_VERSION/$VERSION/g" ./source/lib/cdk-textract-stack.ts
@@ -243,6 +245,8 @@ Resources:
             Value: !Ref KendraEnabled
           - Name: READ_ONLY_MODE
             Value: !Ref ReadOnlyMode
+          - Name: AWS_ACCOUNT
+            Value: !Sub ${AWS::AccountId}
       Artifacts:
         Name: CodeBuild-CDK-output
         Type: CODEPIPELINE
@@ -655,7 +659,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*",
+                        "Resource": "*",
                         "Action": [
                             "cloudformation:GetTemplate",
                             "cloudformation:DescribeStacks",
@@ -666,6 +670,13 @@ Resources:
                             "cloudformation:CreateStack",
                             "cloudformation:Delete*",
                             "cloudformation:List*"
+                        ]
+                    },
+                    {
+                        "Effect": "Allow",
+                        "Resource": "*",
+                        "Action": [
+                            "cloudformation:DescribeStacks"
                         ]
                     },
                     {
@@ -799,6 +810,7 @@ Resources:
                           "lambda:AddLayerVersionPermission",
                           "lambda:DeleteLayerVersion",
                           "lambda:PublishLayerVersion",
+                          "lambda:PublishVersion",
                           "lambda:Get*",
                           "lambda:List*",
                           "lambda:PutFunctionConcurrency",
@@ -833,6 +845,16 @@ Resources:
                           "sqs:SetQueueAttributes"
                         ],
                         "Resource": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*",
+                        "Effect": "Allow"
+                    },
+                    {
+                        "Action": [
+                          "ssm:PutParameter",
+                          "ssm:GetParameter",
+                          "ssm:DescribeParameter*",
+                          "ssm:DeleteParameter*"
+                        ],
+                        "Resource": "*",
                         "Effect": "Allow"
                     },
                     {

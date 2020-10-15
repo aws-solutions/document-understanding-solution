@@ -40,6 +40,7 @@ import {
   PriceClass,
   HttpVersion,
   OriginAccessIdentity,
+  LambdaEdgeEventType
 } from "@aws-cdk/aws-cloudfront";
 import { CanonicalUserPrincipal } from "@aws-cdk/aws-iam";
 import uuid = require("short-uuid");
@@ -52,6 +53,7 @@ import { CustomResource, Duration } from "@aws-cdk/core";
 import * as cr from "@aws-cdk/custom-resources";
 import { Runtime } from "@aws-cdk/aws-lambda";
 import { Peer, Port } from "@aws-cdk/aws-ec2";
+import { SsmParameterReader } from './ssm-parameter-reader';
 
 const API_CONCURRENT_REQUESTS = 30; //approximate number of 1-2 page documents to be processed parallelly
 
@@ -180,6 +182,12 @@ export class CdkTextractStack extends cdk.Stack {
         "Origin Access Identity for Textract web stack bucket cloudfront distribution",
     });
 
+    const edgeLambdaFunctionArn = new SsmParameterReader(this, 'LambdaFunctionArnReader', {
+      parameterName: "lambdaFunctionArnParameterName",
+      region: 'us-east-1',
+      uuid: this.uuid
+    }).stringValue;
+
     const distribution = new CloudFrontWebDistribution(
       this,
       "cdk-textract-cfront",
@@ -190,7 +198,17 @@ export class CdkTextractStack extends cdk.Stack {
               s3BucketSource: clientAppS3Bucket,
               originAccessIdentity: oai,
             },
-            behaviors: [{ isDefaultBehavior: true }],
+            behaviors: [
+              { 
+                isDefaultBehavior: true, 
+                lambdaFunctionAssociations: [
+                  {
+                    eventType: LambdaEdgeEventType.ORIGIN_RESPONSE,
+                    lambdaFunction: lambda.Version.fromVersionArn(this, this.resourceName('EdgeLambdaFunctionArn'), edgeLambdaFunctionArn),
+                  },
+                ] 
+              }
+            ],
           },
         ],
         errorConfigurations: [
