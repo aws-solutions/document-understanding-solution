@@ -676,13 +676,6 @@ Resources:
                         "Effect": "Allow",
                         "Resource": "*",
                         "Action": [
-                            "cloudformation:DescribeStacks"
-                        ]
-                    },
-                    {
-                        "Effect": "Allow",
-                        "Resource": "*",
-                        "Action": [
                           "cognito-idp:AdminCreateUser",
                           "cognito-idp:AdminDeleteUser",
                           "cognito-idp:CreateUserPool",
@@ -814,7 +807,8 @@ Resources:
                           "lambda:Get*",
                           "lambda:List*",
                           "lambda:PutFunctionConcurrency",
-                          "lambda:InvokeFunction"
+                          "lambda:InvokeFunction",
+                          "lambda:EnableReplication*"
                         ]
                     },
                     {
@@ -852,7 +846,10 @@ Resources:
                           "ssm:PutParameter",
                           "ssm:GetParameter",
                           "ssm:DescribeParameter*",
-                          "ssm:DeleteParameter*"
+                          "ssm:DeleteParameter*",
+                          "ssm:AddTagsToResource",
+                          "ssm:RemoveTagsFromResource",
+                          "ssm:ListTagsForResource"
                         ],
                         "Resource": "*",
                         "Effect": "Allow"
