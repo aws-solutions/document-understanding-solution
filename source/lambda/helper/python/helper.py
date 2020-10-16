@@ -1,16 +1,16 @@
 
 ######################################################################################################################
- #  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
- #                                                                                                                    #
- #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
- #  with the License. A copy of the License is located at                                                             #
- #                                                                                                                    #
- #      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
- #                                                                                                                    #
- #  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
- #  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
- #  and limitations under the License.                                                                                #
- #####################################################################################################################
+#  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+#                                                                                                                    #
+#  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
+#  with the License. A copy of the License is located at                                                             #
+#                                                                                                                    #
+#      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
+#                                                                                                                    #
+#  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
+#  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
+#  and limitations under the License.                                                                                #
+#####################################################################################################################
 
 import boto3
 from botocore.client import Config
@@ -18,6 +18,7 @@ import os
 import csv
 import io
 from boto3.dynamodb.conditions import Key
+
 
 class DynamoDBHelper:
 
@@ -57,15 +58,16 @@ class DynamoDBHelper:
                 table.delete_item(
                     Key={
                         key: value,
-                        sk : item[sk]
+                        sk: item[sk]
                     })
                 print("Deleted items")
+
 
 class AwsHelper:
     def getClient(self, name, awsRegion=None):
         config = Config(
-            retries = dict(
-                max_attempts = 30
+            retries=dict(
+                max_attempts=30
             )
         )
         if(awsRegion):
@@ -75,8 +77,8 @@ class AwsHelper:
 
     def getResource(self, name, awsRegion=None):
         config = Config(
-            retries = dict(
-                max_attempts = 30
+            retries=dict(
+                max_attempts=30
             )
         )
 
@@ -84,6 +86,7 @@ class AwsHelper:
             return boto3.resource(name, region_name=awsRegion, config=config)
         else:
             return boto3.resource(name, config=config)
+
 
 class S3Helper:
     @staticmethod
@@ -122,7 +125,7 @@ class S3Helper:
 
             for doc in listObjectsResponse['Contents']:
                 docName = doc['Key']
-                docExt = FileHelper.getFileExtenstion(docName)
+                docExt = FileHelper.getFileExtension(docName)
                 docExtLower = docExt.lower()
                 if(docExtLower in allowedFileTypes):
                     files.append(docName)
@@ -144,7 +147,7 @@ class S3Helper:
     @staticmethod
     def writeCSV(fieldNames, csvData, bucketName, s3FileName, awsRegion=None):
         csv_file = io.StringIO()
-        #with open(fileName, 'w') as csv_file:
+        # with open(fileName, 'w') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldNames)
         writer.writeheader()
 
@@ -160,7 +163,7 @@ class S3Helper:
     @staticmethod
     def writeCSVRaw(csvData, bucketName, s3FileName):
         csv_file = io.StringIO()
-        #with open(fileName, 'w') as csv_file:
+        # with open(fileName, 'w') as csv_file:
         writer = csv.writer(csv_file)
         for item in csvData:
             writer.writerow(item)
@@ -181,11 +184,10 @@ class FileHelper:
         return dn
 
     @staticmethod
-    def getFileExtenstion(fileName):
+    def getFileExtension(fileName):
         basename = os.path.basename(fileName)
         dn, dext = os.path.splitext(basename)
         return dext[1:]
-
 
     @staticmethod
     def readFile(fileName):
@@ -201,11 +203,12 @@ class FileHelper:
     def writeToFileWithMode(fileName, content, mode):
         with open(fileName, mode) as document:
             document.write(content)
+
     @staticmethod
     def getFilesInFolder(path, fileTypes):
         for file in os.listdir(path):
             if os.path.isfile(os.path.join(path, file)):
-                ext = FileHelper.getFileExtenstion(file)
+                ext = FileHelper.getFileExtension(file)
                 if(ext.lower() in fileTypes):
                     yield file
 
