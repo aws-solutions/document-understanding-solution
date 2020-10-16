@@ -21,10 +21,10 @@ import css from "./PersonaInfoModal.scss";
 import cs from "classnames";
 import FormInput from "../FormInput/FormInput";
 
-const COVID_QUESTIONS = [
-  "What are the testing guidelines for COVID-19?",
-  "How to prevent transmission of COVID-19",
-  "What is the recommended treatment for COVID-19?",
+const PERSONA_QUESTIONS = [
+  "What is muscle dystrophy?",
+  "What are Lipoma symptoms?",
+  "What is the Placebo effect?",
 ];
 
 function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
@@ -107,7 +107,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
             />
             <h4>General public</h4>
             <p>
-              Has access to official guidance to prevent and manage COVID-19.
+              Has access to official guidance to prevent and manage diseases/medical conditions.
             </p>
           </label>
           <label>
@@ -135,7 +135,7 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
         </header>
 
         <ul className={css.sampleQueries}>
-          {COVID_QUESTIONS.map((q) => (
+          {PERSONA_QUESTIONS.map((q) => (
             <li onClick={() => submit(q)}>{q}</li>
           ))}
         </ul>
@@ -143,9 +143,9 @@ function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
 
       <aside className={css.notes}>
         Please note, this demo allows you to upload your own documents. If you
-        do so, Kendra will index your documents and you'll be able to search
-        through them. However, the filtering feature won't work. The three users
-        and COVID-19 datasets are used to demonstrate the{" "}
+        do so, Amazon Kendra will index your documents and you'll be able to search
+        through them. However, the filtering feature won't work. The three personas
+        and Medical datasets are used to demonstrate the{" "}
         <strong>Filter query results on User Context</strong> feature.
       </aside>
 
