@@ -64,7 +64,7 @@ def processRequest(request):
     file_type = get_mime_type(request)
 
     # If not expected extension, change status to FAILED and exit
-    if(file_type and file_type.mime and file_type.mime not in ['application/pdf', 'image/png', 'image/jpeg']):
+    if not file_type or file_type.mime not in ['application/pdf', 'image/png', 'image/jpeg']:
         jsonErrorHandlerMessage = {
             'documentId': documentId
         }
