@@ -3,5 +3,10 @@ source/lambda/apiprocessor/search.py:31
 source/lambda/helper/python/comprehendHelper.py:352
 source/lambda/textractor/python/og.py:157
 
+source/package-lock.json:4286
+source/yarn.lock:874
+THIRD-PARTY-LICENSES.txt:7
+CODE_OF_CONDUCT.md:4
+CONTRIBUTING.md:50
 source/samples/*
 
