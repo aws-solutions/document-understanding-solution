@@ -74,9 +74,9 @@ Mappings:
   SourceCode:
     Source:
       S3Bucket: "%%BUCKET_NAME%%"
-      Version: !Ref Version
+      Version: "%%VERSION%%"
       SolutionName: "%%SOLUTION_NAME%%"
-      KeyPrefix: !Sub "%%SOLUTION_NAME%%/${Version}"
+      KeyPrefix: "%%SOLUTION_NAME%%/%%VERSION%%"
 
 Resources:
   # CICD resources [start]
