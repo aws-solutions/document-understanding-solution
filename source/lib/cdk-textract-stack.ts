@@ -617,7 +617,7 @@ export class CdkTextractStack extends cdk.Stack {
                 </p>\
                 `,
         },
-        unusedAccountValidityDays: 60,
+        unusedAccountValidityDays: 7,
       },
     });
 
