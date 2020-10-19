@@ -1,4 +1,3 @@
-//@ts-nocheck
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -53,6 +52,7 @@ import { CustomResource, Duration } from "@aws-cdk/core";
 import * as cr from "@aws-cdk/custom-resources";
 import { Runtime } from "@aws-cdk/aws-lambda";
 import { Peer, Port } from "@aws-cdk/aws-ec2";
+import { EdgeLambdaStack } from './cdk-textract-edge-lambda-stack';
 
 const API_CONCURRENT_REQUESTS = 30; //approximate number of 1-2 page documents to be processed parallelly
 
@@ -256,130 +256,11 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
-    const edgeLambdaCodeBucket = new s3.Bucket(
-      this,
-      this.resourceName("edgeLambdaCodeBucket"),
-      {
-        accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
-        versioned: false,
-        encryption: BucketEncryption.S3_MANAGED,
-        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-      }
-    );
+    /****                  Edge Lambda Nested Stack                      ****/
 
-    const edgeCodeDeployment = new s3deploy.BucketDeployment(
-      this,
-      this.resourceName("EdgeLambdaDeployment"),
-      {
-        sources: [s3deploy.Source.asset("lambda/edge")],
-        destinationBucket: edgeLambdaCodeBucket,
-      }
-    );
-
-    const egdeLambdaRole = new iam.Role(
-      this,
-      this.resourceName("EdgeLambdaServiceRole"),
-      {
-        assumedBy: new iam.CompositePrincipal(
-          new iam.ServicePrincipal("lambda.amazonaws.com"),
-          new iam.ServicePrincipal("edgelambda.amazonaws.com")
-        ),
-        inlinePolicies: {
-          BasicExecution: new iam.PolicyDocument({
-            assignSids: true,
-            statements: [
-              new iam.PolicyStatement({
-                actions: [
-                  "logs:CreateLogGroup",
-                  "logs:CreateLogStream",
-                  "logs:PutLogEvents",
-                ],
-                resources: ["*"],
-              }),
-            ],
-          }),
-        },
-      }
-    );
-    
-    const onEventEdgeLambdaCreator = new lambda.Function(
-      this,
-      this.resourceName("onEventEdgeLambdaCreator"),
-      {
-        code: lambda.Code.fromAsset("lambda/customResourceEdgeLambdaCreator/"),
-        description: "onEvent handler for creating Edge Lambda",
-        runtime: lambda.Runtime.PYTHON_3_8,
-        handler: "lambda_function.lambda_handler",
-        timeout: Duration.minutes(15),
-        environment: {
-          EDGE_LAMBDA_NAME: this.resourceName("DUSEdgeLambda"),
-          EDGE_LAMBDA_ROLE_ARN: egdeLambdaRole.roleArn,
-          SOURCE_KEY: "lambda_function.py",
-          CLOUDFRONT_DIST_ID: distribution.distributionId,
-          BUCKET_NAME: edgeLambdaCodeBucket.bucketName,
-        },
-      }
-    );
-
-    onEventEdgeLambdaCreator.node.addDependency(edgeCodeDeployment);
-
-    onEventEdgeLambdaCreator.addToRolePolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: ["lambda:CreateFunction", "lambda:DeleteFunction", "lambda:GetFunction", "lambda:EnableReplication*", "lambda:PublishVersion"],
-        resources: ["arn:aws:lambda:us-east-1:" + this.account + ":*"],
-      })
-    );
-
-    onEventEdgeLambdaCreator.addToRolePolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: ["iam:PassRole"],
-        resources: [egdeLambdaRole.roleArn],
-      })
-    );
-
-    onEventEdgeLambdaCreator.addToRolePolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: ["s3:Get*", "s3:List*"],
-        resources: [
-          edgeLambdaCodeBucket.bucketArn,
-          `${edgeLambdaCodeBucket.bucketArn}/*`,
-        ],
-      })
-    );
-
-    onEventEdgeLambdaCreator.addToRolePolicy(
-      new iam.PolicyStatement({
-        effect: iam.Effect.ALLOW,
-        actions: [
-          "cloudfront:GetDistributionConfig",
-          "cloudfront:UpdateDistribution",
-          "cloudfront:ListDistributions",
-        ],
-        resources: ["*"],
-      })
-    );
-
-    const edgeLambdaProvider = new cr.Provider(
-      this,
-      this.resourceName("EdgeLambdaProvider"),
-      {
-        onEventHandler: onEventEdgeLambdaCreator,
-      }
-    );
-
-    const onEventEdgeLambdaCustomResource = new CustomResource(
-      this,
-      this.resourceName("EdgeLambdaCreatorCR"),
-      {
-        serviceToken: edgeLambdaProvider.serviceToken,
-      }
-    );
-
-    onEventEdgeLambdaCustomResource.node.addDependency(distribution)
-    
+    const edgeLambdaStack = new EdgeLambdaStack(this, 'DUSEdgeLambdaNestedStack', {
+      cloudfrontDistribution: distribution
+    })
 
     /****                      VPC Configuration                         ****/
 
