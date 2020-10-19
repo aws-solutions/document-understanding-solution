@@ -326,7 +326,7 @@ export class CdkTextractStack extends cdk.Stack {
     onEventEdgeLambdaCreator.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["lambda:CreateFunction", "lambda:DeleteFunction", "lambda:GetFunction", "lambda:EnableReplication*"],
+        actions: ["lambda:CreateFunction", "lambda:DeleteFunction", "lambda:GetFunction", "lambda:EnableReplication*", "lambda:PublishVersion"],
         resources: ["arn:aws:lambda:us-east-1:" + this.account + ":*"],
       })
     );
