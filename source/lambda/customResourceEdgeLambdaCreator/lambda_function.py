@@ -84,8 +84,12 @@ def on_create(event, context):
 def on_delete(event, context):
     print("Deleting edge lambda with name {}".format(
         os.environ['EDGE_LAMBDA_NAME']))
+
+    my_config = Config(
+        region_name='us-east-1',
+    )
+    lambda_client = boto3.client('lambda', config=my_config)
     cloudfront_client = boto3.client('cloudfront')
-    lambda_client = boto3.client('lambda')
     # Remove lambda from cloudfront association, and then delete it
     try:
         cf_config = cloudfront_client.get_distribution_config(
@@ -93,8 +97,9 @@ def on_delete(event, context):
         )
         # removing ETag and lambda association, required to update distribution using boto3
         deleted_etag = cf_config.pop('ETag', None)
-        deleted_edge_function_association = cf_config['DistributionConfig']['DefaultCacheBehavior'].pop(
-            'LambdaFunctionAssociations', None)
+        cf_config['DistributionConfig']['DefaultCacheBehavior']['LambdaFunctionAssociations'] = {
+            'Quantity': 0
+        }
 
         cf_response = cloudfront_client.update_distribution(
             DistributionConfig=cf_config['DistributionConfig'],

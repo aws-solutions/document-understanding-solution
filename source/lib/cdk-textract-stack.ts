@@ -377,6 +377,8 @@ export class CdkTextractStack extends cdk.Stack {
         serviceToken: edgeLambdaProvider.serviceToken,
       }
     );
+
+    onEventEdgeLambdaCustomResource.node.addDependency(distribution)
     
 
     /****                      VPC Configuration                         ****/
