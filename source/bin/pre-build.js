@@ -119,8 +119,8 @@ const GetResources = new Promise((resolve, reject) => {
       /ClientAppS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
     if(enableKendra == "true"){
-      resources.MedicalDataBucketName = stackDescriptionObj.find((x) =>
-      /MedicalDataBucket/i.test(x.LogicalResourceId)
+      resources.CovidDataBucketName = stackDescriptionObj.find((x) =>
+      /CovidDataBucket/i.test(x.LogicalResourceId)
       ).PhysicalResourceId;
     }
     resources.PdfGenLambda = stackDescriptionObj.find((x) =>
