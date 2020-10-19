@@ -1544,25 +1544,25 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket: s3.Bucket,
     bulkProcessingBucket: s3.Bucket
   ) {
-    const medicalDataBucket = new s3.Bucket(
+    const covidDataBucket = new s3.Bucket(
       this,
-      this.resourceName("MedicalDataBucket"),
+      this.resourceName("CovidDataBucket"),
       {
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
         serverAccessLogsBucket: logsS3Bucket,
-        serverAccessLogsPrefix: "medical-data-bucket",
+        serverAccessLogsPrefix: "covid-data-bucket",
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
       }
     );
 
     new s3deploy.BucketDeployment(
       this,
-      this.resourceName("MedicalDataDeployment"),
+      this.resourceName("CovidDataDeployment"),
       {
         sources: [s3deploy.Source.asset("samples/KendraPdfs")],
-        destinationBucket: medicalDataBucket,
+        destinationBucket: covidDataBucket,
       }
     );
     // Assets for Kendra Custom Resource
@@ -1641,8 +1641,8 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: ["s3:GetObject", "s3:ListBucket"],
         resources: [
-          medicalDataBucket.bucketArn,
-          `${medicalDataBucket.bucketArn}/*`,
+          covidDataBucket.bucketArn,
+          `${covidDataBucket.bucketArn}/*`,
           documentsS3Bucket.bucketArn,
           `${documentsS3Bucket.bucketArn}/*`,
           samplesS3Bucket.bucketArn,
@@ -1796,7 +1796,7 @@ export class CdkTextractStack extends cdk.Stack {
           KENDRA_INDEX_ID: kendraIndexCustomResource
             .getAtt("KendraIndexId")
             .toString(),
-          DATA_BUCKET_NAME: medicalDataBucket.bucketName,
+          DATA_BUCKET_NAME: covidDataBucket.bucketName,
           BULK_PROCESSING_BUCKET: bulkProcessingBucket.bucketName,
         },
       }
@@ -1805,7 +1805,7 @@ export class CdkTextractStack extends cdk.Stack {
     onEventKendraDataSourceLambda.addLayers(boto3Layer);
     kendraKMSKey.grantEncryptDecrypt(onEventKendraDataSourceLambda);
     bulkProcessingBucket.grantReadWrite(onEventKendraDataSourceLambda);
-    medicalDataBucket.grantReadWrite(onEventKendraDataSourceLambda);
+    covidDataBucket.grantReadWrite(onEventKendraDataSourceLambda);
 
     onEventKendraDataSourceLambda.addToRolePolicy(
       new iam.PolicyStatement({
@@ -1849,7 +1849,7 @@ export class CdkTextractStack extends cdk.Stack {
         properties: {
           KENDRA_INDEX_ID: kendraIndexId,
           KendraRoleArn: kendraRole.roleArn,
-          DataBucketName: medicalDataBucket.bucketName,
+          DataBucketName: covidDataBucket.bucketName,
         },
       }
     );
