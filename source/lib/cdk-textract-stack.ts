@@ -40,6 +40,7 @@ import {
   PriceClass,
   HttpVersion,
   OriginAccessIdentity,
+  LambdaEdgeEventType
 } from "@aws-cdk/aws-cloudfront";
 import { CanonicalUserPrincipal } from "@aws-cdk/aws-iam";
 import uuid = require("short-uuid");
@@ -174,6 +175,119 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+    const edgeLambdaCodeBucket = new s3.Bucket(
+      this,
+      this.resourceName("edgeLambdaCodeBucket"),
+      {
+        accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+        versioned: false,
+        encryption: BucketEncryption.S3_MANAGED,
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      }
+    );
+
+    const edgeCodeDeployment = new s3deploy.BucketDeployment(
+      this,
+      this.resourceName("EdgeLambdaDeployment"),
+      {
+        sources: [s3deploy.Source.asset("lambda/edge")],
+        destinationBucket: edgeLambdaCodeBucket,
+      }
+    );
+
+    const egdeLambdaRole = new iam.Role(this, this.resourceName('EdgeLambdaServiceRole'), {
+      assumedBy: new iam.CompositePrincipal(
+          new iam.ServicePrincipal("lambda.amazonaws.com"),
+          new iam.ServicePrincipal("edgelambda.amazonaws.com")
+      ),
+      inlinePolicies: {
+        'BasicExecution': new iam.PolicyDocument({
+          assignSids: true,
+          statements: [
+            new iam.PolicyStatement({
+              actions: ["logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents"],
+              resources: ["*"]
+            }),
+          ],
+        })
+      },
+    })
+
+    const onEventEdgeLambdaCreator = new lambda.Function(
+      this,
+      this.resourceName("onEventEdgeLambdaCreator"),
+      {
+        code: lambda.Code.fromAsset("lambda/customResourceEdgeLambdaCreator/"),
+        description: "onEvent handler for creating Edge Lambda",
+        runtime: lambda.Runtime.PYTHON_3_8,
+        handler: "lambda_function.lambda_handler",
+        timeout: Duration.minutes(15),
+        environment: {
+          EDGE_LAMBDA_NAME: this.resourceName("DUSEdgeLambda"),
+          EDGE_LAMBDA_ROLE_ARN: egdeLambdaRole.roleArn,
+          SOURCE_BUCKET_NAME: edgeLambdaCodeBucket.bucketName,
+          SOURCE_KEY: 'lambda_function.py'
+        },
+      }
+    );
+
+    onEventEdgeLambdaCreator.node.addDependency(edgeCodeDeployment);
+
+    onEventEdgeLambdaCreator.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "lambda:CreateFunction",
+          "lambda:DeleteFunction"
+        ],
+        resources: [
+          "arn:aws:lambda:us-east-1:" + this.account + ":*",
+        ],
+      })
+    );
+
+    onEventEdgeLambdaCreator.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["iam:PassRole"],
+        resources: [egdeLambdaRole.roleArn],
+      })
+    );
+
+    onEventEdgeLambdaCreator.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["s3:Get*", "s3:List*"],
+        resources: [edgeLambdaCodeBucket.bucketArn, `${edgeLambdaCodeBucket.bucketArn}/*`],
+      })
+    );
+
+    onEventEdgeLambdaCreator.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["cloudfront:GetDistributionConfig", "cloudfront:UpdateDistribution", "cloudfront:ListDistributions"],
+        resources: ["*"],
+      })
+    );
+
+    const edgeLambdaProvider = new cr.Provider(
+      this,
+      this.resourceName("EdgeLambdaProvider"),
+      {
+        onEventHandler: onEventEdgeLambdaCreator,
+      }
+    );
+
+    const onEventEdgeLambdaCustomResource = new CustomResource(
+      this,
+      this.resourceName("EdgeLambdaCreatorCR"),
+      {
+        serviceToken: edgeLambdaProvider.serviceToken,
+      }
+    );
+
     // eslint-disable-next-line no-unused-vars
     const oai = new OriginAccessIdentity(this, "cdk-textract-oai", {
       comment:
@@ -190,7 +304,19 @@ export class CdkTextractStack extends cdk.Stack {
               s3BucketSource: clientAppS3Bucket,
               originAccessIdentity: oai,
             },
-            behaviors: [{ isDefaultBehavior: true }],
+            behaviors: [
+              {
+                isDefaultBehavior: true,
+                lambdaFunctionAssociations: [
+                  {
+                    eventType: LambdaEdgeEventType.ORIGIN_RESPONSE,
+                    lambdaFunction: lambda.Version.fromVersionArn(this, this.resourceName('EdgeLambdaFunctionArn'), `${onEventEdgeLambdaCustomResource
+                    .getAtt("EdgeLambdaFunctionArn")
+                    .toString()}:1`),
+                  },
+                ]
+              }
+            ],
           },
         ],
         errorConfigurations: [
@@ -254,6 +380,8 @@ export class CdkTextractStack extends cdk.Stack {
     documentsS3Bucket.addToResourcePolicy(
       cloudfrontDocumentsBucketPolicyStatement
     );
+
+    onEventEdgeLambdaCreator.addEnvironment('CLOUDFRONT_DIST_ID', distribution.distributionId)
 
     /****                      VPC Configuration                         ****/
 
