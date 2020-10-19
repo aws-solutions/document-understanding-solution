@@ -617,7 +617,7 @@ export class CdkTextractStack extends cdk.Stack {
                 </p>\
                 `,
         },
-        unusedAccountValidityDays: 60,
+        unusedAccountValidityDays: 7,
       },
     });
 
@@ -1536,16 +1536,6 @@ export class CdkTextractStack extends cdk.Stack {
     const apiDeployment = api.latestDeployment;
     const cfnDeployment = apiDeployment.node
       .defaultChild as apigateway.CfnDeployment;
-    cfnDeployment.cfnOptions.metadata = {
-      cfn_nag: {
-        rules_to_suppress: [
-          {
-            id: "W68",
-            reason: "No usage plan intended",
-          },
-        ],
-      },
-    };
   }
   createandGetKendraRelatedResources(
     boto3Layer: lambda.LayerVersion,

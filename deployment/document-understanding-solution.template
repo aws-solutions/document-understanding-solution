@@ -11,7 +11,7 @@
 # express or implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-Description: "(SO0084) - The AWS CloudFormation template for deployment of the document-understanding-solution. Version v1.0.0"
+Description: "(SO0084) - The AWS CloudFormation template for deployment of the document-understanding-solution. Version %%VERSION%%"
 
 Parameters:
   Email:
@@ -40,7 +40,7 @@ Parameters:
   Version:
     Description: Solution Version
     Type: String
-    Default: "v1.0.0"
+    Default: "%%VERSION%%"
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -197,9 +197,6 @@ Resources:
                 - cdk --version
                 - npm install -g typescript
                 - tsc --version
-                - echo "Installing cfn_nag"
-                - gem install cfn-nag
-                - cfn_nag --version
                 - echo "Installing Yarn"
                 - curl -o- -L https://yarnpkg.com/install.sh | bash
                 - echo "Injecting values for Deploy Type, Region, Email, Version, and boto/pdf lambda code S3 location to the project"

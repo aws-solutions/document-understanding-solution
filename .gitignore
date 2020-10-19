@@ -14,7 +14,6 @@ deployment/build-dist/
 deployment/global-s3-assets/
 deployment/regional-s3-assets/
 deployment/build-dist/
-deployment/build-dist/*
 
 # compressed files
 *.zip
@@ -39,5 +38,3 @@ source/lib/cdk-textract-stack.js
 source/lib/cdk-textract-client-stack.js
 source/lib/cdk-textract-client-stack.js-e
 
-# Brazil
-Config
