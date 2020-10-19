@@ -18,6 +18,10 @@ if [ ! -f boto3-layer.zip ]
 then
     zip -rq boto3-layer.zip python
     echo "Created boto3-layer.zip"
+else
+    rm -rf boto3-layer.zip
+    zip -rq boto3-layer.zip python
+    echo "Created new boto3-layer.zip"
 fi
 if [ ! -d $current_dir/lambda/elasticsearch/python ]
 then
@@ -34,4 +38,8 @@ if [ ! -f es.zip ]
 then
     zip -rq es.zip python
     echo "Created es.zip"
+else
+    rm -rf es.zip
+    zip -rq es.zip python
+    echo "Created new es.zip"
 fi
