@@ -71,10 +71,10 @@ def processRequest(request):
         postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage)
         return
 
-    if(file_type and file_type in ['image/png', 'image/jpeg']):
+    if(file_type.mime in ['image/png', 'image/jpeg']):
         qUrl = request['syncQueueUrl']
         errorHandlerTimeoutSeconds = SYNC_JOB_TIMEOUT_SECONDS
-    elif (file_type in ['application/pdf']):
+    elif (file_type.mime in ['application/pdf']):
         qUrl = request['asyncQueueUrl']
         errorHandlerTimeoutSeconds = ASYNC_JOB_TIMEOUT_SECONDS
 
