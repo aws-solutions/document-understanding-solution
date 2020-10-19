@@ -24,6 +24,7 @@ def on_create(event, context):
         region_name='us-east-1',
     )
     lambda_client = boto3.client('lambda', config=my_config)
+    cloudfront_client = boto3.client('cloudfront')
     edge_lambda_function_arn = None
     try:
         print("Creating DUS Edge Lambda in us-east-1")
@@ -45,6 +46,23 @@ def on_create(event, context):
         )
         print(f"Response is: {response}")
         edge_lambda_function_arn = response['FunctionArn']
+
+        cf_config = cloudfront_client.get_distribution_config(
+            Id=os.environ['CLOUDFRONT_DIST_ID']
+        )
+        # removing ETag required to update distribution using boto3
+        deleted_etag = cf_config.pop('ETag', None)
+
+        cf_config['DistributionConfig']['DefaultCacheBehavior']['LambdaFunctionAssociations'] = {
+            'Items': [
+                {
+                    'LambdaFunctionARN': edge_lambda_function_arn,
+                    'EventType': 'origin-response',
+                    'IncludeBody': False
+                }
+            ]
+        }
+
     except Exception as e:
         raise e
     print("Created edge lambda function with ARN {}".format(
@@ -65,13 +83,10 @@ def on_delete(event, context):
         cf_config = cloudfront_client.get_distribution_config(
             Id=os.environ['CLOUDFRONT_DIST_ID']
         )
-        # removing ETag required to update distribution using boto3
+        # removing ETag and lambda association, required to update distribution using boto3
         deleted_etag = cf_config.pop('ETag', None)
-
-        # remove any and all lambda function associations
-        for index, item in enumerate(cf_config['DistributionConfig']['CacheBehaviors']['Items']):
-            if 'LambdaFunctionAssociations' in item:
-                cf_config['DistributionConfig']['CacheBehaviors']['Items'][index]['LambdaFunctionAssociations'] = {}
+        deleted_edge_function_association = cf_config['DistributionConfig']['DefaultCacheBehavior'].pop(
+            'LambdaFunctionAssociations', None)
 
         cf_response = cloudfront_client.update_distribution(
             DistributionConfig=cf_config)
