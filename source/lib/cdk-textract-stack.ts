@@ -1,4 +1,5 @@
-  /**********************************************************************************************************************
+//@ts-nocheck
+/**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
  *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
@@ -40,7 +41,6 @@ import {
   PriceClass,
   HttpVersion,
   OriginAccessIdentity,
-  LambdaEdgeEventType
 } from "@aws-cdk/aws-cloudfront";
 import { CanonicalUserPrincipal } from "@aws-cdk/aws-iam";
 import uuid = require("short-uuid");
@@ -276,25 +276,31 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    const egdeLambdaRole = new iam.Role(this, this.resourceName('EdgeLambdaServiceRole'), {
-      assumedBy: new iam.CompositePrincipal(
+    const egdeLambdaRole = new iam.Role(
+      this,
+      this.resourceName("EdgeLambdaServiceRole"),
+      {
+        assumedBy: new iam.CompositePrincipal(
           new iam.ServicePrincipal("lambda.amazonaws.com"),
           new iam.ServicePrincipal("edgelambda.amazonaws.com")
-      ),
-      inlinePolicies: {
-        'BasicExecution': new iam.PolicyDocument({
-          assignSids: true,
-          statements: [
-            new iam.PolicyStatement({
-              actions: ["logs:CreateLogGroup",
-              "logs:CreateLogStream",
-              "logs:PutLogEvents"],
-              resources: ["*"]
-            }),
-          ],
-        })
-      },
-    })
+        ),
+        inlinePolicies: {
+          BasicExecution: new iam.PolicyDocument({
+            assignSids: true,
+            statements: [
+              new iam.PolicyStatement({
+                actions: [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents",
+                ],
+                resources: ["*"],
+              }),
+            ],
+          }),
+        },
+      }
+    );
 
     const onEventEdgeLambdaCreator = new lambda.Function(
       this,
@@ -309,8 +315,8 @@ export class CdkTextractStack extends cdk.Stack {
           EDGE_LAMBDA_NAME: this.resourceName("DUSEdgeLambda"),
           EDGE_LAMBDA_ROLE_ARN: egdeLambdaRole.roleArn,
           SOURCE_BUCKET_NAME: edgeLambdaCodeBucket.bucketName,
-          SOURCE_KEY: 'lambda_function.py',
-          CLOUDFRONT_DIST_ID: distribution.distributionId
+          SOURCE_KEY: "lambda_function.py",
+          CLOUDFRONT_DIST_ID: distribution.distributionId,
         },
       }
     );
@@ -320,13 +326,8 @@ export class CdkTextractStack extends cdk.Stack {
     onEventEdgeLambdaCreator.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: [
-          "lambda:CreateFunction",
-          "lambda:DeleteFunction"
-        ],
-        resources: [
-          "arn:aws:lambda:us-east-1:" + this.account + ":*",
-        ],
+        actions: ["lambda:CreateFunction", "lambda:DeleteFunction"],
+        resources: ["arn:aws:lambda:us-east-1:" + this.account + ":*"],
       })
     );
 
@@ -342,14 +343,21 @@ export class CdkTextractStack extends cdk.Stack {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ["s3:Get*", "s3:List*"],
-        resources: [edgeLambdaCodeBucket.bucketArn, `${edgeLambdaCodeBucket.bucketArn}/*`],
+        resources: [
+          edgeLambdaCodeBucket.bucketArn,
+          `${edgeLambdaCodeBucket.bucketArn}/*`,
+        ],
       })
     );
 
     onEventEdgeLambdaCreator.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["cloudfront:GetDistributionConfig", "cloudfront:UpdateDistribution", "cloudfront:ListDistributions"],
+        actions: [
+          "cloudfront:GetDistributionConfig",
+          "cloudfront:UpdateDistribution",
+          "cloudfront:ListDistributions",
+        ],
         resources: ["*"],
       })
     );
@@ -372,19 +380,29 @@ export class CdkTextractStack extends cdk.Stack {
 
     /****                      VPC Configuration                         ****/
 
-    const vpc = new ec2.Vpc(this, this.resourceName('ElasticSearchVPC'), {
-      cidr: "172.62.0.0/16"
-    })
+    const vpc = new ec2.Vpc(this, this.resourceName("ElasticSearchVPC"), {
+      cidr: "172.62.0.0/16",
+    });
 
-    const subnetIds = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE}).subnetIds;
+    const subnetIds = vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE })
+      .subnetIds;
 
-    const securityGroup = new ec2.SecurityGroup(this, this.resourceName('ESSecurityGroup'), {
-      allowAllOutbound: true,
-      vpc: vpc,
-      securityGroupName: "Elasticsearch from lambda"
-    })
+    const securityGroup = new ec2.SecurityGroup(
+      this,
+      this.resourceName("ESSecurityGroup"),
+      {
+        allowAllOutbound: true,
+        vpc: vpc,
+        securityGroupName: "Elasticsearch from lambda",
+      }
+    );
 
-    securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
+    securityGroup.addIngressRule(
+      Peer.anyIpv4(),
+      Port.allTraffic(),
+      "allow lambda ingress",
+      false
+    );
 
     const esSearchLogGroup = new LogGroup(
       this,
@@ -461,8 +479,8 @@ export class CdkTextractStack extends cdk.Stack {
           },
           vpcOptions: {
             subnetIds: [subnetIds[0], subnetIds[1]],
-            securityGroupIds: [securityGroup.securityGroupId]
-          }
+            securityGroupIds: [securityGroup.securityGroupId],
+          },
         }
       );
     }
@@ -957,7 +975,7 @@ export class CdkTextractStack extends cdk.Stack {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
-        vpc: vpc
+        vpc: vpc,
       }
     );
 
@@ -1048,7 +1066,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
-        vpc: vpc
+        vpc: vpc,
       }
     );
 
