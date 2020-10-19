@@ -54,16 +54,24 @@ def on_create(event, context):
         deleted_etag = cf_config.pop('ETag', None)
 
         cf_config['DistributionConfig']['DefaultCacheBehavior']['LambdaFunctionAssociations'] = {
+            'Quantity': 1,
             'Items': [
                 {
-                    'LambdaFunctionARN': edge_lambda_function_arn,
+                    'LambdaFunctionARN': f"{edge_lambda_function_arn}:1",
                     'EventType': 'origin-response',
                     'IncludeBody': False
                 }
             ]
         }
 
+        cf_response = cloudfront_client.update_distribution(
+            DistributionConfig=cf_config['DistributionConfig'],
+            Id=os.environ['CLOUDFRONT_DIST_ID'],
+            IfMatch=deleted_etag)
+        print(f"Updated cloudfront distribution with lambda: {cf_response}")
+
     except Exception as e:
+        print(e)
         raise e
     print("Created edge lambda function with ARN {}".format(
         edge_lambda_function_arn))
@@ -89,7 +97,9 @@ def on_delete(event, context):
             'LambdaFunctionAssociations', None)
 
         cf_response = cloudfront_client.update_distribution(
-            DistributionConfig=cf_config)
+            DistributionConfig=cf_config['DistributionConfig'],
+            Id=os.environ['CLOUDFRONT_DIST_ID'],
+            IfMatch=deleted_etag)
 
         # now delete lambda
         response = lambda_client.delete_function(
