@@ -142,6 +142,7 @@ export class EdgeLambdaStack extends cfn.NestedStack {
           "cloudfront:GetDistributionConfig",
           "cloudfront:UpdateDistribution",
           "cloudfront:ListDistributions",
+          "cloudfront:GetDistribution",
         ],
         resources: ["*"],
       })
