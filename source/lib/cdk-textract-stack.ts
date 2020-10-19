@@ -301,7 +301,7 @@ export class CdkTextractStack extends cdk.Stack {
         },
       }
     );
-
+    
     const onEventEdgeLambdaCreator = new lambda.Function(
       this,
       this.resourceName("onEventEdgeLambdaCreator"),
@@ -314,9 +314,9 @@ export class CdkTextractStack extends cdk.Stack {
         environment: {
           EDGE_LAMBDA_NAME: this.resourceName("DUSEdgeLambda"),
           EDGE_LAMBDA_ROLE_ARN: egdeLambdaRole.roleArn,
-          SOURCE_BUCKET_NAME: edgeLambdaCodeBucket.bucketName,
           SOURCE_KEY: "lambda_function.py",
           CLOUDFRONT_DIST_ID: distribution.distributionId,
+          BUCKET_NAME: edgeLambdaCodeBucket.bucketName,
         },
       }
     );
@@ -377,6 +377,7 @@ export class CdkTextractStack extends cdk.Stack {
         serviceToken: edgeLambdaProvider.serviceToken,
       }
     );
+    
 
     /****                      VPC Configuration                         ****/
 

@@ -6,10 +6,10 @@ from zipfile import ZipFile
 
 def download_and_zip_file():
     print(
-        f"Downloading from here: {os.environ['SOURCE_BUCKET_NAME']}, {os.environ['SOURCE_KEY']}")
+        f"Downloading from here: {os.environ['BUCKET_NAME']}, {os.environ['SOURCE_KEY']}")
     s3 = boto3.resource('s3')
     s3.meta.client.download_file(
-        os.environ['SOURCE_BUCKET_NAME'], os.environ['SOURCE_KEY'], '/tmp/lambda_function.py')
+        os.environ['BUCKET_NAME'], os.environ['SOURCE_KEY'], '/tmp/lambda_function.py')
     with ZipFile('/tmp/lam_fun.zip', mode='w') as zfile:
         print("Zipping function")
         try:
