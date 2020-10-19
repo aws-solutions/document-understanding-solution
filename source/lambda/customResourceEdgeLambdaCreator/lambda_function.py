@@ -106,6 +106,16 @@ def on_delete(event, context):
             Id=os.environ['CLOUDFRONT_DIST_ID'],
             IfMatch=deleted_etag)
 
+        waiter = cloudfront_client.get_waiter('distribution_deployed')
+        print("Waiting for cloudfron distribution to be updated")
+        waiter.wait(
+            Id=os.environ['CLOUDFRONT_DIST_ID'],
+            WaiterConfig={
+                'Delay': 15,
+                'MaxAttempts': 40
+            }
+        )
+        print("Cloudfront distribution updated, deleting lambda")
         # now delete lambda
         response = lambda_client.delete_function(
             FunctionName=os.environ['EDGE_LAMBDA_NAME']
