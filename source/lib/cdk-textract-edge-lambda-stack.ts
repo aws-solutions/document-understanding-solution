@@ -119,7 +119,11 @@ export class EdgeLambdaStack extends cfn.NestedStack {
     onEventEdgeLambdaCreator.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["iam:PassRole"],
+        actions: [
+          "iam:PassRole",
+          "iam:CreateServiceLinkedRole",
+          "iam:DeleteServiceLinkedRole",
+        ],
         resources: [egdeLambdaRole.roleArn],
       })
     );
