@@ -124,7 +124,10 @@ export class EdgeLambdaStack extends cfn.NestedStack {
           "iam:CreateServiceLinkedRole",
           "iam:DeleteServiceLinkedRole",
         ],
-        resources: [egdeLambdaRole.roleArn],
+        resources: [
+          "arn:aws:iam::*:role/aws-service-role/replicator.lambda.amazonaws.com/AWSServiceRoleForLambdaReplicator",
+          "arn:aws:iam::*:role/aws-service-role/logger.cloudfront.amazonaws.com/AWSServiceRoleForCloudFrontLogger",
+        ],
       })
     );
 
