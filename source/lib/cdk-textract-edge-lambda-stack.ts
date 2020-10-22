@@ -134,6 +134,14 @@ export class EdgeLambdaStack extends cfn.NestedStack {
     onEventEdgeLambdaCreator.addToRolePolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
+        actions: ["iam:PassRole"],
+        resources: [egdeLambdaRole.roleArn],
+      })
+    );
+
+    onEventEdgeLambdaCreator.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
         actions: ["s3:Get*", "s3:List*"],
         resources: [
           edgeLambdaCodeBucket.bucketArn,
