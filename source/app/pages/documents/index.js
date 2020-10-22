@@ -167,10 +167,9 @@ function Documents({
           className={css.searchBar}
           light
           suggestions={ENABLE_KENDRA && [
-            'How does a herniated disk occur?',
-            'How to relieve carpal tunnel?',
-            'What is a stress fracture?',
-            'What is anemia?',
+            'What is Muscular Dystrophy?',
+            'Is there a cure for Muscular Dystrophy?',
+            'Is Muscular Dystrophy rare?'
           ]}
         />
       </div>

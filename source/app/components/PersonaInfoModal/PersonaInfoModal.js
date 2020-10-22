@@ -23,8 +23,8 @@ import FormInput from "../FormInput/FormInput";
 
 const PERSONA_QUESTIONS = [
   "What is muscle dystrophy?",
-  "What are Lipoma symptoms?",
-  "What is the Placebo effect?",
+  "Is Muscular Dystrophy inherited?",
+  "What causes Muscular Dystrophy?",
 ];
 
 function PersonaInfoModal({ onClose, onSubmit, searchPersona }) {
