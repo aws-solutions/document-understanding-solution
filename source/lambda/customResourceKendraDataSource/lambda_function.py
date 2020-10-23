@@ -23,11 +23,11 @@ def on_create(event, context):
     
     create_faq_response = kendra_client.create_faq(
         IndexId=kendraIndexId,
-        Name="DUSCovidFAQ",
-        Description='covid-19 questions and answers',
+        Name="MedicalFAQ",
+        Description='medical questions and answers',
         S3Path={
            'Bucket': dataBucketName,
-           'Key': 'faqs/covid_faq.csv'
+           'Key': 'faqs/medical_faq.csv'
         },
         RoleArn=roleArn
     )
@@ -39,7 +39,7 @@ def on_create(event, context):
     s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('documentDrop' +'/'))
     s3_client.put_object(Bucket=os.environ['BULK_PROCESSING_BUCKET'], Key=('kendraPolicyDrop' +'/'))
     
-    #copying of the covid the files is done by upload-sample.sh
+    #copying of the medical the files is done by upload-sample.sh
     
     return
 

@@ -21,9 +21,16 @@ from redact import redact
 from search import search, deleteESItem
 from kendraHelper import KendraHelper
 
+def redactHeadersFromLambdaEvent(lambdaEvent): 
+    lambdaEvent.pop('headers',None)
+    lambdaEvent.pop('multiValueHeaders',None)
+    return lambdaEvent
+
 def lambda_handler(event, context):
 
-    print("Event: {}".format(event))
+    eventCopy = event
+    
+    print("Redacted Event: {}".format(redactHeadersFromLambdaEvent(event))) 
 
     result = {}
 
