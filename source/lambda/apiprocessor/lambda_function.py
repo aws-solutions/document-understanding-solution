@@ -1,19 +1,21 @@
 
 ######################################################################################################################
- #  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
- #                                                                                                                    #
- #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
- #  with the License. A copy of the License is located at                                                             #
- #                                                                                                                    #
- #      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
- #                                                                                                                    #
- #  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
- #  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
- #  and limitations under the License.                                                                                #
- #####################################################################################################################
+#  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+#                                                                                                                    #
+#  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
+#  with the License. A copy of the License is located at                                                             #
+#                                                                                                                    #
+#      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
+#                                                                                                                    #
+#  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
+#  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
+#  and limitations under the License.                                                                                #
+#####################################################################################################################
 
 import os
 import json
+import boto3
+from botocore.exceptions import ClientError
 
 from documents import getDocuments
 from document import getDocument, createDocument, deleteDocument
@@ -21,11 +23,34 @@ from redact import redact
 from search import search, deleteESItem
 from kendraHelper import KendraHelper
 
+
+def redactHeadersFromLambdaEvent(lambdaEvent):
+    lambdaEvent.pop('headers', None)
+    lambdaEvent.pop('multiValueHeaders', None)
+    return lambdaEvent
+
+
+def validate_request(request):
+    """
+    load() throws an exception if the object does not exist in the bucket.
+    """
+    s3 = boto3.resource('s3')
+    try:
+        s3.Object(request['bucketName'], request['objectName']).load()
+        return True
+    except ClientError as ex:
+        print(f"Object does not exist in bucket, rejecting: {ex}")
+        return False
+
+
 def lambda_handler(event, context):
 
-    print("Event: {}".format(event))
+    eventCopy = event
+
+    print("Redacted Event: {}".format(redactHeadersFromLambdaEvent(event)))
 
     result = {}
+    status_code = 200
 
     documentBucket = os.environ['CONTENT_BUCKET']
     sampleBucket = os.environ['SAMPLE_BUCKET']
@@ -46,14 +71,14 @@ def lambda_handler(event, context):
 
         # search Kendra if available
         elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST'):
-            if 'KENDRA_INDEX_ID' in os.environ :
+            if 'KENDRA_INDEX_ID' in os.environ:
                 kendraClient = KendraHelper()
                 result = kendraClient.search(os.environ['KENDRA_INDEX_ID'],
                                              event['body'])
 
         # Kendra search result feedback for relevance boosting
         elif(event['resource'] == '/feedbackkendra' and event['httpMethod'] == 'POST'):
-            if 'KENDRA_INDEX_ID' in os.environ :
+            if 'KENDRA_INDEX_ID' in os.environ:
                 kendraClient = KendraHelper()
                 result = kendraClient.submitFeedback(os.environ['KENDRA_INDEX_ID'],
                                                      event['body'])
@@ -81,26 +106,38 @@ def lambda_handler(event, context):
                     for obj in body['objects']:
                         request["bucketName"] = sampleBucket if obj['sample'] else documentBucket
                         request["objectName"] = obj['key']
-                        results.append(createDocument(request))
+                        if validate_request(request):
+                            results.append(createDocument(request))
+                        else:
+                            status_code = 207
+                            result.append(
+                                f"Object key {request['objectName']} does not exist in bucket")
                     result = results
                 else:
                     request["bucketName"] = sampleBucket if body['sample'] else documentBucket
                     request["objectName"] = body['key']
-                    result = createDocument(request)
+                    if validate_request(request):
+                        result = createDocument(request)
+                    else:
+                        status_code = 400
+                        result.append(
+                            "Bad request, object key does not exist in bucket")
+
             elif(event['httpMethod'] == 'DELETE'):
                 if('documentid' in event['queryStringParameters']):
                     request["documentId"] = event['queryStringParameters']['documentid']
                     result = deleteDocument(request)
-                    deleteESItem(request["elasticsearchDomain"], request["documentId"])
+                    deleteESItem(
+                        request["elasticsearchDomain"], request["documentId"])
                     # remove it from Kendra's index too if present
                     if 'KENDRA_INDEX_ID' in os.environ:
                         kendraClient = KendraHelper()
                         kendraClient.deindexDocument(os.environ['KENDRA_INDEX_ID'],
                                                      request["documentId"])
 
-                        
         elif(event['resource'] == '/redact'):
-            params = event['queryStringParameters'] if 'queryStringParameters' in event else {}
+            params = event['queryStringParameters'] if 'queryStringParameters' in event else {
+            }
             request["params"] = params
             result = redact(request)
 
@@ -113,5 +150,5 @@ def lambda_handler(event, context):
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Headers': '*',
             'Access-Control-Allow-Methods': 'GET,POST,OPTIONS'
-            }
         }
+    }
