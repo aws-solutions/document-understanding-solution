@@ -26,14 +26,14 @@ export const lensTrack = id => lensPath(['entities', 'tracks', id])
 const kendraModeDescription = `
 In this track, you can search through multiple documents and find information faster
 and more efficiently, using  traditional search based technologies such as Amazon 
-Elasticsearch as well using state-of-the-art machine learning and natural language
+Elasticsearch Service (Amazon ES) as well using state-of-the-art machine learning and natural language enterprise search
 with Amazon Kendra.
 
 Once you select a document, you'll be able to interact with Amazon Textract,
 Amazon Comprehend, and Amazon Comprehend Medical to experience the power
 of document digitization and extraction of sensitive information.
 
-For demo purposes, we've loaded data related to COVID-19. Ask a question related
+For demo purposes, we've loaded data related to certain medical conditions. Ask a question related
 to this topic and see the power of natural language search.
 `
 const classicModeDescription = `In this track, you can search through multiple documents and find information faster
