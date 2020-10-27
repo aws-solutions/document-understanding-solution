@@ -107,3 +107,7 @@ cp $template_dir/source/lambda/boto3/boto3-layer.zip $build_dist_dir/boto3-layer
 echo "Copying CloudFormation template and deployment helper lambda code"
 cp ./deployment/document-understanding-cicd.zip $build_dist_dir/document-understanding-cicd.zip
 
+echo "Cleaning up deployment dependency files"
+find ./source/lambda/boto3 ! -name 'requirements.txt' -delete
+find ./source/lambda/elasticsearch ! -name 'requirements.txt' -delete
+rm -rf ./deployment/document-understanding-cicd/node_modules
