@@ -33,7 +33,7 @@ Once you select a document, you'll be able to interact with Amazon Textract,
 Amazon Comprehend, and Amazon Comprehend Medical to experience the power
 of document digitization and extraction of sensitive information.
 
-For demo purposes, the solution is pre-loaded data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.
+For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.
 `
 const classicModeDescription = `In this track, you can search through multiple documents and find information faster
 and more efficiently, using Amazon Elasticsearch.
