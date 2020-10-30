@@ -64,7 +64,7 @@ aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<sol
 aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
 ```
 
-This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
+This solutions will create 10-11 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
 
 - 2 for CICD
 - 1 for solution specific CDK Toolkit
@@ -73,6 +73,7 @@ This solutions will create 7 S3 buckets that need to be manually deleted when th
 - 1 for access logs
 - 1 for CDK toolkit (if this is the customer's first try with CDK)
 - 1 for document bulk processing pipeline
+- 1 for holding the Lambda@Edge function code
 
 The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
 
@@ -142,12 +143,13 @@ The cli will prompt for approval on IAM Roles and Permissions twice in the full 
 
 Note:
 
-This will create 5 or 6 S3 buckets that will have to be manually deleted when the stack is destroyed (Cloudformation does not delete them, in order to avoid data loss).
+This will create 6 or 7 S3 buckets that will have to be manually deleted when the stack is destroyed (Cloudformation does not delete them, in order to avoid data loss).
 
 - 2/3 for documents (sample and general documents and optionally 1 for Medical sample documents if opting for Amazon Kendra Integration)
 - 1 for the client stack
 - 1 for document bulk processing pipeline
 - 1 for CDK toolkit (if this is your first time using CDK)
+- 1 for Lambda@Edge function code
 
 The solution is set up to reserve lambda concurrency quota. This is both to limit the scale of concurrent Lambda invocations as well to ensure sufficient capacity is available for the smooth functioning of the demo. You can tweak the "API_CONCURRENT_REQUESTS" value in source/lib/cdk-textract-stack.ts for changing the concurrency Lambda limits
 

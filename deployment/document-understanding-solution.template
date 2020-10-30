@@ -796,10 +796,12 @@ Resources:
                           "lambda:AddLayerVersionPermission",
                           "lambda:DeleteLayerVersion",
                           "lambda:PublishLayerVersion",
+                          "lambda:PublishVersion",
                           "lambda:Get*",
                           "lambda:List*",
                           "lambda:PutFunctionConcurrency",
-                          "lambda:InvokeFunction"
+                          "lambda:InvokeFunction",
+                          "lambda:EnableReplication*"
                         ]
                     },
                     {

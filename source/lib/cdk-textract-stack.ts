@@ -1,4 +1,4 @@
-  /**********************************************************************************************************************
+/**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
  *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
@@ -52,6 +52,7 @@ import { CustomResource, Duration } from "@aws-cdk/core";
 import * as cr from "@aws-cdk/custom-resources";
 import { Runtime } from "@aws-cdk/aws-lambda";
 import { Peer, Port } from "@aws-cdk/aws-ec2";
+import { EdgeLambdaStack } from './cdk-textract-edge-lambda-stack';
 
 const API_CONCURRENT_REQUESTS = 30; //approximate number of 1-2 page documents to be processed parallelly
 
@@ -255,21 +256,37 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
+    /****                  Edge Lambda Nested Stack                      ****/
+
+    const edgeLambdaStack = new EdgeLambdaStack(this, 'DUSEdgeLambdaNestedStack', {
+      cloudfrontDistribution: distribution
+    })
+
     /****                      VPC Configuration                         ****/
 
-    const vpc = new ec2.Vpc(this, this.resourceName('ElasticSearchVPC'), {
-      cidr: "172.62.0.0/16"
-    })
+    const vpc = new ec2.Vpc(this, this.resourceName("ElasticSearchVPC"), {
+      cidr: "172.62.0.0/16",
+    });
 
-    const subnetIds = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE}).subnetIds;
+    const subnetIds = vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE })
+      .subnetIds;
 
-    const securityGroup = new ec2.SecurityGroup(this, this.resourceName('ESSecurityGroup'), {
-      allowAllOutbound: true,
-      vpc: vpc,
-      securityGroupName: "Elasticsearch from lambda"
-    })
+    const securityGroup = new ec2.SecurityGroup(
+      this,
+      this.resourceName("ESSecurityGroup"),
+      {
+        allowAllOutbound: true,
+        vpc: vpc,
+        securityGroupName: "Elasticsearch from lambda",
+      }
+    );
 
-    securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
+    securityGroup.addIngressRule(
+      Peer.anyIpv4(),
+      Port.allTraffic(),
+      "allow lambda ingress",
+      false
+    );
 
     const esSearchLogGroup = new LogGroup(
       this,
@@ -346,8 +363,8 @@ export class CdkTextractStack extends cdk.Stack {
           },
           vpcOptions: {
             subnetIds: [subnetIds[0], subnetIds[1]],
-            securityGroupIds: [securityGroup.securityGroupId]
-          }
+            securityGroupIds: [securityGroup.securityGroupId],
+          },
         }
       );
     }
@@ -842,7 +859,7 @@ export class CdkTextractStack extends cdk.Stack {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
-        vpc: vpc
+        vpc: vpc,
       }
     );
 
@@ -933,7 +950,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
-        vpc: vpc
+        vpc: vpc,
       }
     );
 
