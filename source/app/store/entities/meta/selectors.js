@@ -19,11 +19,17 @@ export const getCurrentPageNumber = state => view(getMetaLens('currentPageNumber
 export const getDocumentsNextToken = state => view(getMetaLens('documentsNextToken'), state)
 export const getDocumentsTotal = state => view(getMetaLens('documentsTotal'), state)
 export const getSearchQuery = state => view(getMetaLens('searchQuery'), state)
+export const getDocumentSearchQuery = state => view(getMetaLens('documentSearchQuery'), state)
 export const getCleanSearchQuery = state =>
   pipe(
     view(getMetaLens('searchQuery')),
     trim
   )(state)
+export const getSearchPersona = state => view(getMetaLens('searchPersona'), state)
 export const getSearchStatus = state => view(getMetaLens('searchStatus'), state)
 export const getSearchTotalDocuments = state => view(getMetaLens('searchTotalDocuments'), state)
 export const getSearchTotalMatches = state => view(getMetaLens('searchTotalMatches'), state)
+export const getKendraQueryId = state => view(getMetaLens('kendraQueryId'), state);
+export const getKendraFilteredQueryId = state => view(getMetaLens('kendraFilteredQueryId'), state);
+export const getKendraResultCount = state => view(getMetaLens('kendraTotalResults'), state);
+export const getKendraFilteredResultCount = state => view(getMetaLens('kendraTotalFilteredResults'), state);

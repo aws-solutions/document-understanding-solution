@@ -12,7 +12,7 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Router from 'next/router'
@@ -23,6 +23,7 @@ import { setSelectedTrack } from '../store/ui/actions'
 import { getTracks } from '../store/entities/tracks/selectors'
 
 import css from './home.scss'
+import TrackInfoModal from '../components/TrackInfoModal/TrackInfoModal'
 
 Home.propTypes = {
   dispatch: PropTypes.func,
@@ -30,13 +31,23 @@ Home.propTypes = {
 }
 
 function Home({ dispatch, tracks }) {
-  const handleCardClick = useCallback(
-    id => {
-      dispatch(setSelectedTrack(id))
+  const [ showingTrackInfo, setShowingTrackInfo ] = useState(false);
+
+  const handleCardClick = useCallback(id => {
+    setShowingTrackInfo(id);
+  }, []);
+
+  const navigateToTrack = useCallback(
+    () => {
+      dispatch(setSelectedTrack(showingTrackInfo))
       Router.push('/documents')
     },
-    [dispatch]
+    [dispatch, showingTrackInfo]
   )
+
+  const clearTrackInfo = useCallback(() => {
+    setShowingTrackInfo(false);
+  }, [])
 
   return (
     <div className={css.home}>
@@ -50,6 +61,14 @@ function Home({ dispatch, tracks }) {
         <img src="/static/images/icon_feature.svg" /> If you see one of these along the way, click
         on it to learn more about Textract’s features.
       </p> */}
+
+      { showingTrackInfo ?
+        <TrackInfoModal
+          trackName={showingTrackInfo}
+          onNavigateToTrack={navigateToTrack}
+          onClose={clearTrackInfo}
+        />
+      : null }
     </div>
   )
 }

@@ -20,6 +20,9 @@ import {
   SET_SEARCH_QUERY,
   SET_SEARCH_STATUS,
   CLEAR_SEARCH_QUERY,
+  SET_SEARCH_PERSONA,
+  SET_DOCUMENT_SEARCH_QUERY,
+  CLEAR_DOCUMENT_SEARCH_QUERY
 } from '../../../constants/action-types'
 
 /**
@@ -51,8 +54,26 @@ export const clearSearchQuery = createAction(CLEAR_SEARCH_QUERY, () => {
 })
 
 /**
+ * Set the search query
+ */
+export const setDocumentSearchQuery = createAction(SET_DOCUMENT_SEARCH_QUERY, searchQuery => {
+  return { meta: { documentSearchQuery: searchQuery.replace(/ {2,}/g, ' ') } }
+})
+
+/**
+ * Clear the search query
+ */
+export const clearDocumentSearchQuery = createAction(CLEAR_DOCUMENT_SEARCH_QUERY, () => {
+  return { meta: { documentSearchQuery: '' } }
+})
+
+/**
  * Set the search status
  */
 export const setSearchStatus = createAction(SET_SEARCH_STATUS, searchStatus => {
   return { meta: { searchStatus } }
+})
+
+export const setSearchPersona = createAction(SET_SEARCH_PERSONA, persona => {
+  return { meta: { searchPersona: persona } }
 })

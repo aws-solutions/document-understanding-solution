@@ -14,9 +14,12 @@
 
 import boto3
 from botocore.exceptions import ClientError
+from botocore.config import Config
 import json
 import threading
 from helper import S3Helper
+import time
+
 
 # current service limit of Comprehend per page
 MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
@@ -24,6 +27,8 @@ MAX_COMPREHEND_UTF8_PAGE_SIZE = 5000
 # Comprehend batch API call has a limit of 25
 PAGES_PER_BATCH = 15
 
+# maximum retries for comprehend and comprehend medical API call
+MAX_API_RETRIES = 6
 
 class ComprehendHelper:
 
@@ -89,102 +94,101 @@ class ComprehendHelper:
     # thread execution calling Comprehend synchronously by batch of up to
     # 25 pages
     #
+    
     def batchComprehendDetectEntitiesSync(self,
                                           rawPages,
                                           pagesToProcess,
                                           pageStartIndex,
                                           comprehendEntities):
 
-        try:
-            client = boto3.client('comprehend')
+        config = Config(
+                        retries = {
+                        'max_attempts': MAX_API_RETRIES,
+                        'mode': 'standard'
+                        }
+        )
+                        
+        client = boto3.client('comprehend', config=config)
+        
+        textPages = []
+        endIndex = pageStartIndex + pagesToProcess
 
-            textPages = []
-            endIndex = pageStartIndex + pagesToProcess
+        for i in range(pageStartIndex, endIndex):
+            textPages.append(rawPages[i])
 
-            for i in range(pageStartIndex, endIndex):
-                textPages.append(rawPages[i])
+        # service limit is around 10tps, sdk implements 3 retries with backoff
+        # if that's not enough then fail
+        response = client.batch_detect_entities(
+            TextList=textPages,
+            LanguageCode="en")
 
-            # service limit is around 10tps, sdk implements 3 retries with backoff
-            # if that's not enough then fail
-            response = client.batch_detect_entities(
-                TextList=textPages,
-                LanguageCode="en")
-
-            # store results
-            for i in range(0, pagesToProcess):
-                comprehendEntities[pageStartIndex +
-                                   i] = response['ResultList'][i]
-
-        except ClientError as e:
-            print("batchComprehendDetectEntitiesSync ClientError: %s" % e)
-        except Exception as e:
-            print("batchComprehendDetectEntitiesSync Exception: %s" % e)
-        except:
-            print("batchComprehendDetectEntitiesSync exception")
-
+        # store results
+        for i in range(0, pagesToProcess):
+            comprehendEntities[pageStartIndex +
+                               i] = response['ResultList'][i]
+    
     #
     # thread execution calling ComprehendMedical Entities synchronously for each page
     #
-
+    
     def comprehendMedicalDetectEntitiesSync(self,
                                             rawPages,
                                             index,
                                             comprehendMedicalEntities,
                                             mutex):
+        config = Config(
+                        retries = {
+                        'max_attempts': MAX_API_RETRIES,
+                        'mode': 'standard'
+                        }
+        )
+                        
+        client = boto3.client('comprehendmedical', config=config)
+    
+        # service limit is 10tps, sdk implements 3 retries with backoff
+        # if that's not enough then fail
+        response = client.detect_entities_v2(Text=rawPages[index])
 
-        try:
-            client = boto3.client('comprehendmedical')
+        # save results for later processing
+        if 'Entities' not in response:
+            return
 
-            # service limit is 10tps, sdk implements 3 retries with backoff
-            # if that's not enough then fail
-            response = client.detect_entities_v2(Text=rawPages[index])
+        mutex.acquire()
+        comprehendMedicalEntities[index] = response['Entities']
+        mutex.release()
 
-            # save results for later processing
-            if 'Entities' not in response:
-                return
-
-            mutex.acquire()
-            comprehendMedicalEntities[index] = response['Entities']
-            mutex.release()
-
-        except ClientError as e:
-            print("comprehendMedicalDetectEntitiesSync ClientError: %s" % e)
-        except Exception as e:
-            print("comprehendMedicalDetectEntitiesSync Exception: %s" % e)
-        except:
-            print("comprehendMedicalDetectEntitiesSync exception")
-
+    
     #
     # thread execution calling ComprehendMedical ICD10 synchronously for each page
     #
-
+    
     def comprehendMedicalDetectICD10Sync(self,
                                          rawPages,
                                          index,
                                          comprehendMedicalICD10,
                                          mutex):
 
-        try:
-            client = boto3.client('comprehendmedical')
+        config = Config(
+                        retries = {
+                        'max_attempts': MAX_API_RETRIES,
+                        'mode': 'standard'
+                        }
+        )
 
-            # service limit is 10tps, sdk implements 3 retries with backoff
-            # if that's not enough then fail
-            response = client.infer_icd10_cm(Text=rawPages[index])
+        client = boto3.client('comprehendmedical', config=config)
             
-            # save results for later processing
-            if 'Entities' not in response:
-                return
+        # service limit is 10tps, sdk implements 3 retries with backoff
+        # if that's not enough then fail
+        response = client.infer_icd10_cm(Text=rawPages[index])
+        
+        # save results for later processing
+        if 'Entities' not in response:
+            return
 
-            mutex.acquire()
-            comprehendMedicalICD10[index] = response['Entities']
-            mutex.release()
+        mutex.acquire()
+        comprehendMedicalICD10[index] = response['Entities']
+        mutex.release()
 
-        except ClientError as e:
-            print("comprehendMedicalDetectICD10Sync ClientError: %s" % e)
-        except Exception as e:
-            print("comprehendMedicalDetectICD10Sync Exception: %s" % e)
-        except:
-            print("comprehendMedicalDetectICD10Sync exception")
 
     #
     # processes all Comprehend results for all pages
@@ -375,7 +379,9 @@ class ComprehendHelper:
             numOfPages = maxPages
 
         # iterate over results page by page and extract raw text for comprehend
-        rawPages = [""] * numOfPages
+        # initialize rawPages with atleast a 1 character string helps prevent errors produced by comprehend and comprehend medical
+        # comprehend and comprehend medical need text with atleast 1 character and infer_icd10_cm() needs a non empty string
+        rawPages = ["."] * numOfPages
         if self.extractTextByPages(textract, rawPages, numOfPages) == False:
             return False
 
@@ -445,12 +451,12 @@ class ComprehendHelper:
             for index, thread in enumerate(threads):
                 thread.join()
 
-            print("all threads joined...")
+            print("All threads joined...")
 
             # check success of threads
             for i in range(pageStartIndex, pagesToProcess):
                 if (comprehendEntities[pageStartIndex + i] == None) or (comprehendMedicalEntities[pageStartIndex + i] == None):
-                    print("a page failed to process" + str(i))
+                    print("Page failed to process" + str(i))
                     return False
 
             # increment the number of pages processed for the next batch

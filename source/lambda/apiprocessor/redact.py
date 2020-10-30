@@ -79,9 +79,7 @@ def parseTables(table):
   tables = []
   tablesIndex = -1
   rowIndex = 1
-  print(table)
   for row in table:
-    print(row)
     if(len(row) == 1 and row[0] == 'Table'):
       tablesIndex += 1
       rowIndex = 1
@@ -242,7 +240,6 @@ def form(request):
   comprehend = getComprehend()
   document = getPageForm(request)
   textractResponse = parseKey(document, 'textractResponse', [])
-  print(textractResponse)
   pairs = list(map(lambda pair:
     {"key":
       {

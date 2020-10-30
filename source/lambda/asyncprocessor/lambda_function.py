@@ -66,7 +66,7 @@ def processRequest(request):
 
     output = ""
 
-    print("request: {}".format(request))
+    print("Request: {}".format(request))
     
     bucketName = request['bucketName']
     objectName = request['objectName']
@@ -92,12 +92,11 @@ def processRequest(request):
 
 def lambda_handler(event, context):
 
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     
     message = json.loads(event['Records'][0]['body'])
     
-    print("Message: {}".format(message))
-
+    
     request = {}
     request["documentId"] = message['documentId']
     request["bucketName"] = message['bucketName']

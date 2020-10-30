@@ -12,56 +12,114 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { connect } from 'react-redux'
 import Link from 'next/link'
 import PropTypes from 'prop-types'
 import Router from 'next/router'
 import { Auth } from 'aws-amplify'
+import cs from 'classnames'
 
 import Button from '../Button/Button'
+import LinkWithClickHandler from '../LinkWithClickHandler/LinkWithClickHandler'
 
 import { getHeaderProps } from '../../store/ui/selectors'
 
 import css from './Header.scss'
+import { clearSearchQuery, setSearchPersona } from '../../store/entities/meta/actions'
 
 Header.propTypes = {
-  backHref: PropTypes.string,
-  heading: PropTypes.string,
+  showNavigation: PropTypes.bool,
+  backButton: PropTypes.bool
 }
 
-function Header({ backHref, backTitle, heading }) {
+function Header({ showNavigation, backButton, dispatch }) {
+
+  const [ menuOpen, setMenuOpen ] = useState(false);
+
+  const toggleMenu = useCallback(() => {
+    setMenuOpen(open => !open);
+  }, [])
+
+  const clearSearch = useCallback(() => {
+    dispatch(clearSearchQuery());
+    dispatch(setSearchPersona(undefined));
+    setMenuOpen(false);
+  }, [])
+
   return (
     <header className={css.header}>
       <div>
+        <a className={cs(css.mobileMenuLink, menuOpen && css.open)} onClick={toggleMenu} />
         <Link href="/home">
           <a className={css.logoLink}>
-            <img className={css.logo} src="/static/images/logo_aws.svg" alt="AWS" />
+            <img className={css.logo} src="/static/images/DUS_DEMO_logo_WhiteBG.svg" alt="AWS" />
           </a>
         </Link>
 
-        {backHref && (
-          <Link href={backHref}>
+        {showNavigation && (
+          <div className={css.hideMobile}>
+            <LinkWithClickHandler href="/documents" onClick={clearSearch}>
+              <a className={css.backButton}>
+                Document list
+              </a>
+            </LinkWithClickHandler>
+            {' | '}
+            <Link href="/select">
+              <a className={css.backButton}>
+                Upload your own documents
+              </a>
+            </Link>
+          </div>
+        )}
+
+        {backButton && (
+          <LinkWithClickHandler href="/documents" onClick={clearSearch}>
             <a className={css.backButton}>
-              {backTitle}
+              Start a new search
             </a>
-          </Link>
+          </LinkWithClickHandler>
         )}
       </div>
-
-      <h1>{heading}</h1>
-       
-      
 
       <div className={css.logoutlink}>
         <Button className={css.borderlessButton} inverted onClick={handleLogoutClick}>Log Out</Button>
       </div>
+
+      <div className={cs(css.mobileMenu, menuOpen && css.open)}>
+        {showNavigation && (
+          <>
+            <LinkWithClickHandler href="/documents" onClick={clearSearch}>
+              <a>
+                Document list
+              </a>
+            </LinkWithClickHandler>
+            <LinkWithClickHandler href="/select" onClick={toggleMenu}>
+              <a>
+                Upload your own documents
+              </a>
+            </LinkWithClickHandler>
+          </>
+        )}
+
+        {backButton && (
+          <LinkWithClickHandler href="/documents" onClick={clearSearch}>
+            <a>
+              Start a new search
+            </a>
+          </LinkWithClickHandler>
+        )}
+
+        <Button inverted onClick={handleLogoutClick}>Log Out</Button>
+      </div>
+
+      {menuOpen && <div className={css.menuOverlay} onClick={toggleMenu} />}
     </header>
   )
 }
 
-export default connect(function mapStateToProps(state) {
-  return { ...getHeaderProps(state) }
+export default connect(function mapStateToProps(state, { ...originalProps }) {
+  return { ...getHeaderProps(state), ...originalProps }
 })(Header)
 
 async function handleLogoutClick(e) {

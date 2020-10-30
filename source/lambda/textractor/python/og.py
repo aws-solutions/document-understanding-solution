@@ -176,18 +176,19 @@ class OutputGenerator:
                 }
 
                 # add comprehend entities while indexing the document
-                for key, val in entitiesToIndex.items():
-                    key = key.lower()
-                    if(key == "date"):
-                        for date in val:
-                            date_object = format_date(date)
-                            if(date_object!= UNSUPPORTED_DATE_FORMAT):
-                                if(key not in document):
-                                    document[key] = []
-                                document[key].append(date_object.strftime("%Y-%m-%d"))
-                        print("Document with Converted dates: {}".format(document))
-                    else:
-                        document[key] = val
+                if entitiesToIndex:
+                    for key, val in entitiesToIndex.items():
+                        key = key.lower()
+                        if(key == "date"):
+                            for date in val:
+                                date_object = format_date(date)
+                                if(date_object!= UNSUPPORTED_DATE_FORMAT):
+                                    if(key not in document):
+                                        document[key] = []
+                                    document[key].append(date_object.strftime("%Y-%m-%d"))
+                            print("Document with Converted dates: {}".format(document))
+                        else:
+                            document[key] = val
                     
                 try:
                     if not es_index_client.exists(index='textract'):
@@ -201,20 +202,17 @@ class OutputGenerator:
                                     }
                                 },
                                 "mappings":{
-                                    "document":{
-                                        "properties":{
-                                        "date":{ 
-                                            "type": "date",
-                                            "format": "M'/'dd'/'yyyy||date||year||year_month||dd MMM yyyy||dd'/'MM'/'yyyy||yyyy'/'MM'/'dd||dd'/'MM'/'YY||year_month_day||MM'/'dd'/'yy||dd MMM||MM'/'yyyy||M-dd-yyyy||MM'/'dd'/'yyyy||M||d'/'MM'/'yyyy||MM'/'dd'/'yy"
-                                        }
+                                    "properties":{
+                                    "date":{
+                                        "type": "date",
+                                        "format": "M'/'dd'/'yyyy||date||year||year_month||dd MMM yyyy||dd'/'MM'/'yyyy||yyyy'/'MM'/'dd||dd'/'MM'/'YY||year_month_day||MM'/'dd'/'yy||dd MMM||MM'/'yyyy||M-dd-yyyy||MM'/'dd'/'yyyy||M||d'/'MM'/'yyyy||MM'/'dd'/'yy"
                                     }
                                 }
                             }
                         }
                     )
 
-                    es.index(index="textract", doc_type="document",
-                            id=self.documentId, body=json.loads(json.dumps(document)))
+                    es.index(index="textract", id=self.documentId, body=document)
 
                     print("Indexed document: {}".format(self.objectName))
                 except Exception as E:

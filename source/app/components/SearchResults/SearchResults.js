@@ -12,7 +12,7 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import classNames from 'classnames'
 import Link from 'next/link'
 import PropTypes from 'prop-types'
@@ -45,6 +45,7 @@ export default function SearchResults({
   searchStatus,
   searchTotalDocuments,
   searchTotalMatches,
+  isComparing,
   ...rest
 }) {
   const searchResultsClassNames = classNames(css.searchResults, className)
@@ -52,8 +53,20 @@ export default function SearchResults({
 
   if (!searchStatus || !searchQuery) return null
 
+  const highlightRegex = useMemo(() => {
+    const words = searchQuery.split(/\W+/).filter(Boolean).map(x => `\\b${x}\\b`)
+    return new RegExp('(?:' + words.join('|') + ')', 'i');
+  }, [ searchQuery ])
+
   return (
     <nav className={searchResultsClassNames} {...rest}>
+      <header className={classNames(isComparing && css.comparing)}>
+        <h2>Amazon Elasticsearch Service{!isComparing ? ' Results' : ''}</h2>
+        { isComparing ?
+          <p>Keyword search results</p>
+        : null }
+      </header>
+
       {!isQueryLongEnough && (
         <p className={css.noContent}>
           Enter a search query longer than {MIN_SEARCH_QUERY_LENGTH - 1} characters to initiate a
@@ -75,8 +88,6 @@ export default function SearchResults({
         </div>
       )}
 
-      {searchStatus === 'pending' && isQueryLongEnough && <Loading />}
-
       {searchStatus === 'success' && isQueryLongEnough && (
         <ul>
           {results.map(({ documentId: id, count, name, lines }) => {
@@ -86,26 +97,12 @@ export default function SearchResults({
                 <Link {...makeDocumentLink(id)}>
                   <a>
                     <header>
-                      <svg
-                        height="24"
-                        viewBox="0 0 24 24"
-                        width="24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="m11.9999259 2.01129642v7.35237875.81817933h7.9707628l.0290631 10.8154583c.0014841.5522828-.4450265 1.0011995-.9973092 1.0026836-.0008958.0000024-.0017915.0000036-.0026872.0000036h-13.9997554c-.55228475 0-1-.4477153-1-1v-17.99982331c0-.55228475.44771525-1 1-1 .00052958 0 .00105915.00000042.00158873.00000126zm1.5999851.22400401 5.9122424 6.31019543h-5.9122424z"
-                          fillRule="evenodd"
-                        />
-                      </svg>
-                      <h3>{name}</h3>
-                      <p className={css.count}>
-                        {`About  ${count} `} {count === 1 ? 'match' : 'matches'}
-                      </p>
+                      <h3><Highlight search={highlightRegex}>{name}</Highlight></h3>
                     </header>
                     <ul className={css.lines}>
                       {lines.slice(0, 4).map((line, i) => (
                         <li key={i}>
-                          &hellip;<Highlight search={searchQuery}>{line}</Highlight>&hellip;
+                          &hellip;<Highlight search={highlightRegex}>{line}</Highlight>&hellip;
                         </li>
                       ))}
                     </ul>

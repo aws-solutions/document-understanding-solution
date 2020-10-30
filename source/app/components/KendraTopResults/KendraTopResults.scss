@@ -1,0 +1,65 @@
+@import '../../styles/shared/index';
+
+.topResults {
+  border: 1px solid color(gray, 60);
+  background: color(gray, 70);
+  border-radius: 1em;
+
+  > header {
+    padding: 1em 1.5em;
+    border-bottom: inherit;
+  }
+
+  h2 {
+    font-size: 1em;
+    color: color(gray, 60);
+    margin: 0;
+    padding: 0;
+  }
+
+  > header a {
+    color: $link-blue;
+    margin-left: 1em;
+    font-style: italic;
+    font-weight: normal;
+
+    img {
+      position: relative;
+      top: .2em;
+      margin-right: .5em;
+    }
+  }
+}
+
+.results {
+  padding: 1em;
+  padding-top: 0;
+}
+
+.result {
+  padding: 1em 0.5em;
+
+  p {
+    @include type-body-secondary(color(gray, 20));
+    margin: .25em 0 0;
+    line-clamp: 5;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
+  }
+}
+
+.showMore {
+  cursor: pointer;
+
+  &:before {
+    content: '▶\fe0e';
+    margin-right: 1em;;
+  }
+
+  &.expanded:before {
+    content: '▼'
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "cicd-helper",
+  "version": "0.0.1",
+  "description": "creates commit in users account with document understanding code artifact",
+  "author": {
+    "name": "aws-solutions-builder"
+  },
+  "dependencies": {
+    "aws-sdk": "*",
+    "adm-zip": "^0.4.13",
+    "logger": "file:../logger"
+  },
+  "main": "index.js",
+  "scripts": {
+    "build:init": "rm -rf package-lock.json && rm -rf dist && rm -rf node_modules",
+    "build:zip": "npm install && zip -rq ../document-understanding-cicd.zip . -x template.yml",
+    "build:dist": "mkdir dist && mv document-understanding-cicd.zip dist/",
+    "build": "npm run build:init && npm install --production && npm run build:zip && npm run build:dist"
+  }
+}

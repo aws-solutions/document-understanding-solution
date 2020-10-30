@@ -18,16 +18,31 @@ $header-bg-color: color(gray, 90);
   justify-content: space-between;
   align-items: center;
 
+  @include media('<=tabletPortraitSmall') {
+    height: 50px;
+    min-height: 0;
+    padding: 0.6rem;
+  }
+
   > div {
     display: flex;
     flex-direction: row;
     align-items: center;
+
+    &:first-child {
+      flex: 1 1 0px;
+    }
   }
 
   // Logo
   .logoLink {
     line-height: 0;
     z-index: 3;
+
+    img {
+      height: 38px;
+      max-width: 100%;
+    }
   }
 
   // Primary Heading
@@ -42,8 +57,8 @@ $header-bg-color: color(gray, 90);
   .backButton {
     z-index: 3;
     text-decoration: none;
-    margin-left: 2em;
-    color: color(orange, 20);
+    margin: 0 1em;
+    color: $link-blue;
     font-weight: bold;
   }
 
@@ -60,12 +75,6 @@ $header-bg-color: color(gray, 90);
       stroke: color(orange, 20);
     }
   }
-
-  @include media('<=tabletPortraitSmall') {
-    > .logo {
-      width: rem(48);
-    }
-  }
 }
 
 .logoutlink {
@@ -79,14 +88,100 @@ $header-bg-color: color(gray, 90);
 
   @include media('<=tabletPortraitSmall') {
     margin-top: 0.5rem;
+
+    > * {
+      min-width: 0;
+    }
   }
 }
 .borderlessButton {
   border-style: none;
 }
-.backButtons {
-  > * + * {
-    margin-left: rem(10);
-    margin-left: 10;
+
+.backButton, .logoutlink, .hideMobile {
+  @include media('<=tabletPortraitSmall') {
+    display: none !important;
   }
+}
+
+.mobileMenuLink {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+  position: relative;
+
+  @include media('>tabletPortraitSmall') {
+    display: none;
+  }
+
+  &:before, &:after {
+    position: absolute;
+    left: 50%;
+    height: 2px;
+    background: #fff;
+    width: 100%;
+    content: '';
+    transform: translateX(-50%);
+    transition: all 200ms ease;
+  }
+
+  &:before {
+    top: 7px;
+  }
+
+  &:after {
+    top: 15px;
+  }
+
+  &.open {
+    &:before, &:after {
+      top: 11px;
+    }
+
+    &:before {
+      transform: translateX(-50%)rotate(45deg);
+    }
+
+    &:after {
+      transform: translateX(-50%)rotate(-45deg);
+    }
+  }
+}
+
+.mobileMenu {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  background: $header-bg-color;
+  z-index: 1000;
+  flex-direction: column !important;
+  display: none !important;
+
+  &.open {
+    display: flex !important;
+  }
+
+  > * {
+    display: block;
+    border: none;
+    margin: 0;
+    width: 100%;
+    text-align: left;
+    padding: 1em !important;
+    text-decoration: none;
+    color: $link-blue !important;
+    font-weight: bold;
+    font-size: 1em;
+  }
+}
+
+.menuOverlay {
+  position: fixed;
+  top: 50px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 999;
 }

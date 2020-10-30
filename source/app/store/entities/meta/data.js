@@ -23,6 +23,7 @@ export default {
   documentsNextToken: null,
   documentsTotal: 0,
   searchQuery: '',
+  searchPersona: undefined,
   searchStatus: '',
   searchTotalDocuments: 0,
   searchTotalMatches: 0,

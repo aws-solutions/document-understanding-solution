@@ -62,6 +62,7 @@ $button-palettes: (
 
   @include media('<=tabletPortraitSmall') {
     font-size: rem(14);
+    min-width: rem(70);
   }
 }
 

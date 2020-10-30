@@ -20,11 +20,13 @@ from helper import AwsHelper, S3Helper, DynamoDBHelper
 from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX,PUBLIC_PATH_S3_PREFIX
 import datastore
 from comprehendHelper import ComprehendHelper
+from kendraHelper import KendraHelper
 
 def generatePdf(documentId, bucketName, objectName, responseBucketName, outputPath):
 
     responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
-    outputDocumentName = "{}searchable-pdf.pdf".format(outputPath)
+    fileName = os.path.basename(objectName).split(".")[0]
+    outputDocumentName = "{}{}-searchable.pdf".format(outputPath,fileName)
 
     data = {}
     data["bucketName"] = bucketName
@@ -43,8 +45,8 @@ def generatePdf(documentId, bucketName, objectName, responseBucketName, outputPa
         Payload=json.dumps(data)
     )
 
-    print(response["Payload"].read())
 
+    
 
 def callTextract(bucketName, objectName, detectText, detectForms, detectTables):
     textract = AwsHelper().getClient('textract')
@@ -106,8 +108,21 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
     responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
     comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, maxPages)
 
-    print("DocumentId: {}".format(documentId))
-    print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))
+    # if Kendra is available then let it index the document
+    # index the searchable pdf in Kendra
+    if 'KENDRA_INDEX_ID' in os.environ :
+        kendraClient = KendraHelper()
+        fileName = os.path.basename(objectName).split(".")[0]
+        fileExtension = os.path.basename(objectName).split(".")[1]
+        outputDocumentName = "{}{}-searchable.pdf".format(outputPath, fileName)
+        kendraClient.indexDocument(os.environ['KENDRA_INDEX_ID'],
+                                   os.environ['KENDRA_ROLE_ARN'],
+                                   outputBucketName,
+                                   outputDocumentName,
+                                   documentId,
+                                   fileExtension)
+
+    print("Processed Comprehend data for document: {}".format(documentId))
 
     for key, val in opg_output[KVPAIRS].items():
         if key not in comprehendAndMedicalEntities:
@@ -126,7 +141,7 @@ def processRequest(request):
 
     output = ""
 
-    print("request: {}".format(request))
+    print("Request: {}".format(request))
 
     bucketName = request['bucketName']
     objectName = request['objectName']
@@ -156,7 +171,7 @@ def processRequest(request):
 
 def lambda_handler(event, context):
 
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     message = json.loads(event['Records'][0]['body'])
     print("Message: {}".format(message))
 

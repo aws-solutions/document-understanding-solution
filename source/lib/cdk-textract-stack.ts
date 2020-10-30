@@ -1,4 +1,4 @@
-/**********************************************************************************************************************
+  /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
  *  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    *
@@ -18,10 +18,12 @@ import iam = require("@aws-cdk/aws-iam");
 import lambda = require("@aws-cdk/aws-lambda");
 import kms = require("@aws-cdk/aws-kms");
 import s3 = require("@aws-cdk/aws-s3");
+import s3deploy = require("@aws-cdk/aws-s3-deployment");
 import sns = require("@aws-cdk/aws-sns");
 import snsSubscriptions = require("@aws-cdk/aws-sns-subscriptions");
 import sqs = require("@aws-cdk/aws-sqs");
 import apigateway = require("@aws-cdk/aws-apigateway");
+import ec2 = require("@aws-cdk/aws-ec2");
 import {
   DynamoEventSource,
   SqsEventSource,
@@ -45,13 +47,19 @@ import { BucketEncryption, BlockPublicAccess } from "@aws-cdk/aws-s3";
 import { QueueEncryption } from "@aws-cdk/aws-sqs";
 import { LogGroup } from "@aws-cdk/aws-logs";
 import { LogGroupLogDestination } from "@aws-cdk/aws-apigateway";
+import * as s3n from "@aws-cdk/aws-s3-notifications";
+import { CustomResource, Duration } from "@aws-cdk/core";
+import * as cr from "@aws-cdk/custom-resources";
+import { Runtime } from "@aws-cdk/aws-lambda";
+import { Peer, Port } from "@aws-cdk/aws-ec2";
 
-const API_CONCURRENT_REQUESTS = 20; //approximate number of 1-2 page documents to be processed in parallell
+const API_CONCURRENT_REQUESTS = 30; //approximate number of 1-2 page documents to be processed parallelly
 
 export interface TextractStackProps {
   email: string;
   isCICDDeploy: boolean;
   description: string;
+  enableKendra: boolean;
 }
 
 export class CdkTextractStack extends cdk.Stack {
@@ -101,7 +109,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("LogsS3Bucket"),
       {
-        bucketName: this.resourceName("logs-s3-bucket"),
         accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
         versioned: false,
         encryption: BucketEncryption.S3_MANAGED,
@@ -113,7 +120,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("DocumentsS3Bucket"),
       {
-        bucketName: this.resourceName("document-s3-bucket"),
         versioned: false,
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
@@ -127,7 +133,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("SamplesS3Bucket"),
       {
-        bucketName: this.resourceName("sample-s3-bucket"),
         versioned: false,
         cors: [corsRule],
         encryption: BucketEncryption.S3_MANAGED,
@@ -137,6 +142,23 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+    const bulkProcessingBucket = new s3.Bucket(
+      this,
+      this.resourceName("BulkProcessingBucket"),
+      {
+        versioned: false,
+        cors: [corsRule],
+        encryption: BucketEncryption.S3_MANAGED,
+        serverAccessLogsBucket: logsS3Bucket,
+        serverAccessLogsPrefix: "bulk-processing-s3-bucket",
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+        lifecycleRules: [
+          {
+            expiration: Duration.days(3),
+          },
+        ],
+      }
+    );
     // ### Client ###
 
     const clientAppS3Bucket = new s3.Bucket(
@@ -233,6 +255,22 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
+    /****                      VPC Configuration                         ****/
+
+    const vpc = new ec2.Vpc(this, this.resourceName('ElasticSearchVPC'), {
+      cidr: "172.62.0.0/16"
+    })
+
+    const subnetIds = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE}).subnetIds;
+
+    const securityGroup = new ec2.SecurityGroup(this, this.resourceName('ESSecurityGroup'), {
+      allowAllOutbound: true,
+      vpc: vpc,
+      securityGroupName: "Elasticsearch from lambda"
+    })
+
+    securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
+
     const esSearchLogGroup = new LogGroup(
       this,
       this.resourceName("ElasticSearchSearchLogGroup"),
@@ -261,7 +299,7 @@ export class CdkTextractStack extends cdk.Stack {
         this,
         this.resourceName("ElasticSearchCluster"),
         {
-          elasticsearchVersion: "6.5",
+          elasticsearchVersion: "7.4",
           elasticsearchClusterConfig: {
             instanceType: "m5.large.elasticsearch",
           },
@@ -284,7 +322,7 @@ export class CdkTextractStack extends cdk.Stack {
         this,
         this.resourceName("ElasticSearchCluster"),
         {
-          elasticsearchVersion: "6.5",
+          elasticsearchVersion: "7.4",
           elasticsearchClusterConfig: {
             instanceType: "m5.large.elasticsearch",
             instanceCount: 2,
@@ -306,6 +344,10 @@ export class CdkTextractStack extends cdk.Stack {
           nodeToNodeEncryptionOptions: {
             enabled: true,
           },
+          vpcOptions: {
+            subnetIds: [subnetIds[0], subnetIds[1]],
+            securityGroupIds: [securityGroup.securityGroupId]
+          }
         }
       );
     }
@@ -390,6 +432,60 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     // SQS queues
+
+    const documentBulkProcessingDLQueue = new sqs.Queue(
+      this,
+      this.resourceName("BulkProcessorJobsDLQ"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(120),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED,
+      }
+    );
+
+    const bulkProcessingKey = new kms.Key(
+      this,
+      this.resourceName("bulkProcessorKey"),
+      {
+        enableKeyRotation: true,
+      }
+    );
+    bulkProcessingKey.addToResourcePolicy(
+      new iam.PolicyStatement({
+        actions: ["kms:GenerateDataKey", "kms:Decrypt"],
+        resources: [`*`],
+        principals: [new iam.ServicePrincipal("s3.amazonaws.com")],
+      })
+    );
+    const documentBulkProcessingQueue = new sqs.Queue(
+      this,
+      this.resourceName("DocumentBulkProcessingQueue"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(600),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED,
+        encryptionMasterKey: bulkProcessingKey,
+        deadLetterQueue: {
+          maxReceiveCount: 3,
+          queue: documentBulkProcessingDLQueue,
+        },
+      }
+    );
+    documentBulkProcessingQueue.addToResourcePolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "sqs:SendMessage",
+          "sqs:GetQueueUrl",
+          "sqs:GetQueueAttributes",
+        ],
+        resources: [`*`],
+        principals: [
+          new iam.AccountPrincipal(this.account),
+          new iam.ServicePrincipal("s3.amazonaws.com"),
+        ],
+      })
+    );
+
     const syncJobsDLQueue = new sqs.Queue(
       this,
       this.resourceName("SyncJobsDLQ"),
@@ -488,7 +584,6 @@ export class CdkTextractStack extends cdk.Stack {
     // ####### Cognito User Authentication #######
 
     const textractUserPool = new CfnUserPool(this, "textract-user-pool", {
-      userPoolName: "textract-user-pool",
       autoVerifiedAttributes: ["email"],
       aliasAttributes: ["email"],
       mfaConfiguration: "OFF",
@@ -522,7 +617,7 @@ export class CdkTextractStack extends cdk.Stack {
                 </p>\
                 `,
         },
-        unusedAccountValidityDays: 60,
+        unusedAccountValidityDays: 7,
       },
     });
 
@@ -548,7 +643,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-user-pool-client",
       {
-        clientName: "textract_app",
         userPoolId: textractUserPool.ref,
       }
     );
@@ -557,7 +651,6 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       "textract-identity-pool",
       {
-        identityPoolName: "textractUserIdentityPool",
         allowUnauthenticatedIdentities: false,
         cognitoIdentityProviders: [
           {
@@ -648,7 +741,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     // If a local yarn deploy is used, the two lambdas draw their code from a local directory.
 
-    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3");
+    const yarnBotoLoc = lambda.Code.fromAsset("lambda/boto3/boto3-layer.zip");
 
     const yarnPDFLoc = lambda.Code.fromAsset("lambda/pdfgenerator");
 
@@ -693,6 +786,47 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     // Lambdas
+
+    const documentBulkProcessor = new lambda.Function(
+      this,
+      this.resourceName("DocumentBulkProcessor"),
+      {
+        runtime: lambda.Runtime.PYTHON_3_8,
+        code: lambda.Code.fromAsset("lambda/documentbulkprocessor"),
+        handler: "lambda_function.lambda_handler",
+        reservedConcurrentExecutions: 1,
+        timeout: cdk.Duration.seconds(300),
+        tracing: lambda.Tracing.ACTIVE,
+        environment: {
+          DOCUMENTS_BUCKET: documentsS3Bucket.bucketName,
+          OUTPUT_TABLE: outputTable.tableName,
+          DOCUMENTS_TABLE: documentsTable.tableName,
+        },
+      }
+    );
+    documentBulkProcessor.addLayers(helperLayer);
+    documentsTable.grantReadWriteData(documentBulkProcessor);
+    outputTable.grantReadWriteData(documentBulkProcessor);
+    documentsS3Bucket.grantReadWrite(documentBulkProcessor);
+    bulkProcessingBucket.grantReadWrite(documentBulkProcessor);
+
+    bulkProcessingBucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED_PUT,
+      new s3n.SqsDestination(documentBulkProcessingQueue),
+      { prefix: "documentDrop/" }
+    );
+    bulkProcessingBucket.addEventNotification(
+      s3.EventType.OBJECT_CREATED_COPY,
+      new s3n.SqsDestination(documentBulkProcessingQueue),
+      { prefix: "documentDrop/" }
+    );
+
+    documentBulkProcessor.addEventSource(
+      new SqsEventSource(documentBulkProcessingQueue, {
+        batchSize: 5,
+      })
+    );
+
     const documentProcessor = new lambda.Function(
       this,
       this.resourceName("TaskProcessor"),
@@ -702,15 +836,18 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(300),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
+        vpc: vpc
       }
     );
 
     documentProcessor.addLayers(helperLayer);
+    documentProcessor.addLayers(boto3Layer);
 
     //Trigger
     documentProcessor.addEventSource(
@@ -725,6 +862,8 @@ export class CdkTextractStack extends cdk.Stack {
     syncJobsQueue.grantSendMessages(documentProcessor);
     asyncJobsQueue.grantSendMessages(documentProcessor);
     jobErrorHandlerQueue.grantSendMessages(documentProcessor);
+    documentsS3Bucket.grantRead(documentProcessor);
+    samplesS3Bucket.grantRead(documentProcessor);
     //------------------------------------------------------------
 
     const jobErrorHandler = new lambda.Function(
@@ -736,6 +875,7 @@ export class CdkTextractStack extends cdk.Stack {
         reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 4),
         handler: "lambda_function.lambda_handler",
         timeout: cdk.Duration.seconds(60),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           DOCUMENTS_TABLE: documentsTable.tableName,
         },
@@ -766,6 +906,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
       }
     );
 
@@ -782,8 +923,9 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
@@ -791,6 +933,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
+        vpc: vpc
       }
     );
 
@@ -840,13 +983,15 @@ export class CdkTextractStack extends cdk.Stack {
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/asyncprocessor"),
         handler: "lambda_function.lambda_handler",
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
         timeout: cdk.Duration.seconds(120),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
           SNS_ROLE_ARN: textractServiceRole.roleArn,
         },
+        vpc: vpc,
       }
     );
 
@@ -882,8 +1027,9 @@ export class CdkTextractStack extends cdk.Stack {
         code: lambda.Code.asset("lambda/jobresultprocessor"),
         handler: "lambda_function.lambda_handler",
         memorySize: 2000,
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 2),
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
         timeout: cdk.Duration.seconds(900),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
@@ -891,6 +1037,7 @@ export class CdkTextractStack extends cdk.Stack {
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
         },
+        vpc: vpc,
       }
     );
 
@@ -1019,6 +1166,7 @@ export class CdkTextractStack extends cdk.Stack {
         handler: "lambda_function.lambda_handler",
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         timeout: cdk.Duration.seconds(60),
+        tracing: lambda.Tracing.ACTIVE,
         environment: {
           CONTENT_BUCKET: documentsS3Bucket.bucketName,
           SAMPLE_BUCKET: samplesS3Bucket.bucketName,
@@ -1026,6 +1174,7 @@ export class CdkTextractStack extends cdk.Stack {
           DOCUMENTS_TABLE: documentsTable.tableName,
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
         },
+        vpc: vpc,
       }
     );
 
@@ -1056,6 +1205,8 @@ export class CdkTextractStack extends cdk.Stack {
     );
     esEncryptionKey.grantEncryptDecrypt(apiProcessor);
 
+    // API
+
     // Log group for API logs
     const DUSApiLogGroup = new LogGroup(
       this,
@@ -1064,7 +1215,7 @@ export class CdkTextractStack extends cdk.Stack {
         logGroupName: this.resourceName("DUSApiLogGroup"),
       }
     );
-    // API
+
     const api = new apigateway.LambdaRestApi(
       this,
       this.resourceName("DUSAPI"),
@@ -1174,6 +1325,86 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
       })
     );
+
+    // add kendra index id to lambda environment in case of DUS+Kendra mode
+    if (props.enableKendra) {
+      let kendraResources = this.createandGetKendraRelatedResources(
+        boto3Layer,
+        logsS3Bucket,
+        documentsS3Bucket,
+        samplesS3Bucket,
+        bulkProcessingBucket
+      );
+      const kendraRoleArn = kendraResources["KENDRA_ROLE_ARN"];
+      const kendraIndexId = kendraResources["KENDRA_INDEX_ID"];
+      apiProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId);
+      apiProcessor.addEnvironment("KENDRA_ROLE_ARN", kendraRoleArn);
+      apiProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            "kendra:BatchPutDocument",
+            "kendra:SubmitFeedback",
+            "kendra:BatchDeleteDocument",
+            "kendra:Query",
+          ],
+          resources: [
+            "arn:aws:kendra:" + this.region + ":" + this.account + ":index/*",
+          ],
+        })
+      );
+      jobResultProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId);
+      jobResultProcessor.addEnvironment("KENDRA_ROLE_ARN", kendraRoleArn);
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            "kendra:BatchPutDocument",
+            "kendra:SubmitFeedback",
+            "kendra:BatchDeleteDocument",
+            "kendra:Query",
+          ],
+          resources: [
+            "arn:aws:kendra:" + this.region + ":" + this.account + ":index/*",
+          ],
+        })
+      );
+      jobResultProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn],
+        })
+      );
+      syncProcessor.addEnvironment("KENDRA_INDEX_ID", kendraIndexId);
+      syncProcessor.addEnvironment("KENDRA_ROLE_ARN", kendraRoleArn);
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: [
+            "kendra:BatchPutDocument",
+            "kendra:SubmitFeedback",
+            "kendra:BatchDeleteDocument",
+            "kendra:Query",
+          ],
+          resources: [
+            "arn:aws:kendra:" + this.region + ":" + this.account + ":index/*",
+          ],
+        })
+      );
+      syncProcessor.addToRolePolicy(
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          actions: ["iam:PassRole"],
+          resources: [kendraRoleArn],
+        })
+      );
+      const feedbackKendraResource = api.root.addResource("feedbackkendra");
+      addCorsOptionsAndMethods(feedbackKendraResource, ["POST"]);
+
+      const searchKendraResource = api.root.addResource("searchkendra");
+      addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
+    }
 
     /*** CFN NAG SUPPRESSIONS - These do not affect the functionality of the solution ***/
 
@@ -1305,15 +1536,326 @@ export class CdkTextractStack extends cdk.Stack {
     const apiDeployment = api.latestDeployment;
     const cfnDeployment = apiDeployment.node
       .defaultChild as apigateway.CfnDeployment;
-    cfnDeployment.cfnOptions.metadata = {
-      cfn_nag: {
-        rules_to_suppress: [
-          {
-            id: "W68",
-            reason: "No usage plan intended",
-          },
+  }
+  createandGetKendraRelatedResources(
+    boto3Layer: lambda.LayerVersion,
+    logsS3Bucket: s3.Bucket,
+    documentsS3Bucket: s3.Bucket,
+    samplesS3Bucket: s3.Bucket,
+    bulkProcessingBucket: s3.Bucket
+  ) {
+    const medicalDataBucket = new s3.Bucket(
+      this,
+      this.resourceName("MedicalDataBucket"),
+      {
+        accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+        versioned: false,
+        encryption: BucketEncryption.S3_MANAGED,
+        serverAccessLogsBucket: logsS3Bucket,
+        serverAccessLogsPrefix: "medical-data-bucket",
+        blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      }
+    );
+
+    new s3deploy.BucketDeployment(
+      this,
+      this.resourceName("MedicalDataDeployment"),
+      {
+        sources: [s3deploy.Source.asset("samples/KendraPdfs")],
+        destinationBucket: medicalDataBucket,
+      }
+    );
+    // Assets for Kendra Custom Resource
+    const kendraKMSKey = new kms.Key(
+      this,
+      this.resourceName("KendraIndexEncryptionKey"),
+      {
+        enableKeyRotation: true,
+      }
+    );
+
+    const kendraRole = new iam.Role(this, this.resourceName("DUSKendraRole"), {
+      assumedBy: new iam.ServicePrincipal("kendra.amazonaws.com"),
+    });
+
+    kendraRole.assumeRolePolicy?.addStatements(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["sts:AssumeRole"],
+        principals: [new iam.ServicePrincipal("kendra.amazonaws.com")],
+      })
+    );
+
+    kendraRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["cloudwatch:PutMetricData"],
+        resources: ["*"],
+        conditions: { StringEquals: { "cloudwatch:namespace": "AWS/Kendra" } },
+      })
+    );
+
+    kendraRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["logs:DescribeLogGroups"],
+        resources: ["*"],
+        conditions: { StringEquals: { "cloudwatch:namespace": "AWS/Kendra" } },
+      })
+    );
+
+    kendraRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["logs:CreateLogGroup"],
+        resources: [
+          "arn:aws:logs:" +
+            this.region +
+            ":" +
+            this.account +
+            ":log-group:/aws/kendra/*",
         ],
-      },
+      })
+    );
+
+    kendraRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "logs:DescribeLogStreams",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ],
+        resources: [
+          "arn:aws:logs:" +
+            this.region +
+            ":" +
+            this.account +
+            ":log-group:/aws/kendra/*:log-stream:*",
+        ],
+      })
+    );
+
+    kendraRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["s3:GetObject", "s3:ListBucket"],
+        resources: [
+          medicalDataBucket.bucketArn,
+          `${medicalDataBucket.bucketArn}/*`,
+          documentsS3Bucket.bucketArn,
+          `${documentsS3Bucket.bucketArn}/*`,
+          samplesS3Bucket.bucketArn,
+          `${samplesS3Bucket.bucketArn}/*`,
+        ],
+      })
+    );
+    const onEventKendraIndexLambda = new lambda.Function(
+      this,
+      this.resourceName("OnEventKendraIndexHandler"),
+      {
+        code: lambda.Code.fromAsset("lambda/customResourceKendraIndex/"),
+        description: "onEvent handler for creating Kendra index",
+        runtime: lambda.Runtime.PYTHON_3_8,
+        handler: "lambda_function.lambda_handler",
+        timeout: Duration.minutes(15),
+        environment: {
+          KENDRA_ROLE_ARN: kendraRole.roleArn,
+          KMS_KEY_ID: kendraKMSKey.keyId,
+          KENDRA_INDEX_CLIENT_TOKEN: this.uuid.toLowerCase(),
+        },
+      }
+    );
+
+    kendraKMSKey.grantEncryptDecrypt(onEventKendraIndexLambda);
+    onEventKendraIndexLambda.addLayers(boto3Layer);
+
+    onEventKendraIndexLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["kendra:CreateIndex", "kendra:TagResource"], // CreateIndex operation requires to specify "*" in resources. Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazonkendra.html#amazonkendra-index
+        resources: ["*"],
+      })
+    );
+    onEventKendraIndexLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "kendra:DeleteIndex",
+          "kendra:DescribeIndex",
+          "kendra:UpdateIndex",
+        ],
+        resources: [
+          "arn:aws:kendra:" + this.region + ":" + this.account + ":index/*",
+        ],
+      })
+    );
+    onEventKendraIndexLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "kms:ListKeys",
+          "kms:ListAliases",
+          "kms:DescribeKey",
+          "kms:CreateGrant",
+        ],
+        resources: [
+          "arn:aws:kms:" +
+            this.region +
+            ":" +
+            this.account +
+            ":key/" +
+            kendraKMSKey.keyId,
+        ],
+      })
+    );
+
+    onEventKendraIndexLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["iam:PassRole"],
+        resources: [kendraRole.roleArn],
+      })
+    );
+
+    const isCompleteKendraIndexLambda = new lambda.Function(
+      this,
+      this.resourceName("isCompleteKendraIndexPoller"),
+      {
+        code: lambda.Code.fromAsset("lambda/kendraIndexPoller"),
+        description: "isComplete handler to check for Kendra Index creation",
+        runtime: lambda.Runtime.PYTHON_3_8,
+        handler: "lambda_function.lambda_handler",
+        timeout: Duration.minutes(15),
+      }
+    );
+
+    isCompleteKendraIndexLambda.addLayers(boto3Layer);
+
+    isCompleteKendraIndexLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["kendra:DescribeIndex"],
+        resources: [
+          "arn:aws:kendra:" + this.region + ":" + this.account + ":index/*",
+        ],
+      })
+    );
+
+    isCompleteKendraIndexLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["kendra:ListIndices"], // ListIndices operation requires to list "*" in resources. https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazonkendra.html#amazonkendra-index
+        resources: ["*"],
+      })
+    );
+
+    isCompleteKendraIndexLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["iam:PassRole"],
+        resources: [kendraRole.roleArn],
+      })
+    );
+
+    const kendraIndexProvider = new cr.Provider(
+      this,
+      this.resourceName("KendraIndexProvider"),
+      {
+        onEventHandler: onEventKendraIndexLambda,
+        isCompleteHandler: isCompleteKendraIndexLambda,
+        totalTimeout: Duration.hours(1),
+        queryInterval: Duration.minutes(1),
+      }
+    );
+
+    const kendraIndexCustomResource = new CustomResource(
+      this,
+      this.resourceName("kendraIndexCustomResource"),
+      {
+        serviceToken: kendraIndexProvider.serviceToken,
+        properties: {
+          kendraKMSKeyId: kendraKMSKey.keyId,
+          KendraRoleArn: kendraRole.roleArn,
+        },
+      }
+    );
+
+    const onEventKendraDataSourceLambda = new lambda.Function(
+      this,
+      this.resourceName("OnEventDataSourceCreator"),
+      {
+        code: lambda.Code.fromAsset("lambda/customResourceKendraDataSource/"),
+        description: "onEvent handler for creating Kendra data source",
+        runtime: lambda.Runtime.PYTHON_3_8,
+        handler: "lambda_function.lambda_handler",
+        timeout: Duration.minutes(15),
+        environment: {
+          KENDRA_ROLE_ARN: kendraRole.roleArn,
+          KMS_KEY_ID: kendraKMSKey.keyId,
+          KENDRA_INDEX_ID: kendraIndexCustomResource
+            .getAtt("KendraIndexId")
+            .toString(),
+          DATA_BUCKET_NAME: medicalDataBucket.bucketName,
+          BULK_PROCESSING_BUCKET: bulkProcessingBucket.bucketName,
+        },
+      }
+    );
+
+    onEventKendraDataSourceLambda.addLayers(boto3Layer);
+    kendraKMSKey.grantEncryptDecrypt(onEventKendraDataSourceLambda);
+    bulkProcessingBucket.grantReadWrite(onEventKendraDataSourceLambda);
+    medicalDataBucket.grantReadWrite(onEventKendraDataSourceLambda);
+
+    onEventKendraDataSourceLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "kendra:CreateDataSource",
+          "kendra:StartDataSourceSyncJob",
+          "kendra:TagResource",
+          "kendra:CreateFaq",
+        ],
+        resources: [
+          "arn:aws:kendra:" + this.region + ":" + this.account + ":index/*",
+        ],
+      })
+    );
+
+    onEventKendraDataSourceLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["iam:PassRole"],
+        resources: [kendraRole.roleArn],
+      })
+    );
+
+    const kendraDataSourceProvider = new cr.Provider(
+      this,
+      this.resourceName("KendraDataSourceProvider"),
+      {
+        onEventHandler: onEventKendraDataSourceLambda,
+      }
+    );
+
+    const kendraIndexId = kendraIndexCustomResource
+      .getAtt("KendraIndexId")
+      .toString();
+    const kendraDataSourceCustomResource = new CustomResource(
+      this,
+      this.resourceName("kendraDataSourceCustomResource"),
+      {
+        serviceToken: kendraDataSourceProvider.serviceToken,
+        properties: {
+          KENDRA_INDEX_ID: kendraIndexId,
+          KendraRoleArn: kendraRole.roleArn,
+          DataBucketName: medicalDataBucket.bucketName,
+        },
+      }
+    );
+    return {
+      KENDRA_ROLE_ARN: kendraRole.roleArn,
+      KENDRA_INDEX_ID: kendraIndexId,
     };
   }
 }

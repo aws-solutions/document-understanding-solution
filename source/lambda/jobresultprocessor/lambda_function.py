@@ -20,11 +20,13 @@ from helper import AwsHelper
 from og import OutputGenerator, KVPAIRS, DOCTEXT ,SERVICE_OUTPUT_PATH_S3_PREFIX,COMPREHEND_PATH_S3_PREFIX,TEXTRACT_PATH_S3_PREFIX,PUBLIC_PATH_S3_PREFIX
 import datastore
 from comprehendHelper import ComprehendHelper
+from kendraHelper import KendraHelper
 
 def generatePdf(documentId, bucketName, objectName, responseBucketName,outputPath):
     
     responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
-    outputDocumentName = "{}searchable-pdf.pdf".format(outputPath)
+    fileName = os.path.basename(objectName).split(".")[0]
+    outputDocumentName = "{}{}-searchable.pdf".format(outputPath, fileName)
 
     data = {}
     data["bucketName"] = bucketName
@@ -85,7 +87,7 @@ def processRequest(request):
 
     output = ""
 
-    print(request)
+    print("Request : {}".format(request))
 
     jobId = request['jobId']
     documentId = request['jobTag']
@@ -129,6 +131,19 @@ def processRequest(request):
     comprehendClient = ComprehendHelper()
     responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
     comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, maxPages)
+
+    # if Kendra is available then let it index the document
+    if 'KENDRA_INDEX_ID' in os.environ:
+        kendraClient = KendraHelper()
+        fileName = os.path.basename(objectName).split(".")[0]
+        fileExtension = os.path.basename(objectName).split(".")[1]
+        outputDocumentName = "{}{}-searchable.pdf".format(outputPath, fileName)
+        kendraClient.indexDocument(os.environ['KENDRA_INDEX_ID'],
+                                   os.environ['KENDRA_ROLE_ARN'],
+                                   bucketName,
+                                   outputDocumentName,
+                                   documentId,
+                                   fileExtension)
 
     print("DocumentId: {}".format(documentId))
     print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))
@@ -177,5 +192,5 @@ def lambda_handler(event, context):
     return processRequest(request)
 
 def lambda_handler_local(event, context):
-    print("event: {}".format(event))
+    print("Event: {}".format(event))
     return processRequest(event)

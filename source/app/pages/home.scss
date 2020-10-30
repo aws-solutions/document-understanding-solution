@@ -33,5 +33,9 @@
 
   @include media-grid(8) {
     flex-direction: column;
+
+    > * {
+      flex: 1 0 auto;
+    }
   }
 }

@@ -1,20 +1,22 @@
 
 ######################################################################################################################
- #  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
- #                                                                                                                    #
- #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
- #  with the License. A copy of the License is located at                                                             #
- #                                                                                                                    #
- #      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
- #                                                                                                                    #
- #  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
- #  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
- #  and limitations under the License.                                                                                #
- #####################################################################################################################
+#  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+#                                                                                                                    #
+#  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
+#  with the License. A copy of the License is located at                                                             #
+#                                                                                                                    #
+#      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
+#                                                                                                                    #
+#  or in the 'license' file accompanying this file. This file is distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES #
+#  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    #
+#  and limitations under the License.                                                                                #
+#####################################################################################################################
 
 import json
 import os
+import filetype
 from helper import FileHelper, AwsHelper
+import boto3
 
 ASYNC_JOB_TIMEOUT_SECONDS = 900
 SYNC_JOB_TIMEOUT_SECONDS = 180
@@ -32,11 +34,23 @@ def postMessage(client, qUrl, jsonMessage, delaySeconds=0):
     print("Submitted message to queue: {}".format(message))
 
 
+def get_mime_type(request):
+    """
+    Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
+    """
+    client = boto3.client('s3')
+    local_path = f"/tmp/{request['objectName'].rsplit('/',1)[-1]}"
+    client.download_file(request['bucketName'],
+                         request['objectName'], local_path)
+
+    return filetype.guess(local_path)
+
+
 def processRequest(request):
 
     output = ""
 
-    print("request: {}".format(request))
+    print("Request: {}".format(request))
 
     documentId = request["documentId"]
     bucketName = request["bucketName"]
@@ -45,21 +59,22 @@ def processRequest(request):
 
     print("Input Object: {}/{}".format(bucketName, objectName))
 
-    ext = FileHelper.getFileExtenstion(objectName.lower())
-    
     client = AwsHelper().getClient('sqs')
+
+    file_type = get_mime_type(request)
+
     # If not expected extension, change status to FAILED and exit
-    if(ext and ext not in ["jpg", "jpeg", "png", "pdf"]):
+    if not file_type or file_type.mime not in ['application/pdf', 'image/png', 'image/jpeg']:
         jsonErrorHandlerMessage = {
             'documentId': documentId
         }
         postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage)
         return
 
-    if(ext and ext in ["jpg", "jpeg", "png"]):
+    if(file_type.mime in ['image/png', 'image/jpeg']):
         qUrl = request['syncQueueUrl']
         errorHandlerTimeoutSeconds = SYNC_JOB_TIMEOUT_SECONDS
-    elif (ext in ["pdf"]):
+    elif (file_type.mime in ['application/pdf']):
         qUrl = request['asyncQueueUrl']
         errorHandlerTimeoutSeconds = ASYNC_JOB_TIMEOUT_SECONDS
 
@@ -79,7 +94,7 @@ def processRequest(request):
 
     output = "Completed routing for documentId: {}, object: {}/{}".format(
         documentId, bucketName, objectName)
-    
+
 
 def processRecord(record, syncQueueUrl, asyncQueueUrl, errorHandlerQueueUrl):
 
@@ -117,7 +132,7 @@ def lambda_handler(event, context):
 
     try:
 
-        print("event: {}".format(event))
+        print("Event: {}".format(event))
 
         syncQueueUrl = os.environ['SYNC_QUEUE_URL']
         asyncQueueUrl = os.environ['ASYNC_QUEUE_URL']

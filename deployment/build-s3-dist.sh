@@ -72,16 +72,32 @@ else
     echo "sed -i -e $replace $template_dist_dir/document-understanding-solution.template"
     sed -i -e $replace $template_dist_dir/document-understanding-solution.template
 fi
-
+echo "------------------------------------------------------------------------------"
+echo "Creating a zip file of document-understanding-cicd..."
+echo "------------------------------------------------------------------------------"
+if [ ! -f ./deployment/document-understanding-cicd.zip ]
+then
+    cd $template_dir/deployment/document-understanding-cicd && npm run build:zip
+fi
+echo "Created document-understanding-cicd.zip"
+cd $template_dir
+echo "------------------------------------------------------------------------------"
+echo "Installing packages"
+echo "------------------------------------------------------------------------------"
+cd $template_dir/source/ && bash ../deployment/install_packages.sh
+echo "Installed packages for boto3 and elasticsearch"
+cd $template_dir
 echo "Creating zip file of project source..."
 zip -r $build_dist_dir/document-understanding-solution.zip ./* -x "*pdfgenerator*" \
 -x "*boto3*" \
+-x "source/lambda/elasticsearch/python/*" \
 -x "*.git*" \
 -x "*node_modules*" \
 -x "*cdk.out*" \
 -x "source/app/out/*" \
 -x "source/app/.next/*" \
--x "*document-understanding-cicd*"
+-x "*document-understanding-cicd*" \
+-x "*open-source*"
 echo "Created document-understanding-solution.zip"
 
 echo "Copying lambda code that is too large to add to CodeCommit (6MB limit)"
@@ -91,11 +107,7 @@ cp $template_dir/source/lambda/boto3/boto3-layer.zip $build_dist_dir/boto3-layer
 echo "Copying CloudFormation template and deployment helper lambda code"
 cp ./deployment/document-understanding-cicd.zip $build_dist_dir/document-understanding-cicd.zip
 
-echo "Copying solution code"
-cp $build_dist_dir/document-understanding-solution.zip $build_dist_dir/document-understanding-solution.zip
-
-
-# aws s3 cp ./deployment/global-s3-assets/ s3://gwprice-solutions-us-east-1/document-understanding-solution/v1.0.0/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-# aws s3 cp ./deployment/regional-s3-assets/ s3://gwprice-solutions-us-east-1/document-understanding-solution/v1.0.0/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-
-# aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://gwprice-solutions-us-east-1.s3.amazonaws.com/document-understanding-solution/v1.0.0/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+echo "Cleaning up deployment dependency files"
+find ./source/lambda/boto3 ! -name 'requirements.txt' -delete
+find ./source/lambda/elasticsearch ! -name 'requirements.txt' -delete
+rm -rf ./deployment/document-understanding-cicd/node_modules

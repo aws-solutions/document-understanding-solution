@@ -18,14 +18,14 @@ import getConfig from "next/config";
 import Head from "next/head";
 import Router from "next/router";
 import Amplify, { Auth } from "aws-amplify";
-import { times } from "ramda";
+import { times, reject, isNil } from "ramda";
 import { Provider } from "react-redux";
 import withRedux from "next-redux-wrapper";
 
 import initStore from "../store/store";
 import Header from "../components/Header/Header";
 
-import { setSelectedTrack } from "../store/ui/actions";
+import { setSelectedTrack, dismissWalkthrough } from "../store/ui/actions";
 
 import "../styles/global.scss";
 import css from "./app.scss";
@@ -96,6 +96,9 @@ class AppLayout extends App {
       const { store } = this.props;
       const cachedTrack = localStorage.getItem("track");
       if (cachedTrack) store.dispatch(setSelectedTrack(cachedTrack));
+
+      const previouslyDismissedWalkthrough = localStorage.getItem("dismissedWalkthrough");
+      if (previouslyDismissedWalkthrough) store.dispatch(dismissWalkthrough());
     }
   }
 
@@ -148,7 +151,7 @@ class AppLayout extends App {
 }
 
 function Page({ children, pageProps, pathname }) {
-  const { backHref, backTitle, pageTitle: heading } = pageProps;
+  const { showNavigation, backButton, pageTitle: heading } = pageProps;
   const showGrid = useGridOverlay();
 
   // All routes are protected by default. We whitelist public routes.
@@ -192,7 +195,7 @@ function Page({ children, pageProps, pathname }) {
   return (
     shouldRenderApp && (
       <div className={css.container}>
-        <Header {...{ heading, backHref, backTitle }} />
+        <Header {...reject(isNil, { heading, showNavigation, backButton })} />
 
         <main>{children}</main>
 
