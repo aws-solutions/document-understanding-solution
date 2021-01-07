@@ -40,6 +40,7 @@
     "build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region yarn pre-build && NEXT_PUBLIC_ENABLE_KENDRA=$npm_package_enableKendra next build app",
     "export": "yarn build && next export app",
     "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region isROMode=$npm_package_isROMode ENABLE_KENDRA=$npm_package_enableKendra node ./bin/pre-build.js",
+    "preinstall": "npx npm-force-resolutions",
     "license-report": "legally --plain > license-report.txt && echo \"$(tail -n +4 license-report.txt)\" > license-report.txt",
     "prettier": "prettier --write '**/*.{js,md,yaml}'",
     "lint": "yarn lint:js && yarn lint:css",
@@ -71,6 +72,7 @@
     "@zeit/next-sass": "^1.0.1",
     "aws-amplify": "^2.1.0",
     "aws-cdk": "^1.70.0",
+    "aws-sdk": "^2.823.0",
     "classnames": "^2.2.6",
     "date-fns": "^1.30.1",
     "dotenv": "^8.0.0",
@@ -119,8 +121,6 @@
     "sass-lint": "^1.13.1"
   },
   "resolutions": {
-    "@aws-amplify/analytics": "1.2.16",
-    "@aws-amplify/ui": "1.0.19",
-    "node-fetch": "2.6.1"
+    "axios": "0.21.1"
   }
 }
