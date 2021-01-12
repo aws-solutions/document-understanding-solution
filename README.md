@@ -113,7 +113,7 @@ Please ensure you install all requirements before beginning the deployment
   `sudo yum -y install jq`
 
 - moto (Required for running the tests)
-  `pip install moto`
+  `pip install moto==1.3.14`
 
 - pip3 (Required to install packages)
   `curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py`
