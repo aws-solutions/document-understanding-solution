@@ -1,0 +1,18 @@
+# node
+node_modules/
+.next/
+source/app/out/
+source/lib/out/
+
+# python
+__pycache__/
+
+# aws
+cdk.out/
+source/lambda/boto3/python/
+source/lambda/boto3/*.zip
+source/lambda/elasticsearch/python/
+source/lambda/elasticsearch/*.zip
+
+# environment
+.env
