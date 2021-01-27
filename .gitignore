@@ -1,18 +1,35 @@
-# node
+# dependencies
+/.pnp
+.pnp.js
 node_modules/
+
+# testing
+/coverage
+
+# build/deploy
 .next/
+build/
+deployment/build-dist/
+deployment/global-s3-assets/
+deployment/regional-s3-assets/
+deployment/build-dist/
 source/app/out/
 source/lib/out/
-
-# python
-__pycache__/
-
-# aws
 cdk.out/
+
+# compressed files
 source/lambda/boto3/python/
 source/lambda/boto3/*.zip
 source/lambda/elasticsearch/python/
 source/lambda/elasticsearch/*.zip
 
+# python
+__pycache__/
+
 # environment
 .env
+
+# misc
+.DS_Store
+.idea/
+.vscode/
