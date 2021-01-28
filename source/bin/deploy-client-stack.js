@@ -13,7 +13,7 @@
  *********************************************************************************************************************/
 
 const cdk = require("@aws-cdk/core");
-const CdkTextractClientStack = require("../lib/out/cdk-textract-client-stack");
+const CdkTextractClientStack = require("../lib/cdk-textract-client-stack");
 
 const app = new cdk.App();
 const stackName = `${process.env.STACKNAME}ClientStack`;

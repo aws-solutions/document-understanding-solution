@@ -14,14 +14,15 @@ deployment/global-s3-assets/
 deployment/regional-s3-assets/
 deployment/build-dist/
 source/app/out/
-source/lib/out/
+source/lib/cdk-textract-stack.js
+source/lib/cdk-textract-client-stack.js
+source/lib/cdk-textract-client-stack.js-e
 cdk.out/
 
 # compressed files
 source/lambda/boto3/python/
-source/lambda/boto3/*.zip
 source/lambda/elasticsearch/python/
-source/lambda/elasticsearch/*.zip
+*.zip
 
 # python
 __pycache__/

@@ -13,7 +13,7 @@
  *********************************************************************************************************************/
 
 const cdk = require("@aws-cdk/core");
-const CdkTextractStack = require("../lib/out/cdk-textract-stack");
+const CdkTextractStack = require("../lib/cdk-textract-stack");
 const readlineSync = require("readline-sync");
 const fs = require("fs");
 
