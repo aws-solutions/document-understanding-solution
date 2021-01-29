@@ -58,7 +58,7 @@ function Home({ dispatch, tracks }) {
       </div>
 
       {/* <p>
-        <img src="/static/images/icon_feature.svg" /> If you see one of these along the way, click
+        <img src="/images/icon_feature.svg" /> If you see one of these along the way, click
         on it to learn more about Textract’s features.
       </p> */}
 

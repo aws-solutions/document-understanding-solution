@@ -39,7 +39,7 @@ export default function KendraFAQs({ results, submitFeedback }) {
             }
           >
             <a>
-              <img src="/static/images/icon_tip.svg" />
+              <img src="/images/icon_tip.svg" />
               More info
             </a>
           </TooltipButton>
