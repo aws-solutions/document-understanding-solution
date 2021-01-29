@@ -17,7 +17,7 @@ import { getSearchPersona } from "../../store/entities/meta/selectors";
 
 import Modal from "../Modal/Modal";
 import Button from "../Button/Button";
-import css from "./PersonaInfoModal.scss";
+import css from "./PersonaInfoModal.module.scss";
 import cs from "classnames";
 import FormInput from "../FormInput/FormInput";
 

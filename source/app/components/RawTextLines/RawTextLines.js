@@ -18,7 +18,7 @@ import cs from 'classnames'
 
 import Button from '../Button/Button'
 
-import css from './RawTextLines.scss'
+import css from './RawTextLines.module.scss'
 
 export default function RawTextLines({
   lines,
