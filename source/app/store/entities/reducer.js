@@ -13,12 +13,13 @@
  *********************************************************************************************************************/
 
 import { handleActions } from 'redux-actions'
-import { mergeDeepRight } from 'ramda'
+import { view, set, lensPath, mergeDeepRight } from 'ramda'
 
 import {
   FETCH_DOCUMENTS,
   FETCH_DOCUMENT,
   REDACT_DOCUMENT,
+  CANCEL_REDACTION,
   SEARCH,
   CLEAR_SEARCH_RESULTS,
   SET_CURRENT_PAGE_NUMBER,
@@ -46,8 +47,8 @@ export default handleActions(
     [FETCH_DOCUMENT]: receiveEntities,
     [FETCH_DOCUMENTS]: receiveEntities,
     [REDACT_DOCUMENT]: receiveEntities,
+    [CANCEL_REDACTION]: (state, {payload: {documentId, pageNumber, redactions}}) => set(lensPath(['documents', documentId, 'redactions', pageNumber]), redactions, state),
     [HIGHLIGHT_DOCUMENT]: receiveEntities,
-    [SEARCH]: receiveEntities,
     [SEARCH]: receiveEntities,
     [CLEAR_SEARCH_RESULTS]: receiveEntities,
     [SET_CURRENT_PAGE_NUMBER]: receiveEntities,

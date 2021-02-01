@@ -30,6 +30,7 @@ DocumentViewer.propTypes = {
   document: PropTypes.object,
   marks: PropTypes.array,
   pageCount: PropTypes.number,
+  onRedactionClick: PropTypes.func,
 }
 
 DocumentViewer.defaultProps = {}
@@ -42,6 +43,7 @@ export default function DocumentViewer({
   tables,
   pageCount,
   highlightedMark,
+  onRedactionClick,
   ...rest
 }) {
   const { documentName, searchablePdfURL, documentURL } = document
@@ -59,15 +61,16 @@ export default function DocumentViewer({
             highlightedMark={highlightedMark}
             tables={tables}
             redactions={redactions}
+            onRedactionClick={onRedactionClick}
             ref={containerRef}
-          >
+            >
             <Page
               className={css.page}
               loading={<Loading />}
               pageNumber={currentPageNumber}
               width={documentWidth}
               renderAnnotationLayer={false}
-            />
+              />
           </DocumentMarks>
         ) : (
           <div className={css.imageWrapper}>
@@ -76,6 +79,7 @@ export default function DocumentViewer({
               highlightedMark={highlightedMark}
               tables={tables}
               redactions={redactions}
+              onRedactionClick={onRedactionClick}
             >
               <img className={css.image} src={documentURL} />
             </DocumentMarks>
@@ -133,7 +137,7 @@ function useDocumentResizer(isPDF, resizeDeps) {
 }
 
 const DocumentMarks = forwardRef(function DocumentMarks(
-  { children, marks , tables, redactions, highlightedMark },
+  { children, marks , tables, redactions, onRedactionClick, highlightedMark },
   ref
 ) {
 
@@ -152,19 +156,20 @@ const DocumentMarks = forwardRef(function DocumentMarks(
                 width: `${Width * 100}%`,
                 height: `${Height * 100}%`,
               }}
-            />
+              />
           ))}
         {redactions &&
-          Object.values(redactions).map(({ Top, Left, Width, Height }, i) => (
+          Object.entries(redactions).map(([id, { Top, Left, Width, Height }]) => (
             <mark
-              key={i}
-              className={css.redact}
-              style={{
-                top: `${Top * 100}%`,
-                left: `${Left * 100}%`,
-                width: `${Width * 100}%`,
-                height: `${Height * 100}%`,
-              }}
+            key={id}
+            className={css.redact}
+            onClick={() => onRedactionClick(id)}
+            style={{
+              top: `${Top * 100}%`,
+              left: `${Left * 100}%`,
+              width: `${Width * 100}%`,
+              height: `${Height * 100}%`,
+            }}
             />
           ))}
         {tables &&
@@ -179,6 +184,7 @@ DocumentMarks.displayName = 'DocumentMarks'
 DocumentMarks.propTypes = {
   children: PropTypes.node,
   marks: PropTypes.array,
+  onRedactionClick: PropTypes.func,
 }
 
 function TableHighlight({ table, rows }) {

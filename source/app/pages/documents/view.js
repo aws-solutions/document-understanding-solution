@@ -28,6 +28,7 @@ import Tabs from '../../components/Tabs/Tabs'
 import {
   fetchDocument,
   addRedactions,
+  cancelRedaction,
   clearRedactions,
   addHighlights,
   clearHighlights
@@ -365,6 +366,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               document={document}
               pageCount={pageCount}
               redactions={(document.redactions || {})[currentPageNumber]}
+              onRedactionClick={(redactionId) => dispatch(cancelRedaction(document.documentId, currentPageNumber, document.redactions, redactionId))}
               marks={
                 tab === 'search'
                   ? wordsMatchingSearch
