@@ -94,10 +94,21 @@
 .redact {
   position: absolute;
   display: block;
-  background-color: #000;
+  background: rgba(grey, 0.2);
   box-shadow: 0 0 0 2px #000;
   box-sizing: content-box;
   z-index: 4;
+
+  &:after {
+    content: '';
+    height: 2px;
+    background: #000;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 .cellHighlight {
