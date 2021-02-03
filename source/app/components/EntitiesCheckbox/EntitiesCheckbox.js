@@ -113,7 +113,7 @@ export default function EntitiesCheckbox({
                       onSwitchPage(pageNumber)
                     }}
                   >
-                    Redact
+                    Redact All
                   </a></span>
                 ) : null}
                

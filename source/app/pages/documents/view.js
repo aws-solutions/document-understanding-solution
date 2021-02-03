@@ -324,7 +324,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             Object.keys(document.redactions).length ? (
               <div className={css.downloadButtons}>
                 <Button inverted onClick={clearReds}>
-                  Clear Redaction
+                  Clear All Redactions
                 </Button>
                 <Button className={css.downloadRedacted} onClick={downloadRedacted}>
                 ⬇ Redacted Doc
