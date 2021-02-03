@@ -15,12 +15,10 @@
   ],
   "stack": {
     "stackname": "DUS",
-    "region": "%%REGION%%"
   },
   "cicd": "false",
   "isROMode": "false",
   "enableKendra": "false",
-  "email": "%%USER_EMAIL%%",
   "scripts": {
     "bootstrap": "AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk bootstrap --toolkit-stack-name DocumentUnderstandingCDKToolkit",
     "compile-ts-stacks": "yarn compile-ts-backend-stack && yarn compile-ts-client-stack",
@@ -68,6 +66,9 @@
     "@aws-cdk/aws-sqs": "^1.42.0",
     "@aws-cdk/core": "^1.42.0",
     "@babel/helper-validator-identifier": "^7.9.5",
+    "@chakra-ui/react": "^1.2.1",
+    "@emotion/react": "^11.1.4",
+    "@emotion/styled": "^11.0.0",
     "@types/node": "^12.12.5",
     "aws-amplify": "^2.1.0",
     "aws-cdk": "^1.70.0",
@@ -76,6 +77,7 @@
     "date-fns": "^1.30.1",
     "dotenv": "^8.0.0",
     "express": "^4.17.1",
+    "framer-motion": "^3.3.0",
     "inquirer": "^6.4.1",
     "lodash": "^4.17.19",
     "minimist": "^1.2.3",
@@ -83,6 +85,7 @@
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-fetch": "^2.6.1",
     "normalizr": "^3.4.0",
+    "pdf-lib": "^1.16.0",
     "query-string": "^6.8.1",
     "ramda": "^0.26.1",
     "react": "^16.8.6",

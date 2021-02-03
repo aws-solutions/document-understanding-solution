@@ -21,6 +21,7 @@ import Amplify, { Auth } from "aws-amplify";
 import { times, reject, isNil } from "ramda";
 import { Provider } from "react-redux";
 import withRedux from "next-redux-wrapper";
+import {ChakraProvider, extendTheme} from '@chakra-ui/react'
 
 import initStore from "../store/store";
 import Header from "../components/Header/Header";
@@ -65,6 +66,22 @@ Amplify.configure({
   }
 });
 
+const theme = extendTheme({
+  config: {
+    initialColorMode: 'dark'
+  },
+  styles: {
+    global: {
+      body: {
+        background: '#3b4550',
+        color: '#fff',
+        fontFamily: `"Amazon Ember", system, -apple-system, BlinkMacSystemFont, sans-serif`
+      }
+    }
+  }
+
+})
+
 class AppLayout extends App {
   static async getInitialProps({ Component, ctx }) {
     let pageProps = {};
@@ -97,42 +114,44 @@ class AppLayout extends App {
     // Don't render the app unless the user is logged in or this is a public route.
     return (
       <Provider store={store}>
-        <Head>
-          <title>{pageTitle ? `${pageTitle} | DUS ` : `DUS`}</title>
-          <link
-            rel="icon"
-            type="image/ico"
-            href="/images/favicon.ico"
-          />
-          <link
-            rel="shortcut icon"
-            type="image/ico"
-            href="/images/favicon.ico"
-          />
-          <link
-            rel="apple-touch-icon"
-            sizes="57x57"
-            href="/images/touch-icon-iphone-114-smile.png"
-          />
-          <link
-            rel="apple-touch-icon"
-            sizes="72x72"
-            href="/images/touch-icon-ipad-144-smile.png"
-          />
-          <link
-            rel="apple-touch-icon"
-            sizes="114x114"
-            href="/images/touch-icon-iphone-114-smile.png"
-          />
-          <link
-            rel="apple-touch-icon"
-            sizes="144x144"
-            href="/images/touch-icon-ipad-144-smile.png"
-          />
-        </Head>
-        <Page pathname={pathname} pageProps={pageProps}>
-          <Component {...pageProps} />
-        </Page>
+        <ChakraProvider resetCSS={false} theme={theme}>
+          <Head>
+            <title>{pageTitle ? `${pageTitle} | DUS ` : `DUS`}</title>
+            <link
+              rel="icon"
+              type="image/ico"
+              href="/images/favicon.ico"
+            />
+            <link
+              rel="shortcut icon"
+              type="image/ico"
+              href="/images/favicon.ico"
+            />
+            <link
+              rel="apple-touch-icon"
+              sizes="57x57"
+              href="/images/touch-icon-iphone-114-smile.png"
+            />
+            <link
+              rel="apple-touch-icon"
+              sizes="72x72"
+              href="/images/touch-icon-ipad-144-smile.png"
+            />
+            <link
+              rel="apple-touch-icon"
+              sizes="114x114"
+              href="/images/touch-icon-iphone-114-smile.png"
+            />
+            <link
+              rel="apple-touch-icon"
+              sizes="144x144"
+              href="/images/touch-icon-ipad-144-smile.png"
+            />
+          </Head>
+          <Page pathname={pathname} pageProps={pageProps}>
+            <Component {...pageProps} />
+          </Page>
+          </ChakraProvider>
       </Provider>
     );
   }
