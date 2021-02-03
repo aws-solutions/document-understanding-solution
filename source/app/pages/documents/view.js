@@ -367,6 +367,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               pageCount={pageCount}
               redactions={(document.redactions || {})[currentPageNumber]}
               onRedactionClick={(redactionId) => dispatch(cancelRedaction(document.documentId, currentPageNumber, document.redactions, redactionId))}
+              onMarkClick={(redaction) => dispatch(addRedactions(document.documentId, currentPageNumber, [redaction]))}
               marks={
                 tab === 'search'
                   ? wordsMatchingSearch
