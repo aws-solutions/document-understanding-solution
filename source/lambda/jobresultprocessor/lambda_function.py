@@ -153,7 +153,7 @@ def processRequest(request):
         if key not in comprehendAndMedicalEntities:
             comprehendAndMedicalEntities[key] = val
         else:
-            comprehendAndMedicalEntities[key].add(val)
+            comprehendAndMedicalEntities[key].append(val)
     opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTable, outputTable)
