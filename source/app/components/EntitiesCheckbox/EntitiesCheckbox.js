@@ -50,11 +50,8 @@ export default function EntitiesCheckbox({
 
   useEffect(() => {
     if (visible && container.current) {
-      const firstOnThisPage = container.current.querySelector(`.${css.onThisPage}`)
-      if (firstOnThisPage) firstOnThisPage.scrollIntoView()
       onHighlight(getMultiPageWordsBySearch(document, currentPageNumber, ['']))
       resetFormsonPage()
-
     }
   }, [currentPageNumber, visible])
   let is_comprehend_medical = false
