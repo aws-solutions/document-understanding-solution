@@ -57,38 +57,45 @@ export default function DocumentViewer({
   const pager = (
     <Pager className={css.pager} pageTotal={pageCount}>
       {currentPageNumber =>
-        isPDF ? (
-          <DocumentMarks
-            marks={marks}
-            highlightedMark={highlightedMark}
-            tables={tables}
-            redactions={redactions}
-            onRedactionClick={onRedactionClick}
-            onMarkClick={onMarkClick}
-            ref={containerRef}
-            >
-            <Page
-              className={css.page}
-              loading={<Loading />}
-              pageNumber={currentPageNumber}
-              width={documentWidth}
-              renderAnnotationLayer={false}
-              />
-          </DocumentMarks>
-        ) : (
-          <div className={css.imageWrapper}>
-            <DocumentMarks
-              marks={marks}
-              highlightedMark={highlightedMark}
-              tables={tables}
-              redactions={redactions}
-              onRedactionClick={onRedactionClick}
-              onMarkClick={onMarkClick}
-            >
-              <img className={css.image} src={documentURL} />
-            </DocumentMarks>
+        <>
+          <div className={css.redactionExplanation}>
+            Redacted items <span aria-hidden className={css.redactionPreview}>Jane Doe</span> will be covered from the downloaded document with a black rectangle <span aria-hidden className={css.redaction}>Jane Doe</span>
           </div>
-        )
+          {
+              isPDF ? (
+                <DocumentMarks
+                  marks={marks}
+                  highlightedMark={highlightedMark}
+                  tables={tables}
+                  redactions={redactions}
+                  onRedactionClick={onRedactionClick}
+                  onMarkClick={onMarkClick}
+                  ref={containerRef}
+                  >
+                  <Page
+                    className={css.page}
+                    loading={<Loading />}
+                    pageNumber={currentPageNumber}
+                    width={documentWidth}
+                    renderAnnotationLayer={false}
+                    />
+                </DocumentMarks>
+              ) : (
+                <div className={css.imageWrapper}>
+                  <DocumentMarks
+                    marks={marks}
+                    highlightedMark={highlightedMark}
+                    tables={tables}
+                    redactions={redactions}
+                    onRedactionClick={onRedactionClick}
+                    onMarkClick={onMarkClick}
+                  >
+                    <img className={css.image} src={documentURL} />
+                  </DocumentMarks>
+                </div>
+              )
+          }
+        </>
       }
     </Pager>
   )
