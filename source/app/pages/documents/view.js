@@ -145,7 +145,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const [tab, selectTab] = useState('search')
 
-  const [trackTab, selectTrack] = useState('search')
+  const [trackTab, selectTrack] = useState('searchTrack')
 
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document
@@ -339,18 +339,20 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               pageCount={pageCount}
               redactions={(document.redactions || {})[currentPageNumber]}
               onRedactionClick={(redactionId) => dispatch(cancelRedaction(document.documentId, currentPageNumber, document.redactions, redactionId))}
+              onMarkClick={(redaction) => dispatch(addRedactions(document.documentId, currentPageNumber, [redaction]))}
               marks={
-                tab === 'search'
-                  ? wordsMatchingSearch
-                  : tab === 'text'
-                  ? pageLinesAsMarks
-                  : tab === 'kv'
-                  ? pagePairsAsMarks
-                  : tab === 'entities'
-                  ? (document.highlights || [])
-                  : tab === 'medical_entities'
-                  ? (document.highlights || [])
-                  : []
+                [
+                  ...wordsMatchingSearch,
+                  ...tab === 'text'
+                    ? pageLinesAsMarks
+                    : tab === 'kv'
+                    ? pagePairsAsMarks
+                    : tab === 'entities'
+                    ? (document.highlights || [])
+                    : tab === 'medical_entities'
+                    ? (document.highlights || [])
+                    : []
+                ]
               }
               tables={tab === 'tables' && pageData.tables}
               highlightedMark={highlightedKv}

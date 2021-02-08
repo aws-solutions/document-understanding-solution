@@ -31,6 +31,7 @@ DocumentViewer.propTypes = {
   marks: PropTypes.array,
   pageCount: PropTypes.number,
   onRedactionClick: PropTypes.func,
+  onMarkClick: PropTypes.func,
 }
 
 DocumentViewer.defaultProps = {}
@@ -44,6 +45,7 @@ export default function DocumentViewer({
   pageCount,
   highlightedMark,
   onRedactionClick,
+  onMarkClick,
   ...rest
 }) {
   const { documentName, searchablePdfURL, documentURL } = document
@@ -55,36 +57,45 @@ export default function DocumentViewer({
   const pager = (
     <Pager className={css.pager} pageTotal={pageCount}>
       {currentPageNumber =>
-        isPDF ? (
-          <DocumentMarks
-            marks={marks}
-            highlightedMark={highlightedMark}
-            tables={tables}
-            redactions={redactions}
-            onRedactionClick={onRedactionClick}
-            ref={containerRef}
-            >
-            <Page
-              className={css.page}
-              loading={<Loading />}
-              pageNumber={currentPageNumber}
-              width={documentWidth}
-              renderAnnotationLayer={false}
-              />
-          </DocumentMarks>
-        ) : (
-          <div className={css.imageWrapper}>
-            <DocumentMarks
-              marks={marks}
-              highlightedMark={highlightedMark}
-              tables={tables}
-              redactions={redactions}
-              onRedactionClick={onRedactionClick}
-            >
-              <img className={css.image} src={documentURL} />
-            </DocumentMarks>
+        <>
+          <div className={css.redactionExplanation}>
+            Redacted items <span aria-hidden className={css.redactionPreview}>Jane Doe</span> will be covered from the downloaded document with a black rectangle <span aria-hidden className={css.redaction}>Jane Doe</span>
           </div>
-        )
+          {
+              isPDF ? (
+                <DocumentMarks
+                  marks={marks}
+                  highlightedMark={highlightedMark}
+                  tables={tables}
+                  redactions={redactions}
+                  onRedactionClick={onRedactionClick}
+                  onMarkClick={onMarkClick}
+                  ref={containerRef}
+                  >
+                  <Page
+                    className={css.page}
+                    loading={<Loading />}
+                    pageNumber={currentPageNumber}
+                    width={documentWidth}
+                    renderAnnotationLayer={false}
+                    />
+                </DocumentMarks>
+              ) : (
+                <div className={css.imageWrapper}>
+                  <DocumentMarks
+                    marks={marks}
+                    highlightedMark={highlightedMark}
+                    tables={tables}
+                    redactions={redactions}
+                    onRedactionClick={onRedactionClick}
+                    onMarkClick={onMarkClick}
+                  >
+                    <img className={css.image} src={documentURL} />
+                  </DocumentMarks>
+                </div>
+              )
+          }
+        </>
       }
     </Pager>
   )
@@ -137,7 +148,7 @@ function useDocumentResizer(isPDF, resizeDeps) {
 }
 
 const DocumentMarks = forwardRef(function DocumentMarks(
-  { children, marks , tables, redactions, onRedactionClick, highlightedMark },
+  { children, marks , tables, redactions, onRedactionClick, onMarkClick, highlightedMark },
   ref
 ) {
 
@@ -146,10 +157,11 @@ const DocumentMarks = forwardRef(function DocumentMarks(
       <div className={css.canvas} ref={ref}>
         {children}
         {marks &&
-          marks.map(({ Top, Left, Width, Height, type, id }, i) => (
+          marks.map(({ Text, Top, Left, Width, Height, type, id }, i) => (
             <mark
               key={`${id || ''}${type || ''}` || i}
               className={cs(css.highlight, type, id === highlightedMark && css.highlighted)}
+              onClick={() => onMarkClick({Text, Top, Left, Width, Height})}
               style={{
                 top: `${Top * 100}%`,
                 left: `${Left * 100}%`,
@@ -185,6 +197,7 @@ DocumentMarks.propTypes = {
   children: PropTypes.node,
   marks: PropTypes.array,
   onRedactionClick: PropTypes.func,
+  onMarkClick: PropTypes.func,
 }
 
 function TableHighlight({ table, rows }) {

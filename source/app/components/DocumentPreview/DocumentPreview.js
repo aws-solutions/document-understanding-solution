@@ -25,18 +25,9 @@ export default function DocumentPreview({
   visible,
   track,
   document
-}) {
-  const container = useRef()
-
-  useEffect(() => {
-    if (visible && container.current) {
-      const firstOnThisPage = container.current.querySelector(`.${css.onThisPage}`)
-      if (firstOnThisPage) firstOnThisPage.scrollIntoView()
-    }
-  }, [ visible])
-        
+}) {        
   return (
-     <div className={cs(css.entityList, visible && css.visible)} ref={container}>
+     <div className={cs(css.entityList, visible && css.visible)}>
       <ul>
         <h4>File Details</h4>
           <Fragment key={document.documentName}>
