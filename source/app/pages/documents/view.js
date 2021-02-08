@@ -297,8 +297,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                       ⬇ Redacted Doc
                     </MenuButton>
                     <MenuList>
-                      <MenuItem bg="inherit" border="none" onClick={() => downloadRedacted(ExportTypes.PDF)}>PDF</MenuItem>
-                      <MenuItem bg="inherit" border="none" onClick={() => downloadRedacted(ExportTypes.PNG)}>PNG</MenuItem>
+                      <MenuItem bg="inherit" border="none" fontSize="1rem" onClick={() => downloadRedacted(ExportTypes.PDF)}>PDF</MenuItem>
+                      <MenuItem bg="inherit" border="none" fontSize="1rem" onClick={() => downloadRedacted(ExportTypes.PNG)}>PNG</MenuItem>
                     </MenuList>
                   </Menu>
                 </div>
