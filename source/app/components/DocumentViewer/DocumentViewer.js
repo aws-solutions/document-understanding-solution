@@ -24,6 +24,7 @@ import TableDownloader from '../TableDownloader/TableDownloader'
 
 import cs from 'classnames'
 import css from './DocumentViewer.module.scss'
+import {Tooltip} from '@chakra-ui/react'
 
 DocumentViewer.propTypes = {
   className: PropTypes.string,
@@ -158,31 +159,33 @@ const DocumentMarks = forwardRef(function DocumentMarks(
         {children}
         {marks &&
           marks.map(({ Text, Top, Left, Width, Height, type, id }, i) => (
-            <mark
-              key={`${id || ''}${type || ''}` || i}
-              className={cs(css.highlight, type, id === highlightedMark && css.highlighted)}
-              onClick={() => onMarkClick({Text, Top, Left, Width, Height})}
-              style={{
-                top: `${Top * 100}%`,
-                left: `${Left * 100}%`,
-                width: `${Width * 100}%`,
-                height: `${Height * 100}%`,
-              }}
-              />
+            <Tooltip key={`${id || ''}${type || ''}` || i} hasArrow label="Click to redact">
+              <mark
+                className={cs(css.highlight, type, id === highlightedMark && css.highlighted)}
+                onClick={() => onMarkClick({Text, Top, Left, Width, Height})}
+                style={{
+                  top: `${Top * 100}%`,
+                  left: `${Left * 100}%`,
+                  width: `${Width * 100}%`,
+                  height: `${Height * 100}%`,
+                }}
+                />
+            </Tooltip>
           ))}
         {redactions &&
           Object.entries(redactions).map(([id, { Top, Left, Width, Height }]) => (
-            <mark
-            key={id}
-            className={css.redact}
-            onClick={() => onRedactionClick(id)}
-            style={{
-              top: `${Top * 100}%`,
-              left: `${Left * 100}%`,
-              width: `${Width * 100}%`,
-              height: `${Height * 100}%`,
-            }}
-            />
+            <Tooltip key={id} hasArrow label="Click to remove">
+              <mark
+                className={css.redact}
+                onClick={() => onRedactionClick(id)}
+                style={{
+                  top: `${Top * 100}%`,
+                  left: `${Left * 100}%`,
+                  width: `${Width * 100}%`,
+                  height: `${Height * 100}%`,
+                }}
+              />
+            </Tooltip>
           ))}
         {tables &&
           tables.map(({ table, rows }, i) => <TableHighlight key={i} table={table} rows={rows} />)}
