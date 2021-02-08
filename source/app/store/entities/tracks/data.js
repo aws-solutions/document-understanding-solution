@@ -14,7 +14,7 @@
 
 import { schema } from 'normalizr'
 import { lensPath } from 'ramda'
-import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA } from '../../../constants/configs'
+import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA, ENABLE_COMPREHEND_MEDICAL } from '../../../constants/configs'
 
 // Track Schemas
 export const trackSchema = new schema.Entity('tracks')
@@ -23,7 +23,7 @@ export const tracksSchema = new schema.Array(trackSchema)
 // Track Lenses
 export const lensTracks = lensPath(['entities', 'tracks'])
 export const lensTrack = id => lensPath(['entities', 'tracks', id])
-const kendraModeDescription = `
+const kendraWithComprehendMedicalModeDescription = `
 In this track, you can search through multiple documents and find information faster
 and more efficiently, using  traditional search based technologies such as Amazon 
 Elasticsearch Service (Amazon ES) as well using state-of-the-art machine learning and natural language enterprise search
@@ -35,14 +35,38 @@ of document digitization and extraction of sensitive information.
 
 For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.
 `
+// Kendra without comprehend Medical
+const kendraModeDescription = `
+In this track, you can search through multiple documents and find information faster
+and more efficiently, using  traditional search based technologies such as Amazon 
+Elasticsearch Service (Amazon ES) as well using state-of-the-art machine learning and natural language enterprise search
+with Amazon Kendra.
+
+Once you select a document, you'll be able to interact with Amazon Textract and
+Amazon Comprehend to experience the power of document digitization and 
+extraction of sensitive information.
+
+For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.
+`
+
 const classicModeDescription = `In this track, you can search through multiple documents and find information faster
 and more efficiently, using Amazon Elasticsearch.
 
+Once you select a document, you'll be able to interact with Amazon Textract and
+Amazon Comprehend to experience the power of document digitization and 
+extraction of sensitive information.`
+
+const classicModeWithComprehendMedicalDescription = `In this track, you can search through multiple documents and find information faster
+and more efficiently, using Amazon Elasticsearch.
+
 Once you select a document, you'll be able to interact with Amazon Textract,
-Amazon Comprehend, and Amazon Comprehend Medical to experience the power
+Amazon Comprehend and Amazon Comprehend Medical to experience the power
 of document digitization and extraction of sensitive information.`
-const discoveryTrackDescription = ENABLE_KENDRA? kendraModeDescription:classicModeDescription;
-;
+
+const discoveryTrackDescription = (ENABLE_KENDRA && ENABLE_COMPREHEND_MEDICAL)? kendraWithComprehendMedicalModeDescription
+                              :(!ENABLE_COMPREHEND_MEDICAL && !ENABLE_KENDRA)? classicModeDescription
+                              :(!ENABLE_KENDRA && ENABLE_COMPREHEND_MEDICAL)? classicModeWithComprehendMedicalDescription
+                              : kendraModeDescription;
 // Initial Data
 export default {
   search: {

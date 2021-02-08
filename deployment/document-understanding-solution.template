@@ -21,7 +21,14 @@ Parameters:
   KendraEnabled:
     Description: Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
     Type: String
-    Default: "true"
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+  ComprehendMedicalEnabled:
+    Description: Comprehend Medical is utilized to extract the medical information from the documents.
+    Type: String
+    Default: "false"
     AllowedValues:
       - "true"
       - "false"
@@ -206,6 +213,7 @@ Resources:
                 - sed -i -e "s/\"region\":.*/\"region\":\ \"$AWS_REGION\"/g" "./source/package.json"
                 - sed -i -e "s/\"isROMode\":.*/\"isROMode\":\ \"$READ_ONLY_MODE\",/g" "./source/package.json"
                 - sed -i -e "s/\"enableKendra\":.*/\"enableKendra\":\ \"$KENDRA_ENABLED\",/g" "./source/package.json"
+                - sed -i -e "s/\"enableKendra\":.*/\"enableComprehendMedical\":\ \"$COMPREHEND_MEDICAL_ENABLED\",/g" "./source/package.json"
                 - sed -i -e "s/\"stackname\":.*/\"stackname\":\ \"$MAIN_STACK_NAME\",/g" "./source/package.json"
                 - sed -i -e "s/\"cicd\":.*/\"cicd\":\ \"true\",/g" "./source/package.json"
             build:
@@ -237,6 +245,8 @@ Resources:
             Value: !FindInMap [SourceCode, Source, SolutionName]
           - Name: KENDRA_ENABLED
             Value: !Ref KendraEnabled
+          - Name: COMPREHEND_MEDICAL_ENABLED
+            Value: !Ref ComprehendMedicalEnabled
           - Name: READ_ONLY_MODE
             Value: !Ref ReadOnlyMode
       Artifacts:

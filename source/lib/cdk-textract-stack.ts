@@ -60,6 +60,7 @@ export interface TextractStackProps {
   isCICDDeploy: boolean;
   description: string;
   enableKendra: boolean;
+  enableComprehendMedical: boolean;
 }
 
 export class CdkTextractStack extends cdk.Stack {
@@ -932,6 +933,7 @@ export class CdkTextractStack extends cdk.Stack {
           DOCUMENTS_TABLE: documentsTable.tableName,
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
+          ENABLE_COMPREHEND_MEDICAL: props.enableComprehendMedical.toString(),
         },
         vpc: vpc
       }
@@ -1036,6 +1038,7 @@ export class CdkTextractStack extends cdk.Stack {
           DOCUMENTS_TABLE: documentsTable.tableName,
           ES_DOMAIN: elasticSearch.attrDomainEndpoint,
           PDF_LAMBDA: pdfGenerator.functionName,
+          ENABLE_COMPREHEND_MEDICAL: props.enableComprehendMedical.toString(),
         },
         vpc: vpc,
       }
@@ -1137,22 +1140,37 @@ export class CdkTextractStack extends cdk.Stack {
       roles: [syncProcessor.role, jobResultProcessor.role],
     });
 
-    const comprehendMedicalPolicy = new iam.Policy(
-      this,
-      "comprehendMedicalPolicy",
-      {
-        statements: [
-          new iam.PolicyStatement({
-            actions: [
-              "comprehendmedical:InferICD10CM",
-              "comprehendmedical:DetectEntitiesV2",
-            ],
-            resources: ["*"], // Currently, ComprehendMedical does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
-          }),
-        ],
-        roles: [syncProcessor.role, jobResultProcessor.role],
-      }
-    );
+    if(props.enableComprehendMedical){
+      const comprehendMedicalPolicy = new iam.Policy(
+        this,
+        "comprehendMedicalPolicy",
+        {
+          statements: [
+            new iam.PolicyStatement({
+              actions: [
+                "comprehendmedical:InferICD10CM",
+                "comprehendmedical:DetectEntitiesV2",
+              ],
+              resources: ["*"], // Currently, ComprehendMedical does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
+            }),
+          ],
+          roles: [syncProcessor.role, jobResultProcessor.role],
+        }
+      );
+        const cfncomprehendMedicalPolicy = comprehendMedicalPolicy.node
+        .defaultChild as iam.CfnPolicy;
+      cfncomprehendMedicalPolicy.cfnOptions.metadata = {
+        cfn_nag: {
+          rules_to_suppress: [
+            {
+              id: "W12",
+              reason:
+                "Currently, some AI services does not support resource level permissions",
+            },
+          ],
+        },
+      };
+    }
 
     //------------------------------------------------------------
 
@@ -1495,20 +1513,6 @@ export class CdkTextractStack extends cdk.Stack {
     const cfncomprehendPolicy = comprehendPolicy.node
       .defaultChild as iam.CfnPolicy;
     cfncomprehendPolicy.cfnOptions.metadata = {
-      cfn_nag: {
-        rules_to_suppress: [
-          {
-            id: "W12",
-            reason:
-              "Currently, some AI services does not support resource level permissions",
-          },
-        ],
-      },
-    };
-
-    const cfncomprehendMedicalPolicy = comprehendMedicalPolicy.node
-      .defaultChild as iam.CfnPolicy;
-    cfncomprehendMedicalPolicy.cfnOptions.metadata = {
       cfn_nag: {
         rules_to_suppress: [
           {

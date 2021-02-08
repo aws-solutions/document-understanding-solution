@@ -130,7 +130,9 @@ def processRequest(request):
     maxPages = 100
     comprehendClient = ComprehendHelper()
     responseDocumentName = "{}{}response.json".format(outputPath,TEXTRACT_PATH_S3_PREFIX)
-    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, maxPages)
+    # comprehend medical entities API will be called only if the flag is set to true during deployment
+    isComprehendMedicalEnabled = True if os.environ['ENABLE_COMPREHEND_MEDICAL']=="true" else False
+    comprehendAndMedicalEntities = comprehendClient.processComprehend(outputBucketName, responseDocumentName, comprehendOutputPath, isComprehendMedicalEnabled, maxPages)
 
     # if Kendra is available then let it index the document
     if 'KENDRA_INDEX_ID' in os.environ:
