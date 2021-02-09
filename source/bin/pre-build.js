@@ -19,7 +19,13 @@ const stackName = `${process.env.STACKNAME}Stack`;
 const region = process.env.AWS_REGION;
 aws.config.region = region;
 const isROMode = process.env.isROMode;
-const enableKendra = process.env.ENABLE_KENDRA;
+const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
+const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
+
+
+console.log("PRE BUILD Resources")
+console.log(process.env.SEARCH_MODE)
+console.log("Enable ES {} and Enable Kendra{}", enableElasticsearch,enableKendra);
 
 // listStackResources needs to be called twice in order to get the full stack.
 const listFullStack = (stackName, callback) => {
@@ -126,16 +132,18 @@ const GetResources = new Promise((resolve, reject) => {
     resources.PdfGenLambda = stackDescriptionObj.find((x) =>
       /pdfgenerator/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
-    resources.ElasticSearchSearchLogGroup = stackDescriptionObj.find((x) =>
-      /ElasticSearchSearchLogGroup/i.test(x.LogicalResourceId)
-    ).PhysicalResourceId;
-    resources.ElasticSearchIndexLogGroup = stackDescriptionObj.find((x) =>
-      /ElasticSearchIndexLogGroup/i.test(x.LogicalResourceId)
-    ).PhysicalResourceId;
-    resources.ElasticSearchCluster = stackDescriptionObj.find((x) =>
-      /ElasticSearchCluster/i.test(x.LogicalResourceId)
-    ).PhysicalResourceId;
 
+    if (enableElasticsearch){
+      resources.ElasticSearchSearchLogGroup = stackDescriptionObj.find((x) =>
+        /ElasticSearchSearchLogGroup/i.test(x.LogicalResourceId)
+      ).PhysicalResourceId;
+      resources.ElasticSearchIndexLogGroup = stackDescriptionObj.find((x) =>
+        /ElasticSearchIndexLogGroup/i.test(x.LogicalResourceId)
+      ).PhysicalResourceId;
+      resources.ElasticSearchCluster = stackDescriptionObj.find((x) =>
+        /ElasticSearchCluster/i.test(x.LogicalResourceId)
+      ).PhysicalResourceId;
+    }
     resolve(resources);
   });
 });
