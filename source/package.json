@@ -84,7 +84,7 @@
     "inquirer": "^6.4.1",
     "lodash": "^4.17.19",
     "minimist": "^1.2.3",
-    "next": "^10.0.3",
+    "next": "^10.0.6",
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-fetch": "^2.6.1",
     "normalizr": "^3.4.0",
