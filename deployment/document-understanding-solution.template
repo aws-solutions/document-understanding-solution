@@ -213,7 +213,7 @@ Resources:
                 - sed -i -e "s/\"region\":.*/\"region\":\ \"$AWS_REGION\"/g" "./source/package.json"
                 - sed -i -e "s/\"isROMode\":.*/\"isROMode\":\ \"$READ_ONLY_MODE\",/g" "./source/package.json"
                 - sed -i -e "s/\"enableKendra\":.*/\"enableKendra\":\ \"$KENDRA_ENABLED\",/g" "./source/package.json"
-                - sed -i -e "s/\"enableKendra\":.*/\"enableComprehendMedical\":\ \"$COMPREHEND_MEDICAL_ENABLED\",/g" "./source/package.json"
+                - sed -i -e "s/\"enableComprehendMedical\":.*/\"enableComprehendMedical\":\ \"$COMPREHEND_MEDICAL_ENABLED\",/g" "./source/package.json"
                 - sed -i -e "s/\"stackname\":.*/\"stackname\":\ \"$MAIN_STACK_NAME\",/g" "./source/package.json"
                 - sed -i -e "s/\"cicd\":.*/\"cicd\":\ \"true\",/g" "./source/package.json"
             build:
