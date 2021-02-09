@@ -31,11 +31,11 @@ export const search = createAction(SEARCH, async params => {
   }
 
   const [ esResponse, kendraResponse, kendraFilteredResponse ] = await Promise.all([
-    API.get("TextractDemoTextractAPI", "search", {
+    ENABLE_ELASTICSEARCH ? API.get("TextractDemoTextractAPI", "search", {
       headers,
       response: true,
       queryStringParameters: { ...params }
-    }),
+    }) : null,
 
     ENABLE_KENDRA ? API.post("TextractDemoTextractAPI", "searchkendra", {
       headers,
