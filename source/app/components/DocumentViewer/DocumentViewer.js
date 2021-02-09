@@ -159,7 +159,7 @@ const DocumentMarks = forwardRef(function DocumentMarks(
         {children}
         {marks &&
           marks.map(({ Text, Top, Left, Width, Height, type, id }, i) => (
-            <Tooltip key={`${id || ''}${type || ''}` || i} hasArrow label="Click to redact">
+            <Tooltip key={`${id || ''}${type || ''}` || i} hasArrow label="Click to redact" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
               <mark
                 className={cs(css.highlight, type, id === highlightedMark && css.highlighted)}
                 onClick={() => onMarkClick({Text, Top, Left, Width, Height})}
@@ -174,7 +174,7 @@ const DocumentMarks = forwardRef(function DocumentMarks(
           ))}
         {redactions &&
           Object.entries(redactions).map(([id, { Top, Left, Width, Height }]) => (
-            <Tooltip key={id} hasArrow label="Click to remove">
+            <Tooltip key={id} hasArrow label="Click to remove" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
               <mark
                 className={css.redact}
                 onClick={() => onRedactionClick(id)}
