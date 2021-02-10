@@ -14,4 +14,4 @@
 
 export const MIN_SEARCH_QUERY_LENGTH = 4
 export const ENABLE_KENDRA = (process.env.NEXT_PUBLIC_SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.NEXT_PUBLIC_SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
-export const ENABLE_ES = (process.env.NEXT_PUBLIC_SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.NEXT_PUBLIC_SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
+export const ENABLE_ELASTICSEARCH = (process.env.NEXT_PUBLIC_SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.NEXT_PUBLIC_SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false

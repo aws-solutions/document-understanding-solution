@@ -23,10 +23,6 @@ const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process
 const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
 
 
-console.log("PRE BUILD Resources")
-console.log(process.env.SEARCH_MODE)
-console.log("Enable ES {} and Enable Kendra{}", enableElasticsearch,enableKendra);
-
 // listStackResources needs to be called twice in order to get the full stack.
 const listFullStack = (stackName, callback) => {
   const cf = new aws.CloudFormation();
