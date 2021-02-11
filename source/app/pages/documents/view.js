@@ -295,328 +295,190 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   const setHighlightedLine = useCallback(() => {}, [])
 
 
-  if(ENABLE_COMPREHEND_MEDICAL){
-    return (
-      <div className={css.document}>
-        {status === 'pending' && <Loading />}
+  return (
+    <div className={css.document}>
+      {status === 'pending' && <Loading />}
 
-        {status === 'success' && (
-          <>
-            <div className={css.tabWrapper}>
-              <Tabs
-                isTrackTab={false}
-                selected={tab}
-                track={track}
-                onSelectTab={selectTab}
-                items={[
-                  { id: 'search', title: 'Preview' },
-                  { id: 'text', title: 'Raw Text' },
-                  { id: 'kv', title: `Key-Value Pairs` },
-                  { id: 'tables', title: `Tables` },
-                  { id: 'entities', title: `Entities` },
-                  { id: 'medical_entities', title: `Medical Entities` },
-                ]}
-              />
+      {status === 'success' && (
+        <>
+          <div className={css.tabWrapper}>
+            <Tabs
+              isTrackTab={false}
+              selected={tab}
+              track={track}
+              onSelectTab={selectTab}
+              items={ENABLE_COMPREHEND_MEDICAL? [
+                { id: 'search', title: 'Preview' },
+                { id: 'text', title: 'Raw Text' },
+                { id: 'kv', title: `Key-Value Pairs` },
+                { id: 'tables', title: `Tables` },
+                { id: 'entities', title: `Entities` },
+                { id: 'medical_entities', title: `Medical Entities` },
+              ]: [
+                { id: 'search', title: 'Preview' },
+                { id: 'text', title: 'Raw Text' },
+                { id: 'kv', title: `Key-Value Pairs` },
+                { id: 'tables', title: `Tables` },
+                { id: 'entities', title: `Entities` },
+              ] }
+            />
 
 
-              {track === 'redaction' &&
-              document.redactions &&
-              Object.keys(document.redactions).length ? (
-                <div className={css.downloadButtons}>
-                  <Button inverted onClick={clearReds}>
-                    Clear Redaction
-                  </Button>
-                  <Button className={css.downloadRedacted} onClick={downloadRedacted}>
-                  ⬇ Redacted Doc
-                  </Button>
-                </div>
-              ) : null}
+            {track === 'redaction' &&
+            document.redactions &&
+            Object.keys(document.redactions).length ? (
+              <div className={css.downloadButtons}>
+                <Button inverted onClick={clearReds}>
+                  Clear Redaction
+                </Button>
+                <Button className={css.downloadRedacted} onClick={downloadRedacted}>
+                ⬇ Redacted Doc
+                </Button>
+              </div>
+            ) : null}
 
 
 
 
                 <div>
 
-                <Tabs
-                isTrackTab={true}
-                selected={trackTab}
-                track={track}
-                onSelectTab={selectTrack}
-                items={[
-                  { id: 'searchTrack', title: 'Discovery'},
-                  { id: 'complianceTrack', title: 'Compliance'},
-                  { id: 'workflowTrack', title: 'Workflow Automation'}
-                ]}
-              />
-              </div>
-            </div>
-            <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
-              <DocumentSearchBar className={css.searchBar} placeholder="Search current document…" />
-              {track === 'redaction' ? <Button onClick={redactMatches}>Redact matches</Button> : null}
-            </div>
-            <div className={css.content} ref={contentRef}>
-              <DocumentViewer
-                className={cs(
-                  css.tabSourceViewer,
-                  tab === 'kv' && css.withKv,
-                  tab === 'entities' && css.withEv,
-                  tab === 'medical_entities' && css.withEv,
-                  tab === 'text' && css.withText
-                )}
-                document={document}
-                pageCount={pageCount}
-                redactions={(document.redactions || {})[currentPageNumber]}
-                marks={
-                  tab === 'search'
-                    ? wordsMatchingSearch
-                    : tab === 'text'
-                    ? pageLinesAsMarks
-                    : tab === 'kv'
-                    ? pagePairsAsMarks
-                    : tab === 'entities'
-                    ? (document.highlights || [])
-                    : tab === 'medical_entities'
-                    ? (document.highlights || [])
-                    : []
-                }
-                tables={tab === 'tables' && pageData.tables}
-                highlightedMark={highlightedKv}
-              />
-
-              <div
-                className={cs(
-                  css.sidebar,
-                  (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
-                )}
-              >
-                <KeyValueList
-                  kvPairs={docData.pairs}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  showRedaction={track === 'redaction'}
-                  onHighlight={setHighlightedKv}
-                  onSwitchPage={switchPage}
-                  onRedact={redact}
-                  onRedactAll={redactAllValues}
-                  onDownload={downloadKV}
-                  visible={tab === 'kv'}
-                />
-
-                <DocumentPreview
-                  document={document}
-                  pageCount={pageCount}
-                  visible={tab === 'search'}
-                  track = {track}
-                />
-
-                <RawTextLines
-                  lines={docData.lines}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  onHighlight={setHighlightedLine}
-                  onSwitchPage={switchPage}
-                  visible={tab === 'text'}
-                />
-
-                <EntitiesCheckbox
-                  entities={docData.entities}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  showRedaction={track === 'redaction'}
-                  onHighlight={highlightEntities}
-                  onSwitchPage={switchPage}
-                  onRedact={redactEntityMatches}
-                  onRedactAll={redactAllValues}
-                  onDownload={downloadKV}
-                  visible={tab === 'entities'}
-                  comprehendService={COMPREHEND_SERVICE}
-                  onDownloadPrimary = {downloadEntities}
-                  onDownloadSecondary = {null}
-                  document = {document}
-                />
-
-                <EntitiesCheckbox
-                  entities={docData.medicalEntities}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  showRedaction={track === 'redaction'}
-                  onHighlight={highlightEntities}
-                  onSwitchPage={switchPage}
-                  onRedact={redactEntityMatches}
-                  onRedactAll={redactAllValues}
-                  onDownloadPrimary={downloadMedicalEntities}
-                  onDownloadSecondary = {downloadMedicalICD10Ontologies}
-                  visible={tab === 'medical_entities'}
-                  comprehendService={COMPREHEND_MEDICAL_SERVICE}
-                  document = {document}
-                />
-
-                <TableResults
-                  tables={docData.tables}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  onSwitchPage={switchPage}
-                  visible={tab === 'tables'}
-                  document = {document}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    )
-  }
-  else {
-    return (
-      <div className={css.document}>
-        {status === 'pending' && <Loading />}
-
-        {status === 'success' && (
-          <>
-            <div className={css.tabWrapper}>
               <Tabs
-                isTrackTab={false}
-                selected={tab}
-                track={track}
-                onSelectTab={selectTab}
-                items={[
-                  { id: 'search', title: 'Preview' },
-                  { id: 'text', title: 'Raw Text' },
-                  { id: 'kv', title: `Key-Value Pairs` },
-                  { id: 'tables', title: `Tables` },
-                  { id: 'entities', title: `Entities` },
-                ]}
+              isTrackTab={true}
+              selected={trackTab}
+              track={track}
+              onSelectTab={selectTrack}
+              items={[
+                { id: 'searchTrack', title: 'Discovery'},
+                { id: 'complianceTrack', title: 'Compliance'},
+                { id: 'workflowTrack', title: 'Workflow Automation'}
+              ]}
+            />
+            </div>
+          </div>
+          <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
+            <DocumentSearchBar className={css.searchBar} placeholder="Search current document…" />
+            {track === 'redaction' ? <Button onClick={redactMatches}>Redact matches</Button> : null}
+          </div>
+          <div className={css.content} ref={contentRef}>
+            <DocumentViewer
+              className={ENABLE_COMPREHEND_MEDICAL? cs(
+                css.tabSourceViewer,
+                tab === 'kv' && css.withKv,
+                tab === 'entities' && css.withEv,
+                tab === 'medical_entities' && css.withEv,
+                tab === 'text' && css.withText
+              ): cs(
+                css.tabSourceViewer,
+                tab === 'kv' && css.withKv,
+                tab === 'entities' && css.withEv,
+                tab === 'text' && css.withText
+              )}
+              document={document}
+              pageCount={pageCount}
+              redactions={(document.redactions || {})[currentPageNumber]}
+              marks={
+                tab === 'search'
+                  ? wordsMatchingSearch
+                  : tab === 'text'
+                  ? pageLinesAsMarks
+                  : tab === 'kv'
+                  ? pagePairsAsMarks
+                  : tab === 'entities'
+                  ? (document.highlights || [])
+                  : tab === 'medical_entities'
+                  ? (document.highlights || [])
+                  : []
+              }
+              tables={tab === 'tables' && pageData.tables}
+              highlightedMark={highlightedKv}
+            />
+
+            <div
+              className={ENABLE_COMPREHEND_MEDICAL? cs(
+                css.sidebar,
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
+              ): cs(
+                css.sidebar,
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
+              )}
+            >
+              <KeyValueList
+                kvPairs={docData.pairs}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                showRedaction={track === 'redaction'}
+                onHighlight={setHighlightedKv}
+                onSwitchPage={switchPage}
+                onRedact={redact}
+                onRedactAll={redactAllValues}
+                onDownload={downloadKV}
+                visible={tab === 'kv'}
               />
 
-
-              {track === 'redaction' &&
-              document.redactions &&
-              Object.keys(document.redactions).length ? (
-                <div className={css.downloadButtons}>
-                  <Button inverted onClick={clearReds}>
-                    Clear Redaction
-                  </Button>
-                  <Button className={css.downloadRedacted} onClick={downloadRedacted}>
-                  ⬇ Redacted Doc
-                  </Button>
-                </div>
-              ) : null}
-
-
-
-
-                <div>
-
-                <Tabs
-                isTrackTab={true}
-                selected={trackTab}
-                track={track}
-                onSelectTab={selectTrack}
-                items={[
-                  { id: 'searchTrack', title: 'Discovery'},
-                  { id: 'complianceTrack', title: 'Compliance'},
-                  { id: 'workflowTrack', title: 'Workflow Automation'}
-                ]}
-              />
-              </div>
-            </div>
-            <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
-              <DocumentSearchBar className={css.searchBar} placeholder="Search current document…" />
-              {track === 'redaction' ? <Button onClick={redactMatches}>Redact matches</Button> : null}
-            </div>
-            <div className={css.content} ref={contentRef}>
-              <DocumentViewer
-                className={cs(
-                  css.tabSourceViewer,
-                  tab === 'kv' && css.withKv,
-                  tab === 'entities' && css.withEv,
-                  tab === 'text' && css.withText
-                )}
+              <DocumentPreview
                 document={document}
                 pageCount={pageCount}
-                redactions={(document.redactions || {})[currentPageNumber]}
-                marks={
-                  tab === 'search'
-                    ? wordsMatchingSearch
-                    : tab === 'text'
-                    ? pageLinesAsMarks
-                    : tab === 'kv'
-                    ? pagePairsAsMarks
-                    : tab === 'entities'
-                    ? (document.highlights || [])
-                    : []
-                }
-                tables={tab === 'tables' && pageData.tables}
-                highlightedMark={highlightedKv}
+                visible={tab === 'search'}
+                track = {track}
               />
 
-              <div
-                className={cs(
-                  css.sidebar,
-                  (tab === 'kv' || tab === 'text' || tab === 'entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
-                )}
-              >
-                <KeyValueList
-                  kvPairs={docData.pairs}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  showRedaction={track === 'redaction'}
-                  onHighlight={setHighlightedKv}
-                  onSwitchPage={switchPage}
-                  onRedact={redact}
-                  onRedactAll={redactAllValues}
-                  onDownload={downloadKV}
-                  visible={tab === 'kv'}
-                />
+              <RawTextLines
+                lines={docData.lines}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                onHighlight={setHighlightedLine}
+                onSwitchPage={switchPage}
+                visible={tab === 'text'}
+              />
 
-                <DocumentPreview
-                  document={document}
-                  pageCount={pageCount}
-                  visible={tab === 'search'}
-                  track = {track}
-                />
+              <EntitiesCheckbox
+                entities={docData.entities}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                showRedaction={track === 'redaction'}
+                onHighlight={highlightEntities}
+                onSwitchPage={switchPage}
+                onRedact={redactEntityMatches}
+                onRedactAll={redactAllValues}
+                onDownload={downloadKV}
+                visible={tab === 'entities'}
+                comprehendService={COMPREHEND_SERVICE}
+                onDownloadPrimary = {downloadEntities}
+                onDownloadSecondary = {null}
+                document = {document}
+              />
 
-                <RawTextLines
-                  lines={docData.lines}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  onHighlight={setHighlightedLine}
-                  onSwitchPage={switchPage}
-                  visible={tab === 'text'}
-                />
+              { ENABLE_COMPREHEND_MEDICAL?
+               <EntitiesCheckbox
+                entities={docData.medicalEntities}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                showRedaction={track === 'redaction'}
+                onHighlight={highlightEntities}
+                onSwitchPage={switchPage}
+                onRedact={redactEntityMatches}
+                onRedactAll={redactAllValues}
+                onDownloadPrimary={downloadMedicalEntities}
+                onDownloadSecondary = {downloadMedicalICD10Ontologies}
+                visible={tab === 'medical_entities'}
+                comprehendService={COMPREHEND_MEDICAL_SERVICE}
+                document = {document}
+              /> : null }
 
-                <EntitiesCheckbox
-                  entities={docData.entities}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  showRedaction={track === 'redaction'}
-                  onHighlight={highlightEntities}
-                  onSwitchPage={switchPage}
-                  onRedact={redactEntityMatches}
-                  onRedactAll={redactAllValues}
-                  onDownload={downloadKV}
-                  visible={tab === 'entities'}
-                  comprehendService={COMPREHEND_SERVICE}
-                  onDownloadPrimary = {downloadEntities}
-                  onDownloadSecondary = {null}
-                  document = {document}
-                />
-
-                <TableResults
-                  tables={docData.tables}
-                  pageCount={pageCount}
-                  currentPageNumber={currentPageNumber}
-                  onSwitchPage={switchPage}
-                  visible={tab === 'tables'}
-                  document = {document}
-                />
-              </div>
+              <TableResults
+                tables={docData.tables}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                onSwitchPage={switchPage}
+                visible={tab === 'tables'}
+                document = {document}
+              />
             </div>
-          </>
-        )}
-      </div>
-    )
-  }
+          </div>
+        </>
+      )}
+    </div>
+  )
 }
 
 export default connect(function mapStateToProps(state) {
