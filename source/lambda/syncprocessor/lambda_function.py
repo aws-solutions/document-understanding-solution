@@ -128,7 +128,7 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
         if key not in comprehendAndMedicalEntities:
             comprehendAndMedicalEntities[key] = val
         else:
-            comprehendAndMedicalEntities[key].append(val)
+            comprehendAndMedicalEntities[key].add(val)
     opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
