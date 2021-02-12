@@ -82,8 +82,7 @@ export class CdkTextractStack extends cdk.Stack {
     this.resourceName = (name: any) =>
       `${id}-${name}-${this.uuid}`.toLowerCase();
 
-    this.uuid = uuid.generate();
-
+    this.uuid = uuid.generate();   
     const corsRule = {
       allowedOrigins: ["*"],
       allowedMethods: [
@@ -260,6 +259,7 @@ export class CdkTextractStack extends cdk.Stack {
     let elasticSearch : es.CfnDomain;
     let vpc : ec2.Vpc;
     let esEncryptionKey : kms.Key;
+    let esPolicy : iam.PolicyStatement;
 
     if (props.enableElasticsearch){
     /****                      VPC Configuration                         ****/
@@ -278,6 +278,7 @@ export class CdkTextractStack extends cdk.Stack {
 
     securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
 
+   /****                      Elasticsearch Configuration                         ****/
     const esSearchLogGroup = new LogGroup(
       this,
       this.resourceName("ElasticSearchSearchLogGroup"),
@@ -294,11 +295,10 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-
-
     esEncryptionKey = new kms.Key(this, "esEncryptionKey", {
       enableKeyRotation: true,
     });
+
 
     if (!props.isCICDDeploy) {
       elasticSearch = new es.CfnDomain(
@@ -357,7 +357,21 @@ export class CdkTextractStack extends cdk.Stack {
         }
       );
     }
-   }
+    esPolicy  =new iam.PolicyStatement({
+        actions: [
+          "es:ESHttpHead",
+          "es:Get*",
+          "es:List*",
+          "es:Describe*",
+          "es:ESHttpGet",
+          "es:ESHttpDelete",
+          "es:ESHttpPost",
+          "es:ESHttpPut",
+        ],
+        resources: [`${elasticSearch.attrArn}/*`],
+      })
+     }
+
     const jobResultsKey = new kms.Key(
       this,
       this.resourceName("JobResultsKey"),
@@ -848,7 +862,7 @@ export class CdkTextractStack extends cdk.Stack {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
-        vpc: vpc
+        vpc: props.enableElasticsearch? vpc : undefined
       }
     );
 
@@ -963,21 +977,7 @@ export class CdkTextractStack extends cdk.Stack {
     documentsTable.grantReadWriteData(syncProcessor);
     props.enableElasticsearch? esEncryptionKey.grantEncryptDecrypt(syncProcessor) : null;
 
-    props.enableElasticsearch ? syncProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "es:ESHttpHead",
-          "es:Get*",
-          "es:List*",
-          "es:Describe*",
-          "es:ESHttpGet",
-          "es:ESHttpDelete",
-          "es:ESHttpPost",
-          "es:ESHttpPut",
-        ],
-        resources: [`${elasticSearch.attrArn}/*`],
-      })
-    ):null;
+    props.enableElasticsearch ? syncProcessor.addToRolePolicy(esPolicy) : null;
 
     //------------------------------------------------------------
 
@@ -1067,24 +1067,8 @@ export class CdkTextractStack extends cdk.Stack {
     documentsS3Bucket.grantReadWrite(jobResultProcessor);
     samplesS3Bucket.grantReadWrite(jobResultProcessor);
 
-    props.enableElasticsearch ? jobResultProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "es:ESHttpHead",
-          "es:Get*",
-          "es:List*",
-          "es:Describe*",
-          "es:ESHttpGet",
-          "es:ESHttpDelete",
-          "es:ESHttpPost",
-          "es:ESHttpPut",
-        ],
-        resources: [`${elasticSearch.attrArn}/*`],
-      })
-    ):null;
-
     props.enableElasticsearch ? esEncryptionKey.grantEncryptDecrypt(jobResultProcessor) : null ;
-
+    props.enableElasticsearch ? jobResultProcessor.addToRolePolicy(esPolicy) : null; 
     //------------------------------------------------------------
 
     pdfGenerator.grantInvoke(syncProcessor);
@@ -1195,21 +1179,7 @@ export class CdkTextractStack extends cdk.Stack {
     documentsS3Bucket.grantRead(apiProcessor);
     samplesS3Bucket.grantRead(apiProcessor);
     
-    props.enableElasticsearch ? apiProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "es:ESHttpHead",
-          "es:Get*",
-          "es:List*",
-          "es:Describe*",
-          "es:ESHttpGet",
-          "es:ESHttpDelete",
-          "es:ESHttpPost",
-          "es:ESHttpPut",
-        ],
-        resources: [`${elasticSearch.attrArn}/*`],
-      })
-    ) : null;
+    props.enableElasticsearch ? apiProcessor.addToRolePolicy(esPolicy) : null;
     props.enableElasticsearch ? esEncryptionKey.grantEncryptDecrypt(apiProcessor) : null;
 
     // API
@@ -1311,6 +1281,10 @@ export class CdkTextractStack extends cdk.Stack {
     addCorsOptionsAndMethods(api.root, []);
 
 
+    if (props.enableElasticsearch){
+      const searchResource = api.root.addResource("search");
+      addCorsOptionsAndMethods(searchResource, ["GET"]);    
+    }
     const documentsResource = api.root.addResource("documents");
     addCorsOptionsAndMethods(documentsResource, ["GET"]);
 
@@ -1327,6 +1301,7 @@ export class CdkTextractStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
       })
     );
+
 
     // add kendra index id to lambda environment in case of DUS+Kendra mode
     if (props.enableKendra) {
