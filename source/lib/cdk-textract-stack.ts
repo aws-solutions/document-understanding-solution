@@ -79,7 +79,6 @@ export class CdkTextractStack extends cdk.Stack {
   ) {
     super(scope, id, props);
 
-    console.log("Props",props.enableElasticsearch, props.enableKendra);
     this.resourceName = (name: any) =>
       `${id}-${name}-${this.uuid}`.toLowerCase();
 
@@ -948,7 +947,7 @@ export class CdkTextractStack extends cdk.Stack {
     syncProcessor.addLayers(helperLayer);
     syncProcessor.addLayers(textractorLayer);
     syncProcessor.addLayers(boto3Layer);
-    props.enableElasticsearch ? syncProcessor.addLayers(elasticSearchLayer):null;
+    syncProcessor.addLayers(elasticSearchLayer);
 
     //Trigger
     syncProcessor.addEventSource(
@@ -1052,7 +1051,7 @@ export class CdkTextractStack extends cdk.Stack {
     jobResultProcessor.addLayers(helperLayer);
     jobResultProcessor.addLayers(textractorLayer);
     jobResultProcessor.addLayers(boto3Layer);
-    props.enableElasticsearch ? jobResultProcessor.addLayers(elasticSearchLayer) : null;
+    jobResultProcessor.addLayers(elasticSearchLayer);
     jobResultsKey.grantEncryptDecrypt(jobResultProcessor);
 
     // Triggers
@@ -1186,7 +1185,7 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     // Layer
-    apiProcessor.addLayers(elasticSearchLayer)
+    apiProcessor.addLayers(elasticSearchLayer);
     apiProcessor.addLayers(helperLayer);
 
     // Permissions
