@@ -149,7 +149,7 @@ def processRequest(request):
     print("Processed Comprehend data: {}".format(comprehendAndMedicalEntities))
 
     # index document once the comprehend entities and KVPairs have been extracted
-     if 'ES_DOMAIN' in os.environ :
+    if 'ES_DOMAIN' in os.environ :
         for key, val in opg_output[KVPAIRS].items():
             if key not in comprehendAndMedicalEntities:
                 comprehendAndMedicalEntities[key] = val
@@ -186,7 +186,7 @@ def lambda_handler(event, context):
     request["bucketName"] = message['DocumentLocation']['S3Bucket']
     request["objectName"] = message['DocumentLocation']['S3ObjectName']
     request["outputBucketName"] = os.environ['OUTPUT_BUCKET']
-    request["elasticsearchDomain"] = os.environ['ES_DOMAIN']
+    request["elasticsearchDomain"] = os.environ.get('ES_DOMAIN',None)
     request["outputTable"] = os.environ['OUTPUT_TABLE']
     request["documentsTable"] = os.environ['DOCUMENTS_TABLE']
 

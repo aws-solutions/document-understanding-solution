@@ -72,13 +72,13 @@ def lambda_handler(event, context):
 
     if('resource' in event):
         request = {}
-        if 'ES_DOMAIN' in os.enviorn:
+        if 'ES_DOMAIN' in os.environ:
             request["elasticsearchDomain"] = os.environ['ES_DOMAIN']
         request["outputTable"] = os.environ['OUTPUT_TABLE']
         request["documentsTable"] = os.environ['DOCUMENTS_TABLE']
 
         # search Elasticsearch handler
-        if(event['resource'] == '/search' and 'ES_DOMAIN' in os.enviorn):
+        if(event['resource'] == '/search' and 'ES_DOMAIN' in os.environ):
             if('queryStringParameters' in event and 'k' in event['queryStringParameters']):
                 request["keyword"] = event['queryStringParameters']['k']
                 if('documentId' in event['queryStringParameters']):
@@ -159,7 +159,7 @@ def lambda_handler(event, context):
                 if('documentid' in event['queryStringParameters']):
                     request["documentId"] = event['queryStringParameters']['documentid']
                     result = deleteDocument(request)
-                    if 'ES_DOMAIN' in os.enviorn:
+                    if 'ES_DOMAIN' in os.environ:
                         deleteESItem(request["elasticsearchDomain"], request["documentId"])
                     # remove it from Kendra's index too if present
                     if 'KENDRA_INDEX_ID' in os.environ:
