@@ -214,7 +214,7 @@ function Documents({
           { ENABLE_KENDRA && ENABLE_ELASTICSEARCH ?
             <SearchTypeTabs />
           : null }
-          <div className={css.searchResultContainer}>
+          <div className={css.searchResultContainer}>        
             {  ( selectedSearch === 'es' || selectedSearch === 'both' ) ?
               <SearchResults
                 results={searchResults}
