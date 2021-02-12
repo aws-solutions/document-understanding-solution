@@ -58,7 +58,7 @@ aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<sol
 
 - Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
 - Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
-- If you wish to manually choose whether to enable Kendra or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=KendraEnabled,ParameterValue=<true_or_false>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
+- If you wish to manually choose [Search Mode](#search-mode) or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=SearchMode,ParameterValue=<AMAZON_ES_ONLY,AMAZON_KENDRA_ONLY,AMAZON_ES_AND_KENDRA>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
 
 ```
 aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
@@ -125,7 +125,7 @@ To deploy using this approach, you must first set few values inside the `package
   _Note_ : The AWS services used in this solution are not all available in all AWS Regions. Supported regions include us-east-1,us-west-2,eu-west-1. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for the most up to date information on which regions support the all services in DUS are available.
 
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
-- If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to `false`. For [Kendra-enabled mode](#kendra-enabled-mode), set the flag as `true`
+- If you want to choose between the Search modes, set the searchMode parameter to one of the following - AMAZON_ES_ONLY,AMAZON_KENDRA_ONLY,AMAZON_ES_AND_KENDRA. More Info on Search Modes [here](#search-mode)
 - If you want to use the [Read-only (RO) mode](#read-only-mode), set the is isROMode flag to `true`.
 
 Now switch to the source directory, and use yarn to deploy the solution:
@@ -195,16 +195,25 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 ## DUS Modes:
 
-### Classic Mode
+### Search-Mode
 
-This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract, Amazon Comprehend and Amazon Comprehend Medical that allow digitization, information extraction and indexing in DUS.
+DUS offers both Amazon Elasticsearch and Amazon Kendra as two options for indexing and searching data across documents
 
-### Kendra-Enabled Mode
+#### 1. Amazon Elasticsearch Only
 
-In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
-In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
-Simply set the ` enableKendra: "true"` in package.json
+In this version, DUS supports searching/indexing of documents using Amazon Elasticsearch. The document data and metadata are indexed in the Amazon ES cluster to provide the traditional search experience.
+Set `SearchMode=AMAZON_ES_ONLY` either in package.json (for Development Deploy) or in the CloudFormation template (for CICD Deploy)
+
+#### 2. Amazon Kendra Only 
+
+In the Amazon Kendra enabled mode, Amazon Kendra is can be used for exploring features such as Semantic Search, Adding FAQs and User Context Based Filtering.
+Set `SearchMode=AMAZON_KENDRA_ONLY` either in package.json (for Development Deploy) or in the CloudFormation template (for CICD Deploy)
 _Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
+
+#### 3. Amazon ES and Kendra  
+
+In this mode, your data is indexed, stored and available to search in both Amazon ES and Amazon Kendra indexes. There is also a comparitive view available to see the difference in both the search modes.
+Set `SearchMode=AMAZON_ES_AND_KENDRA` either in package.json (for Development Deploy) or in the CloudFormation template (for CICD Deploy)
 
 ### Read-Only Mode
 
