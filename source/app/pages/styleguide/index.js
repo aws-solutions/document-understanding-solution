@@ -27,7 +27,7 @@ import Tabs from '../../components/Tabs/Tabs'
 
 import { searchResults } from '../../constants/test-data'
 
-import css from './styleguide.scss'
+import css from './styleguide.module.scss'
 
 Styleguide.getInitialProps = function() {
   return {

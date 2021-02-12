@@ -19,7 +19,7 @@ import PropTypes from 'prop-types'
 
 import { linkShape } from '../../utils/link-generators.js'
 
-import css from './Button.scss'
+import css from './Button.module.scss'
 
 export const BUTTON_PALETTES = ['black', 'blue', 'orange']
 

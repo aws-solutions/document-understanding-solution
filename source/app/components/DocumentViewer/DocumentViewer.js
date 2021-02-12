@@ -23,7 +23,7 @@ import Pager from '../Pager/Pager'
 import TableDownloader from '../TableDownloader/TableDownloader'
 
 import cs from 'classnames'
-import css from './DocumentViewer.scss'
+import css from './DocumentViewer.module.scss'
 
 DocumentViewer.propTypes = {
   className: PropTypes.string,

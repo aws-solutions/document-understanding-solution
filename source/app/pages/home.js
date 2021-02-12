@@ -22,7 +22,7 @@ import Card from '../components/Card/Card'
 import { setSelectedTrack } from '../store/ui/actions'
 import { getTracks } from '../store/entities/tracks/selectors'
 
-import css from './home.scss'
+import css from './home.module.scss'
 import TrackInfoModal from '../components/TrackInfoModal/TrackInfoModal'
 
 Home.propTypes = {
