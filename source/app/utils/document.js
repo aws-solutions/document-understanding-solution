@@ -32,7 +32,6 @@ import {
   view,
   memoizeWith,
 } from 'ramda'
-import { ENABLE_COMPREHEND_MEDICAL } from '../constants/configs'
 
 import {
   COMPREHEND_MEDICAL_SERVICE,
@@ -308,7 +307,7 @@ export function resetFormsonPage() {
 export function getPageEntityPairs(document, pageNumber,comprehendService) {
   // Get all blocks of Entities for a PAGE
   let blocks = []
-  if (comprehendService == COMPREHEND_MEDICAL_SERVICE && ENABLE_COMPREHEND_MEDICAL){
+  if (comprehendService == COMPREHEND_MEDICAL_SERVICE){
    blocks = document.comprehendMedicalRespone["results"]
   }else{
    blocks = document.comprehendRespone["results"]  

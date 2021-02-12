@@ -124,7 +124,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     const tables = getDocumentTables(document)
     const lines = getDocumentLines(document)
     const entities = getDocumentEntityPairs(document, COMPREHEND_SERVICE)
-    const medicalEntities = getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE)
+    const medicalEntities = ENABLE_COMPREHEND_MEDICAL? getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE) : []
     return { pairs, tables, lines, entities , medicalEntities }
     // eslint-disable-next-line
 
@@ -294,6 +294,15 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const setHighlightedLine = useCallback(() => {}, [])
 
+  const tabItems = [
+    { id: 'search', title: 'Preview' },
+    { id: 'text', title: 'Raw Text' },
+    { id: 'kv', title: `Key-Value Pairs` },
+    { id: 'tables', title: `Tables` },
+    { id: 'entities', title: `Entities` },
+]
+
+if (ENABLE_COMPREHEND_MEDICAL) tabItems.push({ id: 'medical_entities', title: `Medical Entities` })
 
   return (
     <div className={css.document}>
@@ -307,22 +316,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               selected={tab}
               track={track}
               onSelectTab={selectTab}
-              items={ENABLE_COMPREHEND_MEDICAL? [
-                { id: 'search', title: 'Preview' },
-                { id: 'text', title: 'Raw Text' },
-                { id: 'kv', title: `Key-Value Pairs` },
-                { id: 'tables', title: `Tables` },
-                { id: 'entities', title: `Entities` },
-                { id: 'medical_entities', title: `Medical Entities` },
-              ]: [
-                { id: 'search', title: 'Preview' },
-                { id: 'text', title: 'Raw Text' },
-                { id: 'kv', title: `Key-Value Pairs` },
-                { id: 'tables', title: `Tables` },
-                { id: 'entities', title: `Entities` },
-              ] }
+              items={tabItems}
             />
-
 
             {track === 'redaction' &&
             document.redactions &&
@@ -361,18 +356,14 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
           </div>
           <div className={css.content} ref={contentRef}>
             <DocumentViewer
-              className={ENABLE_COMPREHEND_MEDICAL? cs(
+              className={cs(
                 css.tabSourceViewer,
                 tab === 'kv' && css.withKv,
                 tab === 'entities' && css.withEv,
                 tab === 'medical_entities' && css.withEv,
                 tab === 'text' && css.withText
-              ): cs(
-                css.tabSourceViewer,
-                tab === 'kv' && css.withKv,
-                tab === 'entities' && css.withEv,
-                tab === 'text' && css.withText
-              )}
+              )
+            }
               document={document}
               pageCount={pageCount}
               redactions={(document.redactions || {})[currentPageNumber]}
@@ -394,13 +385,11 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             />
 
             <div
-              className={ENABLE_COMPREHEND_MEDICAL? cs(
+              className={cs(
                 css.sidebar,
                 (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
-              ): cs(
-                css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
-              )}
+              )
+            }
             >
               <KeyValueList
                 kvPairs={docData.pairs}
@@ -448,7 +437,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 document = {document}
               />
 
-              { ENABLE_COMPREHEND_MEDICAL?
+              { ENABLE_COMPREHEND_MEDICAL &&
                <EntitiesCheckbox
                 entities={docData.medicalEntities}
                 pageCount={pageCount}
@@ -463,7 +452,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 visible={tab === 'medical_entities'}
                 comprehendService={COMPREHEND_MEDICAL_SERVICE}
                 document = {document}
-              /> : null }
+              /> }
 
               <TableResults
                 tables={docData.tables}

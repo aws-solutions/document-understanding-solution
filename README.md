@@ -200,13 +200,15 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract and Amazon Comprehend that allow digitization, information extraction and indexing in DUS.
 
 ### Comprehend Medical Enabled Mode
-In comprehend medical mode, DUS provides the capability to extract medical information in the documents in addition to the capabilities of the classic mode.
+In the Comprehend Medical Enabled mode, DUS provides the additional capability to extract medical information such as Medical Entities, ICD-10 and RX Norm onotlogies from uploaded documents.
 To enable this mode, set the ` enableComprehendMedical: "true"` in package.json
 
 ### Kendra-Enabled Mode
 
 In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
-In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
+In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists. 
+For demo purposes, this mode comes pre-loaded with a sample dataset of medical documents. 
+
 Simply set the ` enableKendra: "true"` in package.json
 _Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
 
