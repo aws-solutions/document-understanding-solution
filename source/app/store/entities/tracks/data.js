@@ -23,18 +23,25 @@ export const tracksSchema = new schema.Array(trackSchema)
 // Track Lenses
 export const lensTracks = lensPath(['entities', 'tracks'])
 export const lensTrack = id => lensPath(['entities', 'tracks', id])
-const kendraModeDescription = `
-In this track, you can search through multiple documents and find information faster
-We are Kendra Only
 
-For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.
-`
 const esModeDescription = `In this track, you can search through multiple documents and find information faster
 and more efficiently, using Amazon Elasticsearch.
 
 Once you select a document, you'll be able to interact with Amazon Textract,
 Amazon Comprehend, and Amazon Comprehend Medical to experience the power
 of document digitization and extraction of sensitive information.`
+
+const kendraModeDescription = `
+In this track, you can search through multiple documents and find information faster
+and more efficiently, using state-of-the-art machine learning and natural language enterprise search
+with Amazon Kendra.
+
+Once you select a document, you'll be able to interact with Amazon Textract,
+Amazon Comprehend, and Amazon Comprehend Medical to experience the power
+of document digitization and extraction of sensitive information.
+
+For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the search capabilities of Kendra.
+`
 
 const esAndKendraModeDescription = `
 In this track, you can search through multiple documents and find information faster
