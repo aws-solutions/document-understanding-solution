@@ -16,7 +16,7 @@ import { createAction } from "redux-actions";
 import { normalize } from "normalizr";
 import { API, Auth } from "aws-amplify";
 
-import { ENABLE_KENDRA , ENABLE_ELASTICSEARCH } from '../../../constants/configs'
+import { ENABLE_ELASTICSEARCH, ENABLE_KENDRA } from '../../../constants/configs'
 import { SEARCH, CLEAR_SEARCH_RESULTS, SUBMIT_FEEDBACK } from "../../../constants/action-types";
 import { searchResultsSchema, kendraResultsSchema,kendraFilteredResultsSchema } from "./data";
 
@@ -31,11 +31,11 @@ export const search = createAction(SEARCH, async params => {
   }
 
   const [ esResponse, kendraResponse, kendraFilteredResponse ] = await Promise.all([
-    ENABLE_ELASTICSEARCH? API.get("TextractDemoTextractAPI", "search", {
+    ENABLE_ELASTICSEARCH ? API.get("TextractDemoTextractAPI", "search", {
       headers,
       response: true,
       queryStringParameters: { ...params }
-    }) : null ,
+    }) : null,
 
     ENABLE_KENDRA ? API.post("TextractDemoTextractAPI", "searchkendra", {
       headers,
@@ -61,17 +61,18 @@ export const search = createAction(SEARCH, async params => {
     }) : null
   ]);
 
-  const data = Array.isArray(esResponse.data) ? esResponse.data : [] ;
-  let searchTotalMatches = 0;
-  let searchTotalDocuments = 0;
-  const esResults = data.map(result => {
+  const data = ENABLE_ELASTICSEARCH ? Array.isArray(esResponse.data) ? esResponse.data : [] : null;
+  let searchTotalMatches = ENABLE_ELASTICSEARCH ? 0: null;
+  let searchTotalDocuments = ENABLE_ELASTICSEARCH ? 0: null;
+   
+  const esResults = ENABLE_ELASTICSEARCH ? data.map(result => {
     searchTotalMatches += result.count;
     if (result.count) searchTotalDocuments++;
     return {
       ...result,
       name: result.name.replace(/^.*\//, "")
     };
-  });
+  }) : {};
 
   const kendraQueryId = ENABLE_KENDRA ? kendraResponse.data.QueryId : null;
   const kendraTotalResults = ENABLE_KENDRA ? kendraResponse.data.TotalNumberOfResults : null;

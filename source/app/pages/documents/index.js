@@ -215,7 +215,7 @@ function Documents({
             <SearchTypeTabs />
           : null }
           <div className={css.searchResultContainer}>
-            { ENABLE_ELASTICSEARCH && ( selectedSearch === 'es' || selectedSearch === 'both' ) ?
+            {  ( selectedSearch === 'es' || selectedSearch === 'both' ) ?
               <SearchResults
                 results={searchResults}
                 searchStatus={searchStatus}
@@ -240,7 +240,7 @@ function Documents({
               </TooltipButton>
             }
 
-            { ENABLE_KENDRA && (selectedSearch === 'kendra' || selectedSearch === 'both') ?
+            {  (selectedSearch === 'kendra' || selectedSearch === 'both') ?
               <KendraResults
                 results={kendraResults}
                 filteredResults={kendraFilteredResults}
