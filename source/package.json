@@ -20,7 +20,7 @@
   "cicd": "false",
   "isROMode": "false",
   "enableComprehendMedical": "false",
-  "enableKendra": "true",
+  "enableKendra": "false",
   "email": "%%USER_EMAIL%%",
   "scripts": {
     "bootstrap": "AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk bootstrap --toolkit-stack-name DocumentUnderstandingCDKToolkit",

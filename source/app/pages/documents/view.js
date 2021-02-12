@@ -93,6 +93,16 @@ Document.getInitialProps = function({ query, store }) {
   return props
 }
 
+const tabItems = [
+  { id: 'search', title: 'Preview' },
+  { id: 'text', title: 'Raw Text' },
+  { id: 'kv', title: `Key-Value Pairs` },
+  { id: 'tables', title: `Tables` },
+  { id: 'entities', title: `Entities` },
+]
+
+if (ENABLE_COMPREHEND_MEDICAL) tabItems.push({ id: 'medical_entities', title: `Medical Entities` })
+
 function Document({ currentPageNumber, dispatch, id, document, pageTitle, searchQuery, track }) {
   // TODO: Ensure id corresponds to a valid resource, otherwise 404
   // e.g. /documents/export and /documents/view should fail
@@ -293,16 +303,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   )
 
   const setHighlightedLine = useCallback(() => {}, [])
-
-  const tabItems = [
-    { id: 'search', title: 'Preview' },
-    { id: 'text', title: 'Raw Text' },
-    { id: 'kv', title: `Key-Value Pairs` },
-    { id: 'tables', title: `Tables` },
-    { id: 'entities', title: `Entities` },
-]
-
-if (ENABLE_COMPREHEND_MEDICAL) tabItems.push({ id: 'medical_entities', title: `Medical Entities` })
 
   return (
     <div className={css.document}>
