@@ -33,6 +33,7 @@ DocumentViewer.propTypes = {
   pageCount: PropTypes.number,
   onRedactionClick: PropTypes.func,
   onMarkClick: PropTypes.func,
+  isComplianceTrack: PropTypes.bool,
 }
 
 DocumentViewer.defaultProps = {}
@@ -47,6 +48,7 @@ export default function DocumentViewer({
   highlightedMark,
   onRedactionClick,
   onMarkClick,
+  isComplianceTrack,
   ...rest
 }) {
   const { documentName, searchablePdfURL, documentURL } = document
@@ -59,9 +61,12 @@ export default function DocumentViewer({
     <Pager className={css.pager} pageTotal={pageCount}>
       {currentPageNumber =>
         <>
-          <div className={css.redactionExplanation}>
-            Redacted items <span aria-hidden className={css.redactionPreview}>Jane Doe</span> will be covered from the downloaded document with a black rectangle <span aria-hidden className={css.redaction}>Jane Doe</span>
-          </div>
+          {
+            isComplianceTrack && 
+              <div className={css.redactionExplanation}>
+                Redacted items <span aria-hidden className={css.redactionPreview}>Jane Doe</span> will be covered from the downloaded document with a black rectangle <span aria-hidden className={css.redaction}>Jane Doe</span>
+              </div>
+          }
           {
               isPDF ? (
                 <DocumentMarks
@@ -72,6 +77,7 @@ export default function DocumentViewer({
                   onRedactionClick={onRedactionClick}
                   onMarkClick={onMarkClick}
                   ref={containerRef}
+                  isComplianceTrack={isComplianceTrack}
                   >
                   <Page
                     className={css.page}
@@ -90,6 +96,7 @@ export default function DocumentViewer({
                     redactions={redactions}
                     onRedactionClick={onRedactionClick}
                     onMarkClick={onMarkClick}
+                    isComplianceTrack={isComplianceTrack}
                   >
                     <img className={css.image} src={documentURL} />
                   </DocumentMarks>
@@ -149,7 +156,7 @@ function useDocumentResizer(isPDF, resizeDeps) {
 }
 
 const DocumentMarks = forwardRef(function DocumentMarks(
-  { children, marks , tables, redactions, onRedactionClick, onMarkClick, highlightedMark },
+  { children, marks , tables, redactions, onRedactionClick, onMarkClick, highlightedMark, isComplianceTrack },
   ref
 ) {
 
@@ -158,21 +165,28 @@ const DocumentMarks = forwardRef(function DocumentMarks(
       <div className={css.canvas} ref={ref}>
         {children}
         {marks &&
-          marks.map(({ Text, Top, Left, Width, Height, type, id }, i) => (
-            <Tooltip key={`${id || ''}${type || ''}` || i} hasArrow label="Click to redact" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
-              <mark
-                className={cs(css.highlight, type, id === highlightedMark && css.highlighted)}
-                onClick={() => onMarkClick({Text, Top, Left, Width, Height})}
-                style={{
-                  top: `${Top * 100}%`,
-                  left: `${Left * 100}%`,
-                  width: `${Width * 100}%`,
-                  height: `${Height * 100}%`,
-                }}
-                />
-            </Tooltip>
-          ))}
-        {redactions &&
+          marks.map(({ Text, Top, Left, Width, Height, type, id }, i) => {
+            const key = `${id || ''}${type || ''}` || i
+
+            const markProps = {
+              className: cs(css.highlight, type, id === highlightedMark && css.highlighted),
+              style: {
+                top: `${Top * 100}%`,
+                left: `${Left * 100}%`,
+                width: `${Width * 100}%`,
+                height: `${Height * 100}%`,
+              },
+            }
+
+            return (
+              isComplianceTrack ? 
+                <Tooltip  key={key} hasArrow label="Click to redact" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
+                  <mark {...markProps} onClick={() => onMarkClick({Text, Top, Left, Width, Height})} />
+                </Tooltip> :
+                <mark key={key} {...markProps} />
+            )
+          })}
+        {redactions && isComplianceTrack &&
           Object.entries(redactions).map(([id, { Top, Left, Width, Height }]) => (
             <Tooltip key={id} hasArrow label="Click to remove" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
               <mark
