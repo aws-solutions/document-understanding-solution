@@ -22,7 +22,6 @@ const isROMode = process.env.isROMode;
 const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
 const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
 
-
 // listStackResources needs to be called twice in order to get the full stack.
 const listFullStack = (stackName, callback) => {
   const cf = new aws.CloudFormation();
@@ -120,15 +119,17 @@ const GetResources = new Promise((resolve, reject) => {
     resources.ClientAppBucketName = stackDescriptionObj.find((x) =>
       /ClientAppS3Bucket/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
-    if(enableKendra == "true"){
-      resources.MedicalDataBucketName = stackDescriptionObj.find((x) =>
-      /MedicalDataBucket/i.test(x.LogicalResourceId)
-      ).PhysicalResourceId;
-    }
+    
     resources.PdfGenLambda = stackDescriptionObj.find((x) =>
       /pdfgenerator/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
 
+    if(enableKendra){
+      resources.MedicalDataBucketName = stackDescriptionObj.find((x) =>
+      /MedicalDataBucket/i.test(x.LogicalResourceId)
+      ).PhysicalResourceId;
+    }
+    
     if (enableElasticsearch){
       resources.ElasticSearchSearchLogGroup = stackDescriptionObj.find((x) =>
         /ElasticSearchSearchLogGroup/i.test(x.LogicalResourceId)
