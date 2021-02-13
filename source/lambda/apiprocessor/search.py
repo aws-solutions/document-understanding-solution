@@ -18,6 +18,7 @@ import boto3
 import re
 import datetime
 
+
 ES_HIGHLIGHT_FRAGMENT_SIZE = 100
 
 def deleteESItem(elasticsearchDomain, documentId):

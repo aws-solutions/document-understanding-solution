@@ -64,7 +64,7 @@ def format_date(date):
     return UNSUPPORTED_DATE_FORMAT
 
 class OutputGenerator:
-    def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb,outputPath, elasticsearchDomain=None):
+    def __init__(self, documentId, response, bucketName, objectName, forms, tables, ddb,outputPath, elasticsearchDomain):
         self.documentId = documentId
         self.response = response
         self.bucketName = bucketName
@@ -73,7 +73,6 @@ class OutputGenerator:
         self.tables = tables
         self.ddb = ddb
         self.elasticsearchDomain = elasticsearchDomain
-
         self.outputPath = outputPath
 
         self.document = Document(self.response)

@@ -129,7 +129,8 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
             comprehendAndMedicalEntities[key] = val
         else:
             comprehendAndMedicalEntities[key].add(val)
-    opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
+    if 'ES_DOMAIN' in os.environ :
+        opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
     ds.markDocumentComplete(documentId)
@@ -183,5 +184,5 @@ def lambda_handler(event, context):
     request["outputBucketName"] = os.environ['OUTPUT_BUCKET']
     request["outputTable"] = os.environ['OUTPUT_TABLE']
     request["documentsTable"] = os.environ['DOCUMENTS_TABLE']
-    request["elasticsearchDomain"] = os.environ['ES_DOMAIN']
+    request["elasticsearchDomain"] = os.environ.get('ES_DOMAIN',None)
     return processRequest(request)

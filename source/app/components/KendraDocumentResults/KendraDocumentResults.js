@@ -24,7 +24,7 @@ export default function KendraDocumentResults({ results, submitFeedback }) {
     () =>
       results.map((result) => {
         return (
-          <article key={result.id} className={styles.result}>
+          <article key={result.DocumentId} className={styles.result}>
             <KendraResultTitle
               result={result}
               submitFeedback={submitFeedback}

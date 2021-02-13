@@ -27,11 +27,20 @@ const userEmail =
     : process.env.USER_EMAIL;
 
 const isCICDDeploy = process.env.ISCICD == "false" ? false : true;
-const enableKendra = process.env.ENABLE_KENDRA == "true"? true : false;
+
+if ( !["AMAZON_ES_ONLY","AMAZON_KENDRA_ONLY","AMAZON_ES_AND_KENDRA"].includes(process.env.SEARCH_MODE)){
+  throw Error(
+    "Invalid Search Mode provided :{} . Search Mode Values include : AMAZON_ES_ONLY , AMAZON_KENDRA_ONLY , AMAZON_ES_AND_KENDRA".format(process.env.SEARCH_MODE)
+  );
+}
+const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false;
+const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false;
+
 // // eslint-disable-next-line no-new
 new CdkTextractStack.CdkTextractStack(app, stackName, {
   description : "MLSLD-S0001. Document Understanding Solution. This stack deploys the backend for DUS",
   email: userEmail,
   isCICDDeploy: isCICDDeploy,
-  enableKendra: enableKendra
+  enableKendra: enableKendra,
+  enableElasticsearch: enableElasticsearch,
 });

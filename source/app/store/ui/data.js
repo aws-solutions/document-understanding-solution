@@ -13,12 +13,16 @@
  *********************************************************************************************************************/
 
 import { lensPath } from 'ramda'
+import {  ENABLE_KENDRA , ENABLE_ELASTICSEARCH } from '../../constants/configs'
+
 
 export default {
   selectedTrack: 'search',
-  selectedSearch: 'es',
+  selectedSearch: (ENABLE_ELASTICSEARCH && ENABLE_KENDRA)? "both": ENABLE_KENDRA ? "kendra" : "es",
   headerProps: {},
 }
+
+
 
 export const lensSelectedTrack = lensPath(['ui', 'selectedTrack'])
 export const lensHeaderProps = lensPath(['ui', 'headerProps'])
