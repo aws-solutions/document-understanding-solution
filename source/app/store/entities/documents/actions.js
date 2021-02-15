@@ -27,6 +27,7 @@ import {
   HIGHLIGHT_DOCUMENT
 } from "../../../constants/action-types";
 import { documentsSchema, documentSchema } from "./data";
+import { ENABLE_COMPREHEND_MEDICAL } from '../../../constants/configs'
 
 const lensNextToken = lensPath(["data", "nextToken"]);
 const lensDocumentsTotal = lensPath(["data", "Total"]);
@@ -182,12 +183,15 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   );
 
 // Get the raw comprehend medical response data from a json file on S3
- const s3ComprehendMedicalResponse = await Storage.get(comprehendMedicalResponsePath, {
-  download: true
-});
-const comprehendMedicalRespone = JSON.parse(
-  s3ComprehendMedicalResponse.Body ? s3ComprehendMedicalResponse.Body.toString() : null
-);
+let comprehendMedicalRespone = null;
+if(ENABLE_COMPREHEND_MEDICAL){
+  const s3ComprehendMedicalResponse = await Storage.get(comprehendMedicalResponsePath, {
+    download: true
+  });
+  comprehendMedicalRespone = JSON.parse(
+    s3ComprehendMedicalResponse.Body ? s3ComprehendMedicalResponse.Body.toString() : null
+  );
+}
 // Get the raw comprehend response data from a json file on S3
 const s3ComprehendResponse = await Storage.get(comprehendResponsePath, {
   download: true

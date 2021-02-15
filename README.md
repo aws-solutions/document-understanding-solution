@@ -58,7 +58,7 @@ aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<sol
 
 - Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
 - Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
-- If you wish to manually choose whether to enable Kendra or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=KendraEnabled,ParameterValue=<true_or_false>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
+- If you wish to manually choose whether to enable Kendra or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=KendraEnabled,ParameterValue=<true_or_false>` `ParameterKey=ComprehendMedicalEnabled,ParameterValue=<true_or_false>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
 
 ```
 aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
@@ -197,12 +197,18 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 ### Classic Mode
 
-This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract, Amazon Comprehend and Amazon Comprehend Medical that allow digitization, information extraction and indexing in DUS.
+This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract and Amazon Comprehend that allow digitization, information extraction and indexing in DUS.
+
+### Comprehend Medical Enabled Mode
+In the Comprehend Medical Enabled mode, DUS provides the additional capability to extract medical information such as Medical Entities, ICD-10 and RX Norm onotlogies from uploaded documents.
+To enable this mode, set the ` enableComprehendMedical: "true"` in package.json
 
 ### Kendra-Enabled Mode
 
 In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
-In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
+In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists. 
+For demo purposes, this mode comes pre-loaded with a sample dataset of medical documents. 
+
 Simply set the ` enableKendra: "true"` in package.json
 _Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
 
