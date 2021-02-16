@@ -40,7 +40,7 @@
     "dev": "NEXT_PUBLIC_SEARCH_MODE=$npm_package_searchMode NEXT_PUBLIC_ENABLE_COMPREHEND_MEDICAL=$npm_package_enableComprehendMedical next app",
     "build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region SEARCH_MODE=$npm_package_searchMode yarn pre-build && NEXT_PUBLIC_SEARCH_MODE=$npm_package_searchMode NEXT_PUBLIC_ENABLE_COMPREHEND_MEDICAL=$npm_package_enableComprehendMedical next build app",
     "export": "yarn build && next export app",
-    "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region isROMode=$npm_package_isROMode ENABLE_KENDRA=$npm_package_enableKendra node ./bin/pre-build.js",
+    "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region isROMode=$npm_package_isROMode SEARCH_MODE=$npm_package_searchMode node ./bin/pre-build.js",
     "preinstall": "npx npm-force-resolutions",
     "license-report": "legally --plain > license-report.txt && echo \"$(tail -n +4 license-report.txt)\" > license-report.txt",
     "prettier": "prettier --write '**/*.{js,md,yaml}'",
