@@ -126,12 +126,13 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
 
     print("Processed Comprehend data for document: {}".format(documentId))
 
-    for key, val in opg_output[KVPAIRS].items():
-        if key not in comprehendAndMedicalEntities:
-            comprehendAndMedicalEntities[key] = val
-        else:
-            comprehendAndMedicalEntities[key].add(val)
-    opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
+    if 'ES_DOMAIN' in os.environ :
+        for key, val in opg_output[KVPAIRS].items():
+            if key not in comprehendAndMedicalEntities:
+                comprehendAndMedicalEntities[key] = val
+            else:
+                comprehendAndMedicalEntities[key].add(val)
+        opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
     ds.markDocumentComplete(documentId)

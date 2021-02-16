@@ -60,6 +60,7 @@ export interface TextractStackProps {
   isCICDDeploy: boolean;
   description: string;
   enableKendra: boolean;
+  enableElasticsearch: boolean;
   enableComprehendMedical: boolean;
 }
 
@@ -256,103 +257,122 @@ export class CdkTextractStack extends cdk.Stack {
       cloudfrontDocumentsBucketPolicyStatement
     );
 
-    /****                      VPC Configuration                         ****/
+    let elasticSearch : es.CfnDomain;
+    let vpc : ec2.Vpc;
+    let esEncryptionKey : kms.Key;
+    let esPolicy : iam.PolicyStatement;
 
-    const vpc = new ec2.Vpc(this, this.resourceName('ElasticSearchVPC'), {
-      cidr: "172.62.0.0/16"
-    })
+    if (props.enableElasticsearch){
 
-    const subnetIds = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE}).subnetIds;
+      /****                      VPC Configuration                         ****/
+      vpc = new ec2.Vpc(this, this.resourceName('ElasticSearchVPC'), {
+        cidr: "172.62.0.0/16"
+      })
 
-    const securityGroup = new ec2.SecurityGroup(this, this.resourceName('ESSecurityGroup'), {
-      allowAllOutbound: true,
-      vpc: vpc,
-      securityGroupName: "Elasticsearch from lambda"
-    })
+      const subnetIds = vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE}).subnetIds;
 
-    securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
+      const securityGroup = new ec2.SecurityGroup(this, this.resourceName('ESSecurityGroup'), {
+        allowAllOutbound: true,
+        vpc: vpc,
+        securityGroupName: "Elasticsearch from lambda"
+      })
 
-    const esSearchLogGroup = new LogGroup(
-      this,
-      this.resourceName("ElasticSearchSearchLogGroup"),
-      {
-        logGroupName: this.resourceName("ElasticSearchSearchLogGroup"),
-      }
-    );
+      securityGroup.addIngressRule(Peer.anyIpv4(), Port.allTraffic(), "allow lambda ingress", false)
 
-    const esIndexLogGroup = new LogGroup(
-      this,
-      this.resourceName("ElasticSearchIndexLogGroup"),
-      {
-        logGroupName: this.resourceName("ElasticSearchIndexLogGroup"),
-      }
-    );
-
-    // Elasticsearch
-    let elasticSearch;
-
-    const esEncryptionKey = new kms.Key(this, "esEncryptionKey", {
-      enableKeyRotation: true,
-    });
-
-    if (!props.isCICDDeploy) {
-      elasticSearch = new es.CfnDomain(
+      const esSearchLogGroup = new LogGroup(
         this,
-        this.resourceName("ElasticSearchCluster"),
+        this.resourceName("ElasticSearchSearchLogGroup"),
         {
-          elasticsearchVersion: "7.4",
-          elasticsearchClusterConfig: {
-            instanceType: "m5.large.elasticsearch",
-          },
-          ebsOptions: {
-            ebsEnabled: true,
-            volumeSize: 20,
-            volumeType: "gp2",
-          },
-          encryptionAtRestOptions: {
-            enabled: true,
-            kmsKeyId: esEncryptionKey.keyId,
-          },
-          nodeToNodeEncryptionOptions: {
-            enabled: true,
-          },
+          logGroupName: this.resourceName("ElasticSearchSearchLogGroup"),
         }
       );
-    } else {
-      elasticSearch = new es.CfnDomain(
+
+      /****                      ES Resources                        ****/
+      
+      const esIndexLogGroup = new LogGroup(
         this,
-        this.resourceName("ElasticSearchCluster"),
+        this.resourceName("ElasticSearchIndexLogGroup"),
         {
-          elasticsearchVersion: "7.4",
-          elasticsearchClusterConfig: {
-            instanceType: "m5.large.elasticsearch",
-            instanceCount: 2,
-            dedicatedMasterEnabled: true,
-            zoneAwarenessEnabled: true,
-            zoneAwarenessConfig: {
-              availabilityZoneCount: 2,
+          logGroupName: this.resourceName("ElasticSearchIndexLogGroup"),
+        }
+      );
+
+      esEncryptionKey = new kms.Key(this, "esEncryptionKey", {
+        enableKeyRotation: true,
+      });
+
+      if (!props.isCICDDeploy) {
+        elasticSearch = new es.CfnDomain(
+          this,
+          this.resourceName("ElasticSearchCluster"),
+          {
+            elasticsearchVersion: "7.4",
+            elasticsearchClusterConfig: {
+              instanceType: "m5.large.elasticsearch",
             },
-          },
-          ebsOptions: {
-            ebsEnabled: true,
-            volumeSize: 20,
-            volumeType: "gp2",
-          },
-          encryptionAtRestOptions: {
-            enabled: true,
-            kmsKeyId: esEncryptionKey.keyId,
-          },
-          nodeToNodeEncryptionOptions: {
-            enabled: true,
-          },
-          vpcOptions: {
-            subnetIds: [subnetIds[0], subnetIds[1]],
-            securityGroupIds: [securityGroup.securityGroupId]
+            ebsOptions: {
+              ebsEnabled: true,
+              volumeSize: 20,
+              volumeType: "gp2",
+            },
+            encryptionAtRestOptions: {
+              enabled: true,
+              kmsKeyId: esEncryptionKey.keyId,
+            },
+            nodeToNodeEncryptionOptions: {
+              enabled: true,
+            },
           }
-        }
-      );
+        );
+      } else {
+        elasticSearch = new es.CfnDomain(
+          this,
+          this.resourceName("ElasticSearchCluster"),
+          {
+            elasticsearchVersion: "7.4",
+            elasticsearchClusterConfig: {
+              instanceType: "m5.large.elasticsearch",
+              instanceCount: 2,
+              dedicatedMasterEnabled: true,
+              zoneAwarenessEnabled: true,
+              zoneAwarenessConfig: {
+                availabilityZoneCount: 2,
+              },
+            },
+            ebsOptions: {
+              ebsEnabled: true,
+              volumeSize: 20,
+              volumeType: "gp2",
+            },
+            encryptionAtRestOptions: {
+              enabled: true,
+              kmsKeyId: esEncryptionKey.keyId,
+            },
+            nodeToNodeEncryptionOptions: {
+              enabled: true,
+            },
+            vpcOptions: {
+              subnetIds: [subnetIds[0], subnetIds[1]],
+              securityGroupIds: [securityGroup.securityGroupId]
+            }
+          }
+        );
+      }
+      esPolicy  =new iam.PolicyStatement({
+        actions: [
+          "es:ESHttpHead",
+          "es:Get*",
+          "es:List*",
+          "es:Describe*",
+          "es:ESHttpGet",
+          "es:ESHttpDelete",
+          "es:ESHttpPost",
+          "es:ESHttpPut",
+        ],
+        resources: [`${elasticSearch.attrArn}/*`],
+      })
+     
     }
-
     const jobResultsKey = new kms.Key(
       this,
       this.resourceName("JobResultsKey"),
@@ -843,7 +863,7 @@ export class CdkTextractStack extends cdk.Stack {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
-        vpc: vpc
+        vpc: props.enableElasticsearch? vpc : undefined
       }
     );
 
@@ -931,11 +951,11 @@ export class CdkTextractStack extends cdk.Stack {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
-          ES_DOMAIN: elasticSearch.attrDomainEndpoint,
+          ES_DOMAIN: props.enableElasticsearch? elasticSearch.attrDomainEndpoint : undefined,
           PDF_LAMBDA: pdfGenerator.functionName,
           ENABLE_COMPREHEND_MEDICAL: props.enableComprehendMedical.toString(),
         },
-        vpc: vpc
+        vpc: props.enableElasticsearch? vpc : undefined
       }
     );
 
@@ -957,23 +977,9 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket.grantReadWrite(syncProcessor);
     outputTable.grantReadWriteData(syncProcessor);
     documentsTable.grantReadWriteData(syncProcessor);
-    esEncryptionKey.grantEncryptDecrypt(syncProcessor);
+    props.enableElasticsearch? esEncryptionKey.grantEncryptDecrypt(syncProcessor) : null;
 
-    syncProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "es:ESHttpHead",
-          "es:Get*",
-          "es:List*",
-          "es:Describe*",
-          "es:ESHttpGet",
-          "es:ESHttpDelete",
-          "es:ESHttpPost",
-          "es:ESHttpPut",
-        ],
-        resources: [`${elasticSearch.attrArn}/*`],
-      })
-    );
+    props.enableElasticsearch ? syncProcessor.addToRolePolicy(esPolicy) : null;
 
     //------------------------------------------------------------
 
@@ -993,7 +999,7 @@ export class CdkTextractStack extends cdk.Stack {
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
           SNS_ROLE_ARN: textractServiceRole.roleArn,
         },
-        vpc: vpc,
+        vpc: props.enableElasticsearch ? vpc : null, 
       }
     );
 
@@ -1036,11 +1042,11 @@ export class CdkTextractStack extends cdk.Stack {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
-          ES_DOMAIN: elasticSearch.attrDomainEndpoint,
+          ES_DOMAIN: props.enableElasticsearch ? elasticSearch.attrDomainEndpoint : undefined,
           PDF_LAMBDA: pdfGenerator.functionName,
           ENABLE_COMPREHEND_MEDICAL: props.enableComprehendMedical.toString(),
         },
-        vpc: vpc,
+        vpc: props.enableElasticsearch ? vpc : null,
       }
     );
 
@@ -1064,24 +1070,8 @@ export class CdkTextractStack extends cdk.Stack {
     documentsS3Bucket.grantReadWrite(jobResultProcessor);
     samplesS3Bucket.grantReadWrite(jobResultProcessor);
 
-    jobResultProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "es:ESHttpHead",
-          "es:Get*",
-          "es:List*",
-          "es:Describe*",
-          "es:ESHttpGet",
-          "es:ESHttpDelete",
-          "es:ESHttpPost",
-          "es:ESHttpPut",
-        ],
-        resources: [`${elasticSearch.attrArn}/*`],
-      })
-    );
-
-    esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
-
+    props.enableElasticsearch ? jobResultProcessor.addToRolePolicy(esPolicy) : null; 
+    props.enableElasticsearch ? esEncryptionKey.grantEncryptDecrypt(jobResultProcessor) : null ;
     //------------------------------------------------------------
 
     pdfGenerator.grantInvoke(syncProcessor);
@@ -1190,9 +1180,9 @@ export class CdkTextractStack extends cdk.Stack {
           SAMPLE_BUCKET: samplesS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
-          ES_DOMAIN: elasticSearch.attrDomainEndpoint,
+          ES_DOMAIN: props.enableElasticsearch ? elasticSearch.attrDomainEndpoint : undefined,
         },
-        vpc: vpc,
+        vpc: props.enableElasticsearch ? vpc : undefined,
       }
     );
 
@@ -1206,23 +1196,8 @@ export class CdkTextractStack extends cdk.Stack {
     outputTable.grantReadWriteData(apiProcessor);
     documentsS3Bucket.grantRead(apiProcessor);
     samplesS3Bucket.grantRead(apiProcessor);
-    apiProcessor.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "es:ESHttpHead",
-          "es:Get*",
-          "es:List*",
-          "es:Describe*",
-          "es:ESHttpGet",
-          "es:ESHttpDelete",
-          "es:ESHttpPost",
-          "es:ESHttpPut",
-        ],
-        resources: [`${elasticSearch.attrArn}/*`],
-      })
-    );
-    esEncryptionKey.grantEncryptDecrypt(apiProcessor);
-
+    props.enableElasticsearch ? apiProcessor.addToRolePolicy(esPolicy) : null;
+    props.enableElasticsearch ? esEncryptionKey.grantEncryptDecrypt(apiProcessor) : null;
     // API
 
     // Log group for API logs
@@ -1297,9 +1272,6 @@ export class CdkTextractStack extends cdk.Stack {
           methodResponses: [
             {
               statusCode: "200",
-              // responseModels: {
-              //   'application/json': 'Empty',
-              // },
               responseParameters: {
                 "method.response.header.Access-Control-Allow-Headers": true,
                 "method.response.header.Access-Control-Allow-Methods": true,
@@ -1324,8 +1296,10 @@ export class CdkTextractStack extends cdk.Stack {
 
     addCorsOptionsAndMethods(api.root, []);
 
-    const searchResource = api.root.addResource("search");
-    addCorsOptionsAndMethods(searchResource, ["GET"]);
+    if (props.enableElasticsearch){
+      const searchResource = api.root.addResource("search");
+      addCorsOptionsAndMethods(searchResource, ["GET"]);    
+    }
 
     const documentsResource = api.root.addResource("documents");
     addCorsOptionsAndMethods(documentsResource, ["GET"]);
