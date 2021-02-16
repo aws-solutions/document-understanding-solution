@@ -19,8 +19,8 @@ const stackName = `${process.env.STACKNAME}Stack`;
 const region = process.env.AWS_REGION;
 aws.config.region = region;
 const isROMode = process.env.isROMode;
-const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
-const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false
+const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")
+const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")
 // listStackResources needs to be called twice in order to get the full stack.
 const listFullStack = (stackName, callback) => {
   const cf = new aws.CloudFormation();

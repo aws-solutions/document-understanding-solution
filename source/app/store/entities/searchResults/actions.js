@@ -61,19 +61,22 @@ export const search = createAction(SEARCH, async params => {
     }) : null
   ]);
 
-  const data = ENABLE_ELASTICSEARCH ? Array.isArray(esResponse.data) ? esResponse.data : [] : null;
-  let searchTotalMatches = ENABLE_ELASTICSEARCH ? 0: null;
-  let searchTotalDocuments = ENABLE_ELASTICSEARCH ? 0: null;
-   
-  const esResults = ENABLE_ELASTICSEARCH ? data.map(result => {
-    searchTotalMatches += result.count;
-    if (result.count) searchTotalDocuments++;
-    return {
-      ...result,
-      name: result.name.replace(/^.*\//, "")
-    };
-  }) : {};
-
+  let esResults = {}
+  if (ENABLE_ELASTICSEARCH){
+    const data =  Array.isArray(esResponse.data) ? esResponse.data : [] ;
+    let searchTotalMatches = 0
+    let searchTotalDocuments = 0
+    
+    esResults =  data.map(result => {
+      searchTotalMatches += result.count;
+      if (result.count) searchTotalDocuments++;
+      return {
+        ...result,
+        name: result.name.replace(/^.*\//, "")
+      };
+    })
+  }
+  
   const kendraQueryId = ENABLE_KENDRA ? kendraResponse.data.QueryId : null;
   const kendraTotalResults = ENABLE_KENDRA ? kendraResponse.data.TotalNumberOfResults : null;
   const kendraFilteredQueryId = ENABLE_KENDRA && params.persona ? kendraFilteredResponse.data.QueryId : null;

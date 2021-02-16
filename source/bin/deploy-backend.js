@@ -31,8 +31,8 @@ if ( !["AMAZON_ES_ONLY","AMAZON_KENDRA_ONLY","AMAZON_ES_AND_KENDRA"].includes(pr
         "Invalid Search Mode provided :{} . Search Mode Values include : AMAZON_ES_ONLY , AMAZON_KENDRA_ONLY , AMAZON_ES_AND_KENDRA".format(process.env.SEARCH_MODE)
       );
   }
-const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false;
-const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")? true : false;
+const enableKendra = (process.env.SEARCH_MODE == "AMAZON_KENDRA_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")
+const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || process.env.SEARCH_MODE == "AMAZON_ES_AND_KENDRA")
 
 const isCICDDeploy = process.env.ISCICD == "false" ? false : true;
 const enableComprehendMedical = process.env.ENABLE_COMPREHEND_MEDICAL == "true"? true : false;
