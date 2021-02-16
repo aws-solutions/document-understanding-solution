@@ -125,7 +125,7 @@ To deploy using this approach, you must first set few values inside the `package
   _Note_ : The AWS services used in this solution are not all available in all AWS Regions. Supported regions include us-east-1,us-west-2,eu-west-1. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for the most up to date information on which regions support the all services in DUS are available.
 
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
-- If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to `false`. For [Kendra-enabled mode](#kendra-enabled-mode), set the flag as `true`
+- If you want to choose between the Search modes, set the searchMode parameter to one of the following - AMAZON_ES_ONLY,AMAZON_KENDRA_ONLY,AMAZON_ES_AND_KENDRA. More Info on Search Modes [here](#search-mode)
 - If you want to use the [Read-only (RO) mode](#read-only-mode), set the is isROMode flag to `true`.
 
 Now switch to the source directory, and use yarn to deploy the solution:
@@ -195,24 +195,31 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 ## DUS Modes:
 
-### Classic Mode
+### 1 Search-Mode
 
-This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract and Amazon Comprehend that allow digitization, information extraction and indexing in DUS.
+DUS offers both Amazon Elasticsearch and Amazon Kendra as two options for indexing and searching data across documents
 
-### Comprehend Medical Enabled Mode
+#### 1.1. Amazon Elasticsearch Only
+
+In this version, DUS supports searching/indexing of documents using Amazon Elasticsearch. The document data and metadata are indexed in the Amazon ES cluster to provide the traditional search experience.
+Set `SearchMode=AMAZON_ES_ONLY` either in package.json (for Development Deploy) or in the CloudFormation template (for CICD Deploy)
+
+#### 1.2. Amazon Kendra Only 
+
+In the Amazon Kendra enabled mode, Amazon Kendra is can be used for exploring features such as Semantic Search, Adding FAQs and User Context Based Filtering.
+Set `SearchMode=AMAZON_KENDRA_ONLY` either in package.json (for Development Deploy) or in the CloudFormation template (for CICD Deploy)
+_Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
+
+#### 1.3. Amazon ES and Kendra  
+
+In this mode, your data is indexed, stored and available to search in both Amazon ES and Amazon Kendra indexes. There is also a comparitive view available to see the difference in both the search modes.
+Set `SearchMode=AMAZON_ES_AND_KENDRA` either in package.json (for Development Deploy) or in the CloudFormation template (for CICD Deploy)
+
+### 2. Comprehend Medical Enabled Mode
 In the Comprehend Medical Enabled mode, DUS provides the additional capability to extract medical information such as Medical Entities, ICD-10 and RX Norm onotlogies from uploaded documents.
 To enable this mode, set the ` enableComprehendMedical: "true"` in package.json
 
-### Kendra-Enabled Mode
-
-In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
-In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists. 
-For demo purposes, this mode comes pre-loaded with a sample dataset of medical documents. 
-
-Simply set the ` enableKendra: "true"` in package.json
-_Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
-
-### Read-Only Mode
+### 3. Read-Only Mode
 
 In this mode, DUS will only be available in Read-Only mode and you will only be able to analyze the pre-loaded documents. You will not be able to upload documents from the web application UI. In order to enable the Read-Only mode, set ` isROMode: "true"` in package.json. By default, this mode is disabled.
 
