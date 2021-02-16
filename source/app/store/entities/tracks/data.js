@@ -28,12 +28,12 @@ const discoveryTrackDescription = `In this track, you can search through multipl
 and more efficiently, using `+ 
 (ENABLE_ELASTICSEARCH? `Amazon Elasticsearch ` : ``) +
 (ENABLE_ELASTICSEARCH && ENABLE_KENDRA? `as well as using ` : ``) +
-(ENABLE_KENDRA? `state-of-the-art machine learning and natural language enterprise search with Amazon Kendra .`: ``) +
-`Once you select a document, you'll be able to interact with Amazon Textract ` + 
+(ENABLE_KENDRA? `state-of-the-art machine learning and natural language enterprise search with Amazon Kendra.`: ``) +
+`\n Once you select a document, you'll be able to interact with Amazon Textract ` + 
 (ENABLE_COMPREHEND_MEDICAL? `, Amazon Comprehend and Amazon Comprehend Medical ` :`and Amazon Comprehend `) +
 `to experience the power of document digitization and extraction of important information. ` +
 (ENABLE_KENDRA?`
-For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.`:
+\n For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.`:
 ``)
 // Initial Data
 export default {
