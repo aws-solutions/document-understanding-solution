@@ -62,10 +62,11 @@ export const search = createAction(SEARCH, async params => {
   ]);
 
   let esResults = {}
+  let searchTotalMatches = 0
+  let searchTotalDocuments = 0
+    
   if (ENABLE_ELASTICSEARCH){
     const data =  Array.isArray(esResponse.data) ? esResponse.data : [] ;
-    let searchTotalMatches = 0
-    let searchTotalDocuments = 0
     
     esResults =  data.map(result => {
       searchTotalMatches += result.count;
@@ -76,7 +77,7 @@ export const search = createAction(SEARCH, async params => {
       };
     })
   }
-  
+
   const kendraQueryId = ENABLE_KENDRA ? kendraResponse.data.QueryId : null;
   const kendraTotalResults = ENABLE_KENDRA ? kendraResponse.data.TotalNumberOfResults : null;
   const kendraFilteredQueryId = ENABLE_KENDRA && params.persona ? kendraFilteredResponse.data.QueryId : null;
