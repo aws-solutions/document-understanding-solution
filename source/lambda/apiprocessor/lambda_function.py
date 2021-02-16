@@ -86,7 +86,7 @@ def lambda_handler(event, context):
                 result = search(request)
 
         # search Kendra if available
-        elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST' and 'KENDRA_INDEX_ID' in os.environ:):
+        elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST' and 'KENDRA_INDEX_ID' in os.environ):
             kendraClient = KendraHelper()
             result = kendraClient.search(os.environ['KENDRA_INDEX_ID'], event['body'])
 

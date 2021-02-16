@@ -121,6 +121,11 @@ const GetResources = new Promise((resolve, reject) => {
     resources.PdfGenLambda = stackDescriptionObj.find((x) =>
       /pdfgenerator/i.test(x.LogicalResourceId)
     ).PhysicalResourceId;
+    if(enableKendra){
+      resources.MedicalDataBucketName = stackDescriptionObj.find((x) =>
+      /MedicalDataBucket/i.test(x.LogicalResourceId)
+      ).PhysicalResourceId;
+    }
     if (enableElasticsearch){
       resources.ElasticSearchSearchLogGroup = stackDescriptionObj.find((x) =>
         /ElasticSearchSearchLogGroup/i.test(x.LogicalResourceId)
@@ -132,11 +137,7 @@ const GetResources = new Promise((resolve, reject) => {
         /ElasticSearchCluster/i.test(x.LogicalResourceId)
       ).PhysicalResourceId;
     }
-    if(enableKendra == "true"){
-      resources.MedicalDataBucketName = stackDescriptionObj.find((x) =>
-      /MedicalDataBucket/i.test(x.LogicalResourceId)
-      ).PhysicalResourceId;
-    }
+    
 
     resolve(resources);
   });
