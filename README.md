@@ -58,10 +58,11 @@ aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<sol
 
 - Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
 - Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
-- If you wish to manually choose whether to enable Kendra or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=SearchMode,ParameterValue=<AMAZON_ES_ONLY,AMAZON_KENDRA_ONLY,AMAZON_ES_AND_KENDRA>` `ParameterKey=ComprehendMedicalEnabled,ParameterValue=<true_or_false>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
+- DUS supports Different Modes. When running the below `create-stack` command, please set the appropriate parameter values. For more Information, refer to [DUS Modes](#DUS-Modes)
 
 ```
-aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email>
+ParameterKey=SearchMode,ParameterValue=<AMAZON_ES_ONLY,AMAZON_KENDRA_ONLY,AMAZON_ES_AND_KENDRA> ParameterKey=ComprehendMedicalEnabled,ParameterValue=<true_or_false> ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>  --capabilities CAPABILITY_NAMED_IAM --disable-rollback
 ```
 
 This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
@@ -203,15 +204,13 @@ DUS offers both Amazon Elasticsearch and Amazon Kendra as two options for indexi
 
 In this version, DUS supports searching/indexing of documents using Amazon Elasticsearch. The document data and metadata are indexed in the Amazon ES cluster to provide the traditional search experience.
 
-For Development Deploy, Set `searchMode` = `AMAZON_ES_ONLY` in package.json  
-For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
+For Development Deploy, Set `searchMode: "AMAZON_ES_ONLY` in package.json  For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
 
 #### 1.2. Amazon Kendra Only 
 
 In the Amazon Kendra enabled mode, Amazon Kendra is can be used for exploring features such as Semantic Search, Adding FAQs and User Context Based Filtering.
 
-For Development Deploy, Set `searchMode` = `AMAZON_KENDRA_ONLY` in package.json  
-For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
+For Development Deploy, Set `searchMode: "AMAZON_KENDRA_ONLY"` in package.json  For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
 
 _Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
 
@@ -219,8 +218,7 @@ _Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment
 
 In this mode, your data is indexed, stored and available to search in both Amazon ES and Amazon Kendra indexes. There is also a comparitive view available to see the difference in both the search modes.
 
-For Development Deploy, Set `searchMode` = `AMAZON_ES_AND_KENDRA` in package.json  
-For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
+For Development Deploy, Set `searchMode: "AMAZON_ES_AND_KENDRA"` in package.json  For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
 
 ### 2. Comprehend Medical Enabled Mode
 In the Comprehend Medical Enabled mode, DUS provides the additional capability to extract medical information such as Medical Entities, ICD-10 and RX Norm onotlogies from uploaded documents.

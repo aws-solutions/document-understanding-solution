@@ -21,7 +21,7 @@ Parameters:
   SearchMode:
     Description: DUS supports Amazon Elasticsearch for traditional search capbilities and Amazon Kendra  for features such as Semantic Search, Adding FAQs and User Context based filtering.
     Type: String
-    Default: "AMAZON_ES_AND_KENDRA"
+    Default: "AMAZON_ES_ONLY"
     AllowedValues:
       - "AMAZON_ES_ONLY"
       - "AMAZON_KENDRA_ONLY"
