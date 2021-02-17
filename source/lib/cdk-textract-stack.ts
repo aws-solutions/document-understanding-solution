@@ -863,7 +863,7 @@ export class CdkTextractStack extends cdk.Stack {
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
-        vpc: props.enableElasticsearch? vpc : undefined
+        vpc: props.enableElasticsearch? vpc : null
       }
     );
 
@@ -951,11 +951,10 @@ export class CdkTextractStack extends cdk.Stack {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
-          ES_DOMAIN: props.enableElasticsearch? elasticSearch.attrDomainEndpoint : undefined,
           PDF_LAMBDA: pdfGenerator.functionName,
           ENABLE_COMPREHEND_MEDICAL: props.enableComprehendMedical.toString(),
         },
-        vpc: props.enableElasticsearch? vpc : undefined
+        vpc: props.enableElasticsearch? vpc : null
       }
     );
 
@@ -977,10 +976,7 @@ export class CdkTextractStack extends cdk.Stack {
     samplesS3Bucket.grantReadWrite(syncProcessor);
     outputTable.grantReadWriteData(syncProcessor);
     documentsTable.grantReadWriteData(syncProcessor);
-    props.enableElasticsearch? esEncryptionKey.grantEncryptDecrypt(syncProcessor) : null;
-
-    props.enableElasticsearch ? syncProcessor.addToRolePolicy(esPolicy) : null;
-
+    
     //------------------------------------------------------------
 
     // Async Job Processor (Start jobs using Async APIs)
@@ -1042,7 +1038,6 @@ export class CdkTextractStack extends cdk.Stack {
           OUTPUT_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
-          ES_DOMAIN: props.enableElasticsearch ? elasticSearch.attrDomainEndpoint : undefined,
           PDF_LAMBDA: pdfGenerator.functionName,
           ENABLE_COMPREHEND_MEDICAL: props.enableComprehendMedical.toString(),
         },
@@ -1070,8 +1065,6 @@ export class CdkTextractStack extends cdk.Stack {
     documentsS3Bucket.grantReadWrite(jobResultProcessor);
     samplesS3Bucket.grantReadWrite(jobResultProcessor);
 
-    props.enableElasticsearch ? jobResultProcessor.addToRolePolicy(esPolicy) : null; 
-    props.enableElasticsearch ? esEncryptionKey.grantEncryptDecrypt(jobResultProcessor) : null ;
     //------------------------------------------------------------
 
     pdfGenerator.grantInvoke(syncProcessor);
@@ -1180,9 +1173,8 @@ export class CdkTextractStack extends cdk.Stack {
           SAMPLE_BUCKET: samplesS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
-          ES_DOMAIN: props.enableElasticsearch ? elasticSearch.attrDomainEndpoint : undefined,
         },
-        vpc: props.enableElasticsearch ? vpc : undefined,
+        vpc: props.enableElasticsearch ? vpc : null,
       }
     );
 
@@ -1196,8 +1188,6 @@ export class CdkTextractStack extends cdk.Stack {
     outputTable.grantReadWriteData(apiProcessor);
     documentsS3Bucket.grantRead(apiProcessor);
     samplesS3Bucket.grantRead(apiProcessor);
-    props.enableElasticsearch ? apiProcessor.addToRolePolicy(esPolicy) : null;
-    props.enableElasticsearch ? esEncryptionKey.grantEncryptDecrypt(apiProcessor) : null;
     // API
 
     // Log group for API logs
@@ -1318,6 +1308,25 @@ export class CdkTextractStack extends cdk.Stack {
       })
     );
 
+
+    if (props.enableElasticsearch){
+        //  -------  Adding Env Vars ------ //
+        apiProcessor.addEnvironment("ES_DOMAIN", elasticSearch.attrDomainEndpoint);
+        syncProcessor.addEnvironment("ES_DOMAIN", elasticSearch.attrDomainEndpoint);
+        jobResultProcessor.addEnvironment("ES_DOMAIN", elasticSearch.attrDomainEndpoint);
+            
+        //  -------  Adding Permissions ------ //
+        esEncryptionKey.grantEncryptDecrypt(syncProcessor);
+        syncProcessor.addToRolePolicy(esPolicy);
+        esEncryptionKey.grantEncryptDecrypt(jobResultProcessor); 
+        jobResultProcessor.addToRolePolicy(esPolicy);
+        esEncryptionKey.grantEncryptDecrypt(apiProcessor);
+        apiProcessor.addToRolePolicy(esPolicy);
+
+        //  -------  API  ------ //
+        const searchResource = api.root.addResource("search");
+        addCorsOptionsAndMethods(searchResource, ["GET"]);
+    }
     // add kendra index id to lambda environment in case of DUS+Kendra mode
     if (props.enableKendra) {
       let kendraResources = this.createandGetKendraRelatedResources(
