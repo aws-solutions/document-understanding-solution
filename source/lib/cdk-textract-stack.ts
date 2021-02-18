@@ -1286,11 +1286,6 @@ export class CdkTextractStack extends cdk.Stack {
 
     addCorsOptionsAndMethods(api.root, []);
 
-    if (props.enableElasticsearch){
-      const searchResource = api.root.addResource("search");
-      addCorsOptionsAndMethods(searchResource, ["GET"]);    
-    }
-
     const documentsResource = api.root.addResource("documents");
     addCorsOptionsAndMethods(documentsResource, ["GET"]);
 
