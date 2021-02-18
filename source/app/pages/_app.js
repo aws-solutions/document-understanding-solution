@@ -102,32 +102,32 @@ class AppLayout extends App {
           <link
             rel="icon"
             type="image/ico"
-            href="/static/images/favicon.ico"
+            href="/images/favicon.ico"
           />
           <link
             rel="shortcut icon"
             type="image/ico"
-            href="/static/images/favicon.ico"
+            href="/images/favicon.ico"
           />
           <link
             rel="apple-touch-icon"
             sizes="57x57"
-            href="/static/images/touch-icon-iphone-114-smile.png"
+            href="/images/touch-icon-iphone-114-smile.png"
           />
           <link
             rel="apple-touch-icon"
             sizes="72x72"
-            href="/static/images/touch-icon-ipad-144-smile.png"
+            href="/images/touch-icon-ipad-144-smile.png"
           />
           <link
             rel="apple-touch-icon"
             sizes="114x114"
-            href="/static/images/touch-icon-iphone-114-smile.png"
+            href="/images/touch-icon-iphone-114-smile.png"
           />
           <link
             rel="apple-touch-icon"
             sizes="144x144"
-            href="/static/images/touch-icon-ipad-144-smile.png"
+            href="/images/touch-icon-ipad-144-smile.png"
           />
         </Head>
         <Page pathname={pathname} pageProps={pageProps}>

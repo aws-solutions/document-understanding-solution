@@ -12,19 +12,31 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React from 'react';
-import { reject, isNil } from 'ramda'
+import React from 'react'
+import PropTypes from 'prop-types'
 
-import ErrorPage from '../components/ErrorPage/ErrorPage'
+import Button from '../Button/Button'
 
-const Error = (props) => <ErrorPage {...props} />
+import css from './ErrorPage.module.scss'
 
-Error.getInitialProps = function({ res, err }) {
-  const statusCode = res ? res.statusCode : err ? err.statusCode : null
-  return reject(isNil, {
-    pageTitle: 'Error',
-    statusCode,
-  })
+Error.propTypes = {
+  statusCode: PropTypes.number,
 }
 
-export default Error;
+export default function Error({ statusCode }) {
+  return (
+    <div className={css.error}>
+      {statusCode ? (
+        <p className={css.message}>
+          A {statusCode} error occurred on server. Please refresh the page and try again.
+        </p>
+      ) : (
+        <p className={css.message}>Something went wrong. Please refresh the page and try again.</p>
+      )}
+
+      <p>
+        <Button link={{ href: '/home' }}>Go Home</Button>
+      </p>
+    </div>
+  )
+}

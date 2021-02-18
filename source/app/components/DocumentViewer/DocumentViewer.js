@@ -16,7 +16,7 @@ import React, { Fragment, useCallback, useState, useEffect, useRef, forwardRef }
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import { Document, Page, pdfjs } from 'react-pdf'
-pdfjs.GlobalWorkerOptions.workerSrc = `/static/pdf.worker.min.js`
+pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`
 
 import Loading from '../Loading/Loading'
 import Pager from '../Pager/Pager'

@@ -176,7 +176,7 @@ if (isROMode==="true"){
       <input {...getInputProps({
         disabled: true
       })} />
-      <img src="/static/images/icon_file-upload.svg" alt="File Upload Icon" />
+      <img src="/images/icon_file-upload.svg" alt="File Upload Icon" />
       {isDragActive && <p className={css.instructions}>Drop the documents here...</p>}
       {!isDragActive && isReadyToUpload && (
         <>
@@ -210,7 +210,7 @@ else {
       })}
     >
       <input {...getInputProps()} />
-      <img src="/static/images/icon_file-upload.svg" alt="File Upload Icon" />
+      <img src="/images/icon_file-upload.svg" alt="File Upload Icon" />
       {isDragActive && <p className={css.instructions}>Drop the documents here...</p>}
       {!isDragActive && isReadyToUpload && (
         <>
@@ -246,11 +246,11 @@ else {
               return (
                 <li key={fileName}>
                   {isReadyToUpload && (
-                    <img src="/static/images/icon_document.svg" alt="Document Icon" />
+                    <img src="/images/icon_document.svg" alt="Document Icon" />
                   )}
                   {!success && !error && progress && <span>{progress}</span>}
-                  {success && <img src="/static/images/icon_success.svg" alt="Success Icon" />}
-                  {error && <img src="/static/images/icon_error.svg" alt="Error Icon" />}
+                  {success && <img src="/images/icon_success.svg" alt="Success Icon" />}
+                  {error && <img src="/images/icon_error.svg" alt="Error Icon" />}
                   {fileName}
                   {isReadyToUpload && (
                     <svg

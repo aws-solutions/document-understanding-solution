@@ -42,7 +42,7 @@ export default {
     title: 'Discovery',
     subtitle: 'Search across many documents, or within a single document',
     longDescription: discoveryTrackDescription,
-    icon: '/static/images/icon_cloud-search.svg',
+    icon: '/images/icon_cloud-search.svg',
     palette: 'blue',
   },
   redaction: {
@@ -60,7 +60,7 @@ export default {
       sensitive information that may be critical to your use case. You also have the option
       to download the redacted document before you would want to share it.
     `,
-    icon: '/static/images/icon_redact.svg',
+    icon: '/images/icon_redact.svg',
     palette: 'teal',
   },
   workflow: {
@@ -72,7 +72,7 @@ export default {
       consumed. The data extracted from DUS is available in the backend storage
       (Amazon S3) and then it can be consumed by your downstream dependencies.
     `,
-    icon: '/static/images/icon_workflow.svg',
+    icon: '/images/icon_workflow.svg',
     palette: 'purple',
   },
 }

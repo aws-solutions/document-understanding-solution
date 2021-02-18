@@ -33,7 +33,7 @@ export default function FeatureTooltip({ className, description, title }) {
   return (
     <div className={tooltipClassNames}>
       <img
-        src="/static/images/icon_feature.svg"
+        src="/images/icon_feature.svg"
         onClick={() => setVisible(isVisible => !isVisible)}
       />
 

@@ -234,7 +234,7 @@ function Documents({
                 </>}
               >
                 <div className={css.compareButton}>
-                  <img src="/static/images/icon_tip.svg" />
+                  <img src="/images/icon_tip.svg" />
                   What's the difference?
                 </div>
               </TooltipButton>
