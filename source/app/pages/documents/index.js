@@ -28,7 +28,7 @@ import {
 } from '../../store/entities/meta/actions'
 import { search, clearSearchResults } from '../../store/entities/searchResults/actions'
 
-import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA } from '../../constants/configs'
+import { MIN_SEARCH_QUERY_LENGTH, ENABLE_KENDRA, ENABLE_ELASTICSEARCH } from '../../constants/configs'
 
 import DocumentList from '../../components/DocumentList/DocumentList'
 import Loading from '../../components/Loading/Loading'
@@ -211,11 +211,11 @@ function Documents({
       {searchQuery && <>
 
         <div>
-          { ENABLE_KENDRA ?
+          { ENABLE_KENDRA && ENABLE_ELASTICSEARCH ?
             <SearchTypeTabs />
           : null }
           <div className={css.searchResultContainer}>
-            { !ENABLE_KENDRA || selectedSearch === 'es' || selectedSearch === 'both' ?
+            { (selectedSearch === 'es' || selectedSearch === 'both') ?
               <SearchResults
                 results={searchResults}
                 searchStatus={searchStatus}
@@ -240,7 +240,7 @@ function Documents({
               </TooltipButton>
             }
 
-            { ENABLE_KENDRA && (selectedSearch === 'kendra' || selectedSearch === 'both') ?
+            { (selectedSearch === 'kendra' || selectedSearch === 'both') ?
               <KendraResults
                 results={kendraResults}
                 filteredResults={kendraFilteredResults}
