@@ -66,7 +66,7 @@ import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox
 import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
 import TableResults from '../../components/TableResults/TableResults'
 import {ExportTypes, downloadRedactedDocument} from '../../utils/downloadRedactedDocument'
-
+import { ENABLE_COMPREHEND_MEDICAL } from '../../constants/configs'
 
 Document.propTypes = {
   currentPageNumber: PropTypes.number,
@@ -94,6 +94,16 @@ Document.getInitialProps = function({ query, store }) {
 
   return props
 }
+
+const tabItems = [
+  { id: 'search', title: 'Preview' },
+  { id: 'text', title: 'Raw Text' },
+  { id: 'kv', title: `Key-Value Pairs` },
+  { id: 'tables', title: `Tables` },
+  { id: 'entities', title: `Entities` },
+]
+
+if (ENABLE_COMPREHEND_MEDICAL) tabItems.push({ id: 'medical_entities', title: `Medical Entities` })
 
 function Document({ currentPageNumber, dispatch, id, document, pageTitle, searchQuery, track }) {
   // TODO: Ensure id corresponds to a valid resource, otherwise 404
@@ -126,7 +136,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     const tables = getDocumentTables(document)
     const lines = getDocumentLines(document)
     const entities = getDocumentEntityPairs(document, COMPREHEND_SERVICE)
-    const medicalEntities = getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE)
+    const medicalEntities = ENABLE_COMPREHEND_MEDICAL? getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE) : []
     return { pairs, tables, lines, entities , medicalEntities }
     // eslint-disable-next-line
 
@@ -260,8 +270,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const setHighlightedLine = useCallback(() => {}, [])
 
-
-
   return (
     <div className={css.document}>
       {status === 'pending' && <Loading />}
@@ -274,16 +282,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               selected={tab}
               track={track}
               onSelectTab={selectTab}
-              items={[
-                { id: 'search', title: 'Preview' },
-                { id: 'text', title: 'Raw Text' },
-                { id: 'kv', title: `Key-Value Pairs` },
-                { id: 'tables', title: `Tables` },
-                { id: 'entities', title: `Entities` },
-                { id: 'medical_entities', title: `Medical Entities` },
-              ]}
+              items={tabItems}
             />
-
 
             {track === 'redaction' &&
             document.redactions &&
@@ -307,7 +307,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
 
 
-              <div>
+                <div>
 
               <Tabs
               isTrackTab={true}
@@ -334,7 +334,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 tab === 'entities' && css.withEv,
                 tab === 'medical_entities' && css.withEv,
                 tab === 'text' && css.withText
-              )}
+              )
+            }
               document={document}
               pageCount={pageCount}
               redactions={(document.redactions || {})[currentPageNumber]}
@@ -362,7 +363,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               className={cs(
                 css.sidebar,
                 (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
-              )}
+              )
+            }
             >
               <KeyValueList
                 kvPairs={docData.pairs}
@@ -394,45 +396,46 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               />
 
               <EntitiesCheckbox
-                 entities={docData.entities}
-                 pageCount={pageCount}
-                 currentPageNumber={currentPageNumber}
-                 showRedaction={track === 'redaction'}
-                 onHighlight={highlightEntities}
-                 onSwitchPage={switchPage}
-                 onRedact={redactEntityMatches}
-                 onRedactAll={redactAllValues}
-                 onDownload={downloadKV}
-                 visible={tab === 'entities'}
-                 comprehendService={COMPREHEND_SERVICE}
-                 onDownloadPrimary = {downloadEntities}
-                 onDownloadSecondary = {null}
-                 document = {document}
+                entities={docData.entities}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                showRedaction={track === 'redaction'}
+                onHighlight={highlightEntities}
+                onSwitchPage={switchPage}
+                onRedact={redactEntityMatches}
+                onRedactAll={redactAllValues}
+                onDownload={downloadKV}
+                visible={tab === 'entities'}
+                comprehendService={COMPREHEND_SERVICE}
+                onDownloadPrimary = {downloadEntities}
+                onDownloadSecondary = {null}
+                document = {document}
               />
 
-              <EntitiesCheckbox
-                 entities={docData.medicalEntities}
-                 pageCount={pageCount}
-                 currentPageNumber={currentPageNumber}
-                 showRedaction={track === 'redaction'}
-                 onHighlight={highlightEntities}
-                 onSwitchPage={switchPage}
-                 onRedact={redactEntityMatches}
-                 onRedactAll={redactAllValues}
-                 onDownloadPrimary={downloadMedicalEntities}
-                 onDownloadSecondary = {downloadMedicalICD10Ontologies}
-                 visible={tab === 'medical_entities'}
-                 comprehendService={COMPREHEND_MEDICAL_SERVICE}
-                 document = {document}
-              />
+              { ENABLE_COMPREHEND_MEDICAL &&
+               <EntitiesCheckbox
+                entities={docData.medicalEntities}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                showRedaction={track === 'redaction'}
+                onHighlight={highlightEntities}
+                onSwitchPage={switchPage}
+                onRedact={redactEntityMatches}
+                onRedactAll={redactAllValues}
+                onDownloadPrimary={downloadMedicalEntities}
+                onDownloadSecondary = {downloadMedicalICD10Ontologies}
+                visible={tab === 'medical_entities'}
+                comprehendService={COMPREHEND_MEDICAL_SERVICE}
+                document = {document}
+              /> }
 
               <TableResults
-                 tables={docData.tables}
-                 pageCount={pageCount}
-                 currentPageNumber={currentPageNumber}
-                 onSwitchPage={switchPage}
-                 visible={tab === 'tables'}
-                 document = {document}
+                tables={docData.tables}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                onSwitchPage={switchPage}
+                visible={tab === 'tables'}
+                document = {document}
               />
             </div>
           </div>
