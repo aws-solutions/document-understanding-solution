@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import { pdfjs } from 'react-pdf';
 
 export const ExportTypes = {
