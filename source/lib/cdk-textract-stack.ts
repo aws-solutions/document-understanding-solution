@@ -642,6 +642,8 @@ export class CdkTextractStack extends cdk.Stack {
       },
     });
 
+    new cdk.CfnOutput(this, 'DUSUserPoolId', { value: textractUserPool.ref });
+
     // Depends upon all other parts of the stack having been created.
     const textractUserPoolUser = new CfnUserPoolUser(
       this,
