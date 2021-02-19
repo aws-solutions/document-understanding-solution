@@ -40,41 +40,11 @@ const getDocumentBlob = (document, type) => {
   throw new Error(`Invalid export type: ${type}`);
 };
 
-const getPDFBlob = async (document) => {
-  const pdfResponse = await fetch(document.searchablePdfURL);
-  const pdfBytes = await pdfResponse.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(pdfBytes);
-
-  const pages = pdfDoc.getPages();
-
-  pages.forEach((page, i) => {
-    const pageRedactions = document.redactions[i + 1];
-
-    if (pageRedactions) {
-      Object.values(pageRedactions).forEach((redaction) => {
-        const { height, width } = page.getSize();
-
-        page.drawRectangle({
-          color: rgb(0, 0, 0),
-          x: redaction.Left * width,
-          y: height - (redaction.Top + redaction.Height) * height,
-          width: redaction.Width * width,
-          height: redaction.Height * height,
-        });
-      });
-    }
-  });
-
-  const redactedPdfBytes = await pdfDoc.save();
-
-  return new Blob([redactedPdfBytes.buffer]);
-};
-
-const getPNGBlob = async (document) => {
+const getRedactedDocumentCanvases = async (document) => {
   const pdfDoc = await pdfjs.getDocument(document.searchablePdfURL).promise;
 
   // canvas for each page so we can draw redactions relative to each page's dimensions
-  const pageCanvases = await Promise.all(
+  return Promise.all(
     Array(pdfDoc.numPages)
       .fill(null)
       .map(async (_, i) => {
@@ -108,6 +78,38 @@ const getPNGBlob = async (document) => {
         return canvas;
       }),
   );
+};
+
+const getPDFBlob = async (document) => {
+  const pdfDoc = await PDFDocument.create();
+
+  const redactedDocumentPNGs = await getRedactedDocumentCanvases(document).then((canvases) =>
+    Promise.all(
+      canvases.map(
+        (canvas) =>
+          new Promise((resolve) =>
+            canvas.toBlob(async (blob) => {
+              const arrayBuffer = await blob.arrayBuffer();
+              const png = await pdfDoc.embedPng(arrayBuffer);
+              resolve(png);
+            }),
+          ),
+      ),
+    ),
+  );
+
+  redactedDocumentPNGs.forEach((png) => {
+    const page = pdfDoc.addPage([png.width, png.height]);
+    page.drawImage(png);
+  });
+
+  const redactedPdfBytes = await pdfDoc.save();
+
+  return new Blob([redactedPdfBytes.buffer]);
+};
+
+const getPNGBlob = async (document) => {
+  const pageCanvases = await getRedactedDocumentCanvases(document);
 
   // combine pages
   const canvas = window.document.createElement('canvas');
