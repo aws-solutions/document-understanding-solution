@@ -18,7 +18,7 @@ import { connect } from 'react-redux'
 import queryString from 'query-string'
 import cs from 'classnames'
 import { Storage } from 'aws-amplify'
-import {Menu, MenuButton, MenuList, MenuItem} from '@chakra-ui/react'
+
 
 
 import Loading from '../../components/Loading/Loading'
@@ -67,6 +67,8 @@ import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
 import TableResults from '../../components/TableResults/TableResults'
 import {ExportTypes, downloadRedactedDocument} from '../../utils/downloadRedactedDocument'
 import { ENABLE_COMPREHEND_MEDICAL } from '../../constants/configs'
+import ExportPreview from '../../components/ExportPreview/ExportPreview'
+
 
 Document.propTypes = {
   currentPageNumber: PropTypes.number,
@@ -226,10 +228,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const contentRef = useRef()
 
-  const downloadRedacted = useCallback((exportType) => {
-    downloadRedactedDocument(document, exportType)
-  }, [currentPageNumber, document.objectName, document.redactions])
-
   const pagePairsAsMarks = useMemo(() => {
     return pageData.pairs.reduce((acc, { id, keyBoundingBox, valueBoundingBox }) => {
       return [
@@ -292,15 +290,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                   <Button inverted onClick={clearReds}>
                     Clear Redaction
                   </Button>
-                  <Menu>
-                    <MenuButton as={Button}>
-                      ⬇ Redacted Doc
-                    </MenuButton>
-                    <MenuList>
-                      <MenuItem bg="inherit" border="none" fontSize="1rem" onClick={() => downloadRedacted(ExportTypes.PDF)}>PDF</MenuItem>
-                      <MenuItem bg="inherit" border="none" fontSize="1rem" onClick={() => downloadRedacted(ExportTypes.PNG)}>PNG</MenuItem>
-                    </MenuList>
-                  </Menu>
+                  <ExportPreview />
                 </div>
             ) : null}
 
