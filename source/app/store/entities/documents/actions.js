@@ -179,9 +179,8 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const s3Response = await Storage.get(textractResponsePath, {
     download: true
   });
-  const textractResponse = JSON.parse(
-    s3Response.Body ? s3Response.Body.toString() : null
-  );
+  const s3ResponseText = await s3Response.Body?.text()
+  const textractResponse = JSON.parse(s3ResponseText);
 
 // Get the raw comprehend medical response data from a json file on S3
 let comprehendMedicalRespone = null;
@@ -189,17 +188,15 @@ if(ENABLE_COMPREHEND_MEDICAL){
   const s3ComprehendMedicalResponse = await Storage.get(comprehendMedicalResponsePath, {
     download: true
   });
-  comprehendMedicalRespone = JSON.parse(
-    s3ComprehendMedicalResponse.Body ? s3ComprehendMedicalResponse.Body.toString() : null
-  );
+  const s3ComprehendMedicalResponseText = await s3ComprehendMedicalResponse.Body?.text()
+  comprehendMedicalRespone = JSON.parse(s3ComprehendMedicalResponseText);
 }
 // Get the raw comprehend response data from a json file on S3
 const s3ComprehendResponse = await Storage.get(comprehendResponsePath, {
   download: true
 });
-const comprehendRespone = JSON.parse(
-  s3ComprehendResponse.Body ? s3ComprehendResponse.Body.toString() : null
-);
+const s3ComprehendResponseText = await s3ComprehendResponse.Body?.text()
+const comprehendRespone = JSON.parse(s3ComprehendResponseText);
 
   return normalize(
     {

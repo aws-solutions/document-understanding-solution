@@ -41,12 +41,9 @@
     "build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region SEARCH_MODE=$npm_package_searchMode yarn pre-build && NEXT_PUBLIC_SEARCH_MODE=$npm_package_searchMode NEXT_PUBLIC_ENABLE_COMPREHEND_MEDICAL=$npm_package_enableComprehendMedical next build app",
     "export": "yarn build && next export app",
     "pre-build": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region isROMode=$npm_package_isROMode SEARCH_MODE=$npm_package_searchMode node ./bin/pre-build.js",
-    "preinstall": "npx npm-force-resolutions",
     "license-report": "legally --plain > license-report.txt && echo \"$(tail -n +4 license-report.txt)\" > license-report.txt",
     "prettier": "prettier --write '**/*.{js,md,yaml}'",
-    "lint": "yarn lint:js && yarn lint:css",
-    "lint:css": "sass-lint --verbose --no-exit",
-    "lint:js": "eslint './**/*.js' --max-warnings 0",
+    "lint": "eslint './**/*.js' --max-warnings 0",
     "run:tests": "bash bin/run-tests.sh",
     "install-all": "bash ../deployment/install_packages.sh",
     "add-service-linked-role": "bash ../deployment/custom-deployment/bin/add_es_service_role_if_missing.sh"
@@ -73,7 +70,7 @@
     "@emotion/react": "^11.1.4",
     "@emotion/styled": "^11.0.0",
     "@types/node": "^12.12.5",
-    "aws-amplify": "^2.1.0",
+    "aws-amplify": "^3.3.17",
     "aws-cdk": "^1.70.0",
     "aws-sdk": "^2.823.0",
     "classnames": "^2.2.6",
@@ -84,7 +81,7 @@
     "inquirer": "^6.4.1",
     "lodash": "^4.17.19",
     "minimist": "^1.2.3",
-    "next": "^10.0.3",
+    "next": "^10.0.6",
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-fetch": "^2.6.1",
     "normalizr": "^3.4.0",
@@ -121,8 +118,7 @@
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-react-hooks": "^1.6.0",
     "legally": "^3.3.7",
-    "prettier": "1.18.2",
-    "sass-lint": "^1.13.1"
+    "prettier": "1.18.2"
   },
   "resolutions": {
     "axios": "0.21.1"
