@@ -23,18 +23,7 @@ import css from './Button.module.scss'
 
 export const BUTTON_PALETTES = ['black', 'blue', 'orange']
 
-Button.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  disabled: PropTypes.bool,
-  inverted: PropTypes.bool,
-  link: PropTypes.shape(linkShape),
-  onClick: PropTypes.func,
-  palette: PropTypes.oneOf(BUTTON_PALETTES),
-  simple: PropTypes.bool,
-}
-
-export default function Button({
+const Button = React.forwardRef(({
   children,
   className,
   disabled = false,
@@ -44,7 +33,7 @@ export default function Button({
   palette = 'orange',
   simple = false,
   ...otherProps
-}) {
+}, ref) => {
   const { target, ...linkProps } = link || {}
   const buttonClassNames = classNames(css.button, css[palette], className, {
     [css.disabled]: disabled,
@@ -56,6 +45,7 @@ export default function Button({
   if (otherProps.href) {
     return (
       <a
+        ref={ref}
         className={buttonClassNames}
         target={target || null}
         tabIndex={disabled ? -1 : null}
@@ -67,7 +57,7 @@ export default function Button({
   }
 
   return !disabled && link ? (
-    <Link {...linkProps}>
+    <Link ref={ref} {...linkProps}>
       <a
         className={buttonClassNames}
         target={target || null}
@@ -78,8 +68,21 @@ export default function Button({
       </a>
     </Link>
   ) : (
-    <button className={buttonClassNames} onClick={onClick} tabIndex={disabled ? -1 : null} {...otherProps}>
+    <button ref={ref} className={buttonClassNames} onClick={onClick} tabIndex={disabled ? -1 : null} {...otherProps}>
       {children}
     </button>
   )
+})
+
+Button.propTypes = {
+  children: PropTypes.node.isRequired,
+  className: PropTypes.string,
+  disabled: PropTypes.bool,
+  inverted: PropTypes.bool,
+  link: PropTypes.shape(linkShape),
+  onClick: PropTypes.func,
+  palette: PropTypes.oneOf(BUTTON_PALETTES),
+  simple: PropTypes.bool,
 }
+
+export default Button

@@ -12,13 +12,14 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-import React, { Fragment, useCallback, useEffect, useRef, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { reject, either, isNil, isEmpty, groupWith } from 'ramda'
 import queryString from 'query-string'
 import cs from 'classnames'
 import { Storage } from 'aws-amplify'
+import {Menu, MenuButton, MenuList, MenuItem} from '@chakra-ui/react'
+
 
 import Loading from '../../components/Loading/Loading'
 import DocumentViewer from '../../components/DocumentViewer/DocumentViewer'
@@ -28,13 +29,13 @@ import Tabs from '../../components/Tabs/Tabs'
 import {
   fetchDocument,
   addRedactions,
+  clearRedaction,
   clearRedactions,
   addHighlights,
   clearHighlights
 
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
-import { setHeaderProps , setSelectedTrack} from '../../store/ui/actions'
 import { getSelectedTrackId } from '../../store/ui/selectors'
 import { setCurrentPageNumber, setDocumentSearchQuery } from '../../store/entities/meta/actions'
 import { getDocumentSearchQuery, getCurrentPageNumber } from '../../store/entities/meta/selectors'
@@ -64,6 +65,7 @@ import RawTextLines from '../../components/RawTextLines/RawTextLines'
 import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox'
 import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
 import TableResults from '../../components/TableResults/TableResults'
+import {ExportTypes, downloadRedactedDocument} from '../../utils/downloadRedactedDocument'
 import { ENABLE_COMPREHEND_MEDICAL } from '../../constants/configs'
 
 Document.propTypes = {
@@ -153,7 +155,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const [tab, selectTab] = useState('search')
 
-  const [trackTab, selectTrack] = useState('search')
+  const [trackTab, selectTrack] = useState('searchTrack')
 
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document
@@ -224,44 +226,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const contentRef = useRef()
 
-  const downloadRedacted = useCallback(async () => {
-    const theThing = contentRef.current.querySelector('canvas,img')
-
-    const cnv = window.document.createElement('canvas')
-    // TODO the resolution is just based on the viewport for pdfs. It shouldn't be.
-    cnv.width = theThing.naturalWidth || theThing.width
-    cnv.height = theThing.naturalHeight || theThing.height
-
-    const ctx = cnv.getContext('2d')
-
-    ctx.drawImage(theThing, 0, 0)
-
-    ctx.fillStyle = '#000'
-    const x = val => val * cnv.width
-    const y = val => val * cnv.height
-    const margin = 2
-
-    Object.values(document.redactions[currentPageNumber]).forEach(red => {
-      ctx.fillRect(
-        x(red.Left) - margin,
-        y(red.Top) - margin,
-        x(red.Width) + 2 * margin,
-        y(red.Height) + 2 * margin
-      )
-    })
-
-    cnv.toBlob(blob => {
-      const a = window.document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.target = '_blank'
-      a.style.display = 'none'
-      a.download = document.objectName
-        .split('/')
-        .pop()
-        .replace(/\.[^.]+$/, '-REDACTED.png')
-      window.document.body.appendChild(a)
-      a.click()
-    }, 'image/png')
+  const downloadRedacted = useCallback((exportType) => {
+    downloadRedactedDocument(document, exportType)
   }, [currentPageNumber, document.objectName, document.redactions])
 
   const pagePairsAsMarks = useMemo(() => {
@@ -322,14 +288,20 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             {track === 'redaction' &&
             document.redactions &&
             Object.keys(document.redactions).length ? (
-              <div className={css.downloadButtons}>
-                <Button inverted onClick={clearReds}>
-                  Clear Redaction
-                </Button>
-                <Button className={css.downloadRedacted} onClick={downloadRedacted}>
-                ⬇ Redacted Doc
-                </Button>
-              </div>
+                <div className={css.downloadButtons}>
+                  <Button inverted onClick={clearReds}>
+                    Clear Redaction
+                  </Button>
+                  <Menu>
+                    <MenuButton as={Button}>
+                      ⬇ Redacted Doc
+                    </MenuButton>
+                    <MenuList>
+                      <MenuItem bg="inherit" border="none" fontSize="1rem" onClick={() => downloadRedacted(ExportTypes.PDF)}>PDF</MenuItem>
+                      <MenuItem bg="inherit" border="none" fontSize="1rem" onClick={() => downloadRedacted(ExportTypes.PNG)}>PNG</MenuItem>
+                    </MenuList>
+                  </Menu>
+                </div>
             ) : null}
 
 
@@ -367,18 +339,21 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               document={document}
               pageCount={pageCount}
               redactions={(document.redactions || {})[currentPageNumber]}
+              onRedactionClick={(redactionId) => dispatch(clearRedaction(document.documentId, currentPageNumber, document.redactions, redactionId))}
+              onMarkClick={(redaction) => dispatch(addRedactions(document.documentId, currentPageNumber, [redaction]))}
               marks={
-                tab === 'search'
-                  ? wordsMatchingSearch
-                  : tab === 'text'
-                  ? pageLinesAsMarks
-                  : tab === 'kv'
-                  ? pagePairsAsMarks
-                  : tab === 'entities'
-                  ? (document.highlights || [])
-                  : tab === 'medical_entities'
-                  ? (document.highlights || [])
-                  : []
+                [
+                  ...wordsMatchingSearch,
+                  ...tab === 'text'
+                    ? pageLinesAsMarks
+                    : tab === 'kv'
+                    ? pagePairsAsMarks
+                    : tab === 'entities'
+                    ? (document.highlights || [])
+                    : tab === 'medical_entities'
+                    ? (document.highlights || [])
+                    : []
+                ]
               }
               tables={tab === 'tables' && pageData.tables}
               highlightedMark={highlightedKv}

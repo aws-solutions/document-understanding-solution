@@ -24,12 +24,15 @@ import TableDownloader from '../TableDownloader/TableDownloader'
 
 import cs from 'classnames'
 import css from './DocumentViewer.module.scss'
+import {Tooltip} from '@chakra-ui/react'
 
 DocumentViewer.propTypes = {
   className: PropTypes.string,
   document: PropTypes.object,
   marks: PropTypes.array,
   pageCount: PropTypes.number,
+  onRedactionClick: PropTypes.func,
+  onMarkClick: PropTypes.func,
 }
 
 DocumentViewer.defaultProps = {}
@@ -42,6 +45,8 @@ export default function DocumentViewer({
   tables,
   pageCount,
   highlightedMark,
+  onRedactionClick,
+  onMarkClick,
   ...rest
 }) {
   const { documentName, searchablePdfURL, documentURL } = document
@@ -53,34 +58,45 @@ export default function DocumentViewer({
   const pager = (
     <Pager className={css.pager} pageTotal={pageCount}>
       {currentPageNumber =>
-        isPDF ? (
-          <DocumentMarks
-            marks={marks}
-            highlightedMark={highlightedMark}
-            tables={tables}
-            redactions={redactions}
-            ref={containerRef}
-          >
-            <Page
-              className={css.page}
-              loading={<Loading />}
-              pageNumber={currentPageNumber}
-              width={documentWidth}
-              renderAnnotationLayer={false}
-            />
-          </DocumentMarks>
-        ) : (
-          <div className={css.imageWrapper}>
-            <DocumentMarks
-              marks={marks}
-              highlightedMark={highlightedMark}
-              tables={tables}
-              redactions={redactions}
-            >
-              <img className={css.image} src={documentURL} />
-            </DocumentMarks>
+        <>
+          <div className={css.redactionExplanation}>
+            Redacted items <span aria-hidden className={css.redactionPreview}>Jane Doe</span> will be covered from the downloaded document with a black rectangle <span aria-hidden className={css.redaction}>Jane Doe</span>
           </div>
-        )
+          {
+              isPDF ? (
+                <DocumentMarks
+                  marks={marks}
+                  highlightedMark={highlightedMark}
+                  tables={tables}
+                  redactions={redactions}
+                  onRedactionClick={onRedactionClick}
+                  onMarkClick={onMarkClick}
+                  ref={containerRef}
+                  >
+                  <Page
+                    className={css.page}
+                    loading={<Loading />}
+                    pageNumber={currentPageNumber}
+                    width={documentWidth}
+                    renderAnnotationLayer={false}
+                    />
+                </DocumentMarks>
+              ) : (
+                <div className={css.imageWrapper}>
+                  <DocumentMarks
+                    marks={marks}
+                    highlightedMark={highlightedMark}
+                    tables={tables}
+                    redactions={redactions}
+                    onRedactionClick={onRedactionClick}
+                    onMarkClick={onMarkClick}
+                  >
+                    <img className={css.image} src={documentURL} />
+                  </DocumentMarks>
+                </div>
+              )
+          }
+        </>
       }
     </Pager>
   )
@@ -133,7 +149,7 @@ function useDocumentResizer(isPDF, resizeDeps) {
 }
 
 const DocumentMarks = forwardRef(function DocumentMarks(
-  { children, marks , tables, redactions, highlightedMark },
+  { children, marks , tables, redactions, onRedactionClick, onMarkClick, highlightedMark },
   ref
 ) {
 
@@ -142,30 +158,34 @@ const DocumentMarks = forwardRef(function DocumentMarks(
       <div className={css.canvas} ref={ref}>
         {children}
         {marks &&
-          marks.map(({ Top, Left, Width, Height, type, id }, i) => (
-            <mark
-              key={`${id || ''}${type || ''}` || i}
-              className={cs(css.highlight, type, id === highlightedMark && css.highlighted)}
-              style={{
-                top: `${Top * 100}%`,
-                left: `${Left * 100}%`,
-                width: `${Width * 100}%`,
-                height: `${Height * 100}%`,
-              }}
-            />
+          marks.map(({ Text, Top, Left, Width, Height, type, id }, i) => (
+            <Tooltip key={`${id || ''}${type || ''}` || i} hasArrow label="Click to redact" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
+              <mark
+                className={cs(css.highlight, type, id === highlightedMark && css.highlighted)}
+                onClick={() => onMarkClick({Text, Top, Left, Width, Height})}
+                style={{
+                  top: `${Top * 100}%`,
+                  left: `${Left * 100}%`,
+                  width: `${Width * 100}%`,
+                  height: `${Height * 100}%`,
+                }}
+                />
+            </Tooltip>
           ))}
         {redactions &&
-          Object.values(redactions).map(({ Top, Left, Width, Height }, i) => (
-            <mark
-              key={i}
-              className={css.redact}
-              style={{
-                top: `${Top * 100}%`,
-                left: `${Left * 100}%`,
-                width: `${Width * 100}%`,
-                height: `${Height * 100}%`,
-              }}
-            />
+          Object.entries(redactions).map(([id, { Top, Left, Width, Height }]) => (
+            <Tooltip key={id} hasArrow label="Click to remove" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
+              <mark
+                className={css.redact}
+                onClick={() => onRedactionClick(id)}
+                style={{
+                  top: `${Top * 100}%`,
+                  left: `${Left * 100}%`,
+                  width: `${Width * 100}%`,
+                  height: `${Height * 100}%`,
+                }}
+              />
+            </Tooltip>
           ))}
         {tables &&
           tables.map(({ table, rows }, i) => <TableHighlight key={i} table={table} rows={rows} />)}
@@ -179,6 +199,8 @@ DocumentMarks.displayName = 'DocumentMarks'
 DocumentMarks.propTypes = {
   children: PropTypes.node,
   marks: PropTypes.array,
+  onRedactionClick: PropTypes.func,
+  onMarkClick: PropTypes.func,
 }
 
 function TableHighlight({ table, rows }) {
