@@ -24,7 +24,7 @@ import {
   FETCH_DOCUMENTS,
   FETCH_DOCUMENT,
   REDACT_DOCUMENT,
-  CANCEL_REDACTION,
+  CLEAR_REDACTION,
   HIGHLIGHT_DOCUMENT
 } from "../../../constants/action-types";
 import { documentsSchema, documentSchema } from "./data";
@@ -259,8 +259,8 @@ export const addRedactions = createAction(
   }
 );
 
-export const cancelRedaction = createAction(
-  CANCEL_REDACTION,
+export const clearRedaction = createAction(
+  CLEAR_REDACTION,
   (documentId, pageNumber, redactions, redactionId) => {
     const newRedactions = {...redactions[pageNumber]};
 
