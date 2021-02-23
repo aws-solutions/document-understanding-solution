@@ -10,8 +10,8 @@ import {
   ModalHeader,
   ModalCloseButton,
   ModalBody,
-  ModalFooter,
   Box,
+  Flex,
 } from '@chakra-ui/react';
 import { connect } from 'react-redux';
 import queryString from 'query-string';
@@ -22,7 +22,7 @@ import { getDocumentPageCount } from '../../utils/document';
 import { Document, Page } from 'react-pdf';
 import Loading from '../Loading/Loading';
 import { DocumentMarks, useDocumentResizer } from '../DocumentViewer/DocumentViewer';
-import DownloadIcon from './DownloadIcon'
+import DownloadIcon from './DownloadIcon';
 
 const ExportPreview = ({ document }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -38,53 +38,61 @@ const ExportPreview = ({ document }) => {
       <Modal isOpen={isOpen} onClose={onClose} isCentered size='6xl' scrollBehavior='inside'>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader bg='#f2f4f4' d='flex' alignItems='center' color='#000'>
-            <Box flex='1'>Preview Redactions and Export</Box>
+          <ModalHeader bg='#f2f4f4' color='#000'>
+            <Flex alignItems='center'>
+              <Box flex='1'>Preview Redactions and Export</Box>
 
-            <Menu>
-              <MenuButton as={Button}>Download Redacted Doc</MenuButton>
-              <MenuList bg='#666' color='#fff'>
-                <MenuItem
-                  bg='inherit'
-                  border='none'
-                  justifyContent="center"
-                  fontSize='1rem'
-                  onClick={() => downloadRedactedDocument(document, ExportTypes.PDF)}
-                >
-                  <DownloadIcon /> <Box ml={2} width="40px">PDF</Box>
-                </MenuItem>
-                <MenuItem
-                  bg='inherit'
-                  border='none'
-                  justifyContent="center"
-                  fontSize='1rem'
-                  onClick={() => downloadRedactedDocument(document, ExportTypes.PNG)}
-                >
-                  <DownloadIcon /> <Box ml={2} width="40px">PNG</Box>
-                </MenuItem>
-              </MenuList>
-            </Menu>
+              <Menu placement='bottom'>
+                <MenuButton as={Button}>Download Redacted Doc</MenuButton>
+                <MenuList bg='#666' color='#fff'>
+                  <MenuItem
+                    bg='inherit'
+                    border='none'
+                    justifyContent='center'
+                    fontSize='1rem'
+                    onClick={() => downloadRedactedDocument(document, ExportTypes.PDF)}
+                  >
+                    <DownloadIcon />{' '}
+                    <Box ml={2} width='40px'>
+                      PDF
+                    </Box>
+                  </MenuItem>
+                  <MenuItem
+                    bg='inherit'
+                    border='none'
+                    justifyContent='center'
+                    fontSize='1rem'
+                    onClick={() => downloadRedactedDocument(document, ExportTypes.PNG)}
+                  >
+                    <DownloadIcon />{' '}
+                    <Box ml={2} width='40px'>
+                      PNG
+                    </Box>
+                  </MenuItem>
+                </MenuList>
+              </Menu>
 
-            <ModalCloseButton border='none' bg='#f2f4f4' position='static' />
-          </ModalHeader>
+              <ModalCloseButton border='none' bg='#f2f4f4' position='static' />
+            </Flex>
 
-          <ModalBody bg='#fff' color='#000'>
-            <dl>
-              <Box as='dt' d='inline-block'>
+            <Box as='dl' fontSize="1rem">
+              <Box as='dt' d='inline-block' fontWeight='normal'>
                 Document Name:
               </Box>
-              <Box as='dd' d='inline-block' ml={1} mr={10} fontWeight='bold'>
+              <Box as='dd' d='inline-block' ml={1} mr={10}>
                 {readableDocumentName}
               </Box>
 
-              <Box as='dt' d='inline-block'>
+              <Box as='dt' d='inline-block' fontWeight='normal'>
                 Total pages:
               </Box>
-              <Box as='dd' d='inline-block' ml={1} fontWeight='bold'>
+              <Box as='dd' d='inline-block' ml={1}>
                 {pageCount}
               </Box>
-            </dl>
+            </Box>
+          </ModalHeader>
 
+          <ModalBody bg='#fff' color='#000'>
             <div ref={containerRef}>
               <Document
                 file={document.searchablePdfURL}
