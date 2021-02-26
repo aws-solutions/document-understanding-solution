@@ -357,6 +357,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               }
               tables={tab === 'tables' && pageData.tables}
               highlightedMark={highlightedKv}
+              isComplianceTrack={track === 'redaction'}
             />
 
             <div
