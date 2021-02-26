@@ -12,11 +12,11 @@ import {
   ModalBody,
   Box,
   Flex,
+  Button,
 } from '@chakra-ui/react';
 import { connect } from 'react-redux';
 import queryString from 'query-string';
 import { ExportTypes, downloadRedactedDocument } from '../../utils/downloadRedactedDocument';
-import Button from '../Button/Button';
 import { getDocumentById } from '../../store/entities/documents/selectors';
 import { getDocumentPageCount } from '../../utils/document';
 import { Document, Page } from 'react-pdf';
@@ -27,30 +27,76 @@ import DownloadIcon from './DownloadIcon';
 const ExportPreview = ({ document }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { containerRef, documentWidth, handleResize } = useDocumentResizer(true, []);
+  const [isExporting, setIsExporting] = React.useState(false);
 
   const readableDocumentName = document.documentName.replace(/\.(pdf|PDF|png|PNG|jpg|JPG|jpeg|JPEG)/, '');
   const pageCount = getDocumentPageCount(document);
 
+  const downloadRedactedDocumentWithDownloadingState = async (exportType) => {
+    try {
+      setIsExporting(true);
+      await downloadRedactedDocument(document, exportType);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <>
-      <Button onClick={onOpen}>Export Redacted Doc</Button>
+      <Button
+        onClick={onOpen}
+        size='sm'
+        borderRadius='2px'
+        fontSize='1rem'
+        bg='orange'
+        _hover={{ background: '#f6761d' }}
+        _active={{ background: '#f6761d' }}
+      >
+        Export Redacted Doc
+      </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} isCentered size='6xl' scrollBehavior='inside'>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader bg='#f2f4f4' color='#000'>
             <Flex alignItems='center'>
-              <Box flex='1'>Preview Redactions and Export</Box>
+              <Box flex='1'>
+                <Box flex='1'>Preview Redactions and Export</Box>
 
-              <Menu placement='bottom'>
-                <MenuButton as={Button}>Download Redacted Doc</MenuButton>
+                <Box as='dl' my={0} fontSize='1rem'>
+                  <Box as='dt' d='inline-block' fontWeight='normal'>
+                    Document Name:
+                  </Box>
+                  <Box as='dd' d='inline-block' ml={1} mr={10}>
+                    {readableDocumentName}
+                  </Box>
+
+                  <Box as='dt' d='inline-block' fontWeight='normal'>
+                    Total pages:
+                  </Box>
+                  <Box as='dd' d='inline-block' ml={1}>
+                    {pageCount}
+                  </Box>
+                </Box>
+              </Box>
+
+              <Menu placement='bottom' justifySelf='flex-end'>
+                <MenuButton
+                  as={Button}
+                  isLoading={isExporting}
+                  bg='orange'
+                  _hover={{ background: '#f6761d' }}
+                  _active={{ background: '#f6761d' }}
+                >
+                  Download Redacted Doc
+                </MenuButton>
                 <MenuList bg='#666' color='#fff'>
                   <MenuItem
                     bg='inherit'
                     border='none'
                     justifyContent='center'
                     fontSize='1rem'
-                    onClick={() => downloadRedactedDocument(document, ExportTypes.PDF)}
+                    onClick={() => downloadRedactedDocumentWithDownloadingState(ExportTypes.PDF)}
                   >
                     <DownloadIcon />{' '}
                     <Box ml={2} width='40px'>
@@ -62,7 +108,7 @@ const ExportPreview = ({ document }) => {
                     border='none'
                     justifyContent='center'
                     fontSize='1rem'
-                    onClick={() => downloadRedactedDocument(document, ExportTypes.PNG)}
+                    onClick={() => downloadRedactedDocumentWithDownloadingState(ExportTypes.PNG)}
                   >
                     <DownloadIcon />{' '}
                     <Box ml={2} width='40px'>
@@ -74,22 +120,6 @@ const ExportPreview = ({ document }) => {
 
               <ModalCloseButton border='none' bg='#f2f4f4' position='static' />
             </Flex>
-
-            <Box as='dl' fontSize="1rem">
-              <Box as='dt' d='inline-block' fontWeight='normal'>
-                Document Name:
-              </Box>
-              <Box as='dd' d='inline-block' ml={1} mr={10}>
-                {readableDocumentName}
-              </Box>
-
-              <Box as='dt' d='inline-block' fontWeight='normal'>
-                Total pages:
-              </Box>
-              <Box as='dd' d='inline-block' ml={1}>
-                {pageCount}
-              </Box>
-            </Box>
           </ModalHeader>
 
           <ModalBody bg='#fff' color='#000'>
@@ -104,7 +134,10 @@ const ExportPreview = ({ document }) => {
                   .map((_, i) => i + 1)
                   .map((pageNumber) => (
                     <Box key={pageNumber} mb={10}>
-                      <DocumentMarks redactions={document.redactions[pageNumber]} isExportPreview>
+                      <DocumentMarks
+                        redactions={document.redactions ? document.redactions[pageNumber] : []}
+                        isExportPreview
+                      >
                         <Page
                           width={documentWidth}
                           loading={<Loading />}
