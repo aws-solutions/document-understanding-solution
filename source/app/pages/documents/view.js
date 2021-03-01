@@ -157,8 +157,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   const [tab, selectTab] = useState('search')
 
-  const [trackTab, selectTrack] = useState('searchTrack')
-
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document
     const url = await Storage.get(`${resultDirectory}/textract/page-${currentPageNumber}-forms.csv`, {
@@ -300,10 +298,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 <div>
 
               <Tabs
-              isTrackTab={true}
-              selected={trackTab}
+              isTrackTab
               track={track}
-              onSelectTab={selectTrack}
               items={[
                 { id: 'searchTrack', title: 'Discovery'},
                 { id: 'complianceTrack', title: 'Compliance'},
