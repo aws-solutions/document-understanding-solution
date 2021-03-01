@@ -16,7 +16,7 @@ import React, { Fragment, useCallback, useState, useEffect, useRef, forwardRef }
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import { Document, Page, pdfjs } from 'react-pdf'
-pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 import Loading from '../Loading/Loading'
 import Pager from '../Pager/Pager'
@@ -128,7 +128,7 @@ export default function DocumentViewer({
 }
 
 // Resize PDF on window resize
-function useDocumentResizer(isPDF, resizeDeps) {
+export function useDocumentResizer(isPDF, resizeDeps) {
   const containerRef = useRef(null)
   const [documentWidth, setDocumentWidth] = useState(0)
 
@@ -155,8 +155,8 @@ function useDocumentResizer(isPDF, resizeDeps) {
   return { containerRef, documentWidth, handleResize }
 }
 
-const DocumentMarks = forwardRef(function DocumentMarks(
-  { children, marks , tables, redactions, onRedactionClick, onMarkClick, highlightedMark, isComplianceTrack },
+export const DocumentMarks = forwardRef(function DocumentMarks(
+  { children, marks , tables, redactions, onRedactionClick, onMarkClick, highlightedMark, isComplianceTrack, isExportPreview = false, },
   ref
 ) {
 
@@ -186,21 +186,29 @@ const DocumentMarks = forwardRef(function DocumentMarks(
                 <mark key={key} {...markProps} />
             )
           })}
-        {redactions && isComplianceTrack &&
-          Object.entries(redactions).map(([id, { Top, Left, Width, Height }]) => (
-            <Tooltip key={id} hasArrow label="Click to remove" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
-              <mark
-                className={css.redact}
-                onClick={() => onRedactionClick(id)}
-                style={{
-                  top: `${Top * 100}%`,
-                  left: `${Left * 100}%`,
-                  width: `${Width * 100}%`,
-                  height: `${Height * 100}%`,
-                }}
-              />
-            </Tooltip>
-          ))}
+        {redactions && (isComplianceTrack || isExportPreview) &&
+          Object.entries(redactions).map(([id, { Top, Left, Width, Height }]) => {
+            const key = id
+
+            const markProps = {
+              className: cs(css.redact, isExportPreview && css.exportPreviewRedaction),
+              style: {
+                top: `${Top * 100}%`,
+                left: `${Left * 100}%`,
+                width: `${Width * 100}%`,
+                height: `${Height * 100}%`,
+              }
+            }
+
+
+            return (
+              isExportPreview ?
+                <mark key={key} {...markProps} /> : 
+                <Tooltip key={key} hasArrow label="Click to remove" bg="rgb(24, 29, 43)" fontSize='1rem' color="white">
+                  <mark {...markProps} onClick={() => onRedactionClick(id)} />  
+                </Tooltip>
+            )
+          })}
         {tables &&
           tables.map(({ table, rows }, i) => <TableHighlight key={i} table={table} rows={rows} />)}
       </div>
