@@ -156,7 +156,7 @@ Resources:
                 - Name: SourceApp
               Configuration:
                 RepositoryName: !Ref CodeCommitRepository
-                BranchName: master
+                BranchName: main
                 PollForSourceChanges: false
         - Name: Deploy
           Actions:
@@ -918,7 +918,7 @@ Resources:
           referenceType:
             - branch
           referenceName:
-            - master
+            - main
       Targets:
         - Arn:
             !Join [
