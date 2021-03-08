@@ -1300,7 +1300,7 @@ export class CdkTextractStack extends cdk.Stack {
     const redactionResource = api.root.addResource("redaction");
     addCorsOptionsAndMethods(redactionResource, ["GET", "POST"]);
 
-    const redactionGlobalResource = api.root.addResource("redactionGlobal");
+    const redactionGlobalResource = api.root.addResource("redactionglobal");
     addCorsOptionsAndMethods(redactionGlobalResource, ["GET"]);
 
     cognitoPolicy.addStatements(
