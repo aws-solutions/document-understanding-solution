@@ -16,14 +16,12 @@ import os
 import json
 import boto3
 from botocore.exceptions import ClientError
-import re
-
 from documents import getDocuments
 from document import getDocument, createDocument, deleteDocument
 from redact import redact
 from search import search, deleteESItem
 from kendraHelper import KendraHelper
-
+from redaction import getDocumentRedaction, saveDocumentRedaction, getRedactionGlobal
 
 def redactHeadersFromLambdaEvent(lambdaEvent):
     lambdaEvent.pop('headers', None)
@@ -85,6 +83,24 @@ def lambda_handler(event, context):
                     request["documentId"] = event['queryStringParameters']['documentId']
                 result = search(request)
 
+        # document redaction items: terms header and footer
+        elif(event['resource'] == '/redaction'):
+            
+             if event['httpMethod'] == 'GET':
+                result = getDocumentRedaction(event['queryStringParameters']['documentId'],
+                                              documentBucket)
+            
+             elif event['httpMethod'] == 'POST':
+                result = saveDocumentRedaction(event['queryStringParameters']['documentId'],
+                                               documentBucket,
+                                               event['body'])
+
+        # global redaction items: labels and exclusion lists
+        elif(event['resource'] == '/redactionglobal'):
+
+            if event['httpMethod'] == 'GET':
+                result = getRedactionGlobal(documentBucket)
+                    
         # search Kendra if available
         elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST' and 'KENDRA_INDEX_ID' in os.environ):
             kendraClient = KendraHelper()

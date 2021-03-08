@@ -1188,7 +1188,7 @@ export class CdkTextractStack extends cdk.Stack {
     documentsTable.grantReadWriteData(apiProcessor);
     documentsTable.grant(apiProcessor, "dynamodb:DescribeTable");
     outputTable.grantReadWriteData(apiProcessor);
-    documentsS3Bucket.grantRead(apiProcessor);
+    documentsS3Bucket.grantReadWrite(apiProcessor);
     samplesS3Bucket.grantRead(apiProcessor);
     // API
 
@@ -1296,6 +1296,12 @@ export class CdkTextractStack extends cdk.Stack {
 
     const redactResource = api.root.addResource("redact");
     addCorsOptionsAndMethods(redactResource, ["GET", "POST"]);
+
+    const redactionResource = api.root.addResource("redaction");
+    addCorsOptionsAndMethods(redactionResource, ["GET", "POST"]);
+
+    const redactionGlobalResource = api.root.addResource("redactionGlobal");
+    addCorsOptionsAndMethods(redactionGlobalResource, ["GET"]);
 
     cognitoPolicy.addStatements(
       new iam.PolicyStatement({
