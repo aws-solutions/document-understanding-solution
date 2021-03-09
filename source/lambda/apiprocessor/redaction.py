@@ -1,6 +1,6 @@
 
 ######################################################################################################################
-#  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
+#  Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
 #                                                                                                                    #
 #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
 #  with the License. A copy of the License is located at                                                             #
@@ -17,6 +17,7 @@ import json
 import os
 from helper import S3Helper
 
+# the maximum number of exclusion lists we support, like legal, marketing, etc
 MAXIMUM_EXCLUSION_LISTS = 100
 
 # get the redacted items of this document
@@ -28,6 +29,7 @@ def getDocumentRedaction(documentId, bucket):
     redaction['headers'] = []
     redaction['footers'] = []
     
+    # the redaction file may or may not exist
     try:
         data = S3Helper.readFromS3(bucket, 'public/' + documentId + '/redaction.json')
         redaction = json.loads(data)
@@ -38,24 +40,26 @@ def getDocumentRedaction(documentId, bucket):
     
     return redaction
 
+
 # retrieve the redacted items of this document
 def saveDocumentRedaction(documentId, bucket, body):
 
     result = {}
     result['status'] = False
     
-    # save document redaction if it parses correctly
+    # save the document redaction, if it parses correctly
     try:
         redaction = json.loads(body)
         
         S3Helper.writeToS3(json.dumps(redaction),
                            bucket,
                            'public/' + documentId + '/redaction.json')
+    
+        result['status'] = True
+    
     except Exception as e:
         print("saveDocumentRedaction exception: " + str(e))
-        return result
-
-    result['status'] = True
+    
     return result
 
 
@@ -73,7 +77,7 @@ def getRedactionGlobal(bucket):
         data = S3Helper.readFromS3(bucket, 'redactionglobal/labels.csv')
         lines = data.splitlines()
     
-        # remove csv header
+        # remove csv header with column names
         lines.pop(0)
         
         numOfLabels = len(lines)
@@ -86,14 +90,20 @@ def getRedactionGlobal(bucket):
                 label['display'] = tokens[1]
                 label['description'] = tokens[2]
                 redactionglobal['labels'].append(label)
+
+    # if the labels.csv file doesn't exists, then the labels are skipped
     except Exception as e:
-        print("getRedactionGlobal: no labels.csv found, skipping this step")
-    
+        print("getRedactionGlobal exception while retrieving labels.csv: " + str(e))
+    except:
+        print("getRedactionGlobal exception while retrieving labels.csv")
+
     #
     # fetch exclusion lists
     #
     allowedFileTypes = set()
     allowedFileTypes.add('csv')
+
+    # this may return an empty list if no exclusion files exist
     filenames = S3Helper.getFileNames(bucket,
                                       'redactionglobal/exclusion/',
                                       MAXIMUM_EXCLUSION_LISTS,

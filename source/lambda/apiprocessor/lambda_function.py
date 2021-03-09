@@ -83,7 +83,7 @@ def lambda_handler(event, context):
                     request["documentId"] = event['queryStringParameters']['documentId']
                 result = search(request)
 
-        # document redaction items: terms header and footer
+        # a specific document redaction items (terms, headers and footers)
         elif(event['resource'] == '/redaction'):
             
              if event['httpMethod'] == 'GET':
@@ -95,7 +95,7 @@ def lambda_handler(event, context):
                                                documentBucket,
                                                event['body'])
 
-        # global redaction items: labels and exclusion lists
+        # global redaction items (labels and exclusion lists)
         elif(event['resource'] == '/redactionglobal'):
 
             if event['httpMethod'] == 'GET':
