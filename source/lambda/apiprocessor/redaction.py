@@ -17,6 +17,8 @@ import json
 import os
 from helper import S3Helper
 
+MAXIMUM_EXCLUSION_LISTS = 100
+
 # get the redacted items of this document
 def getDocumentRedaction(documentId, bucket):
 
@@ -31,7 +33,8 @@ def getDocumentRedaction(documentId, bucket):
         redaction = json.loads(data)
     except Exception as e:
         print("getDocumentRedaction exception: " + str(e))
-        return None
+    except:
+        print("getDocumentRedaction exception")
     
     return redaction
 
@@ -91,8 +94,10 @@ def getRedactionGlobal(bucket):
     #
     allowedFileTypes = set()
     allowedFileTypes.add('csv')
-
-    filenames = S3Helper.getFileNames(bucket, 'redactionglobal/exclusion/', 100, allowedFileTypes)
+    filenames = S3Helper.getFileNames(bucket,
+                                      'redactionglobal/exclusion/',
+                                      MAXIMUM_EXCLUSION_LISTS,
+                                      allowedFileTypes)
     numOfFiles = len(filenames)
 
     # if exclusion lists exist
