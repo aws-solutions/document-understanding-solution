@@ -27,6 +27,7 @@ import initStore from "../store/store";
 import Header from "../components/Header/Header";
 
 import { setSelectedTrack, dismissWalkthrough } from "../store/ui/actions";
+import { fetchGlobals } from "../store/entities/actions";
 
 import "../styles/global.scss";
 import css from "./app.scss";
@@ -97,14 +98,20 @@ class AppLayout extends App {
   componentDidMount() {
     // Set selected track from localStorage
     // This allows you to hard refresh a page and maintain some state
+    const { store } = this.props;
+
+    store.dispatch(fetchGlobals());
+    
+    
     if (localStorage) {
-      const { store } = this.props;
       const cachedTrack = localStorage.getItem("track");
       if (cachedTrack) store.dispatch(setSelectedTrack(cachedTrack));
-
+      
       const previouslyDismissedWalkthrough = localStorage.getItem("dismissedWalkthrough");
       if (previouslyDismissedWalkthrough) store.dispatch(dismissWalkthrough());
     }
+
+    
   }
 
   render() {

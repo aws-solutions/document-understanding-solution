@@ -59,7 +59,7 @@ const getRedactedDocumentCanvases = async (document) => {
 
         await page.render({ canvasContext: context, viewport }).promise;
 
-        const pageRedactions = document.redactions[i + 1];
+        const pageRedactions = document.redactions ? document.redactions[i + 1] : null;
 
         if (pageRedactions) {
           context.fillStyle = '#000';
