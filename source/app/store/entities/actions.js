@@ -4,7 +4,7 @@ import { Auth, API } from 'aws-amplify';
 
 export const fetchGlobals = createAction(FETCH_GLOBALS, async () => {
   const session = await Auth.currentSession();
-  const token = await session.getIdToken().getJwtToken();
+  const token = session.getIdToken().getJwtToken();
 
   const {
     data: { exclusion: exclusionLists, labels: redactionLabels },
