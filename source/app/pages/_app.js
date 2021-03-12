@@ -19,7 +19,7 @@ import Head from "next/head";
 import Router from "next/router";
 import Amplify, { Auth } from "aws-amplify";
 import { times, reject, isNil } from "ramda";
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import withRedux from "next-redux-wrapper";
 import {ChakraProvider, extendTheme} from '@chakra-ui/react'
 
@@ -98,20 +98,15 @@ class AppLayout extends App {
   componentDidMount() {
     // Set selected track from localStorage
     // This allows you to hard refresh a page and maintain some state
-    const { store } = this.props;
-
-    store.dispatch(fetchGlobals());
-    
-    
     if (localStorage) {
+      const { store } = this.props;
+
       const cachedTrack = localStorage.getItem("track");
       if (cachedTrack) store.dispatch(setSelectedTrack(cachedTrack));
       
       const previouslyDismissedWalkthrough = localStorage.getItem("dismissedWalkthrough");
       if (previouslyDismissedWalkthrough) store.dispatch(dismissWalkthrough());
     }
-
-    
   }
 
   render() {
@@ -167,6 +162,7 @@ class AppLayout extends App {
 function Page({ children, pageProps, pathname }) {
   const { showNavigation, backButton, pageTitle: heading } = pageProps;
   const showGrid = useGridOverlay();
+  const dispatch = useDispatch()
 
   // All routes are protected by default. We whitelist public routes.
   // Authorization does not occur on public routes.
@@ -205,6 +201,10 @@ function Page({ children, pageProps, pathname }) {
         !isLoginRoute && Router.push("/");
       });
   }, [isLoginRoute, isPublicRoute]);
+
+  useEffect(() => {
+    if (isLoggedIn === true) dispatch(fetchGlobals());
+  }, [isLoggedIn])
 
   return (
     shouldRenderApp && (
