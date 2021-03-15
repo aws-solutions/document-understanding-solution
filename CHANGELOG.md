@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Explicitly declare 404 page rather than letting the general error page apply to it
 - Rename static folder to public
 - Remove package-lock.json
-- Update `aws-amplify` from 2.1.0 to 3.3.17 and `next` from 10.0.3 to 10.0.6
+- Update `aws-amplify` from 2.1.0 to 3.3.17, `next` from 10.0.3 to 10.0.6, `elliptic` from 6.5.3 to 6.5.4
 - Remove `next-sass`
 
 ## [1.0.1] - 2021-01-04
