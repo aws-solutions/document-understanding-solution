@@ -345,7 +345,7 @@ export const saveRedactions = (documentId, redactions) => {
           uuid: documentId,
           headers: [],
           footers: [],
-          redactedItems: getRedactionsResponseFromRedactions(redactions)
+          redactedItems: getRedactionsDtoFromRedactions(redactions)
         }
       });
     } finally {

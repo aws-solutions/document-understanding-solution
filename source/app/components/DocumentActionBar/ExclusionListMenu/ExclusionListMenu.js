@@ -33,7 +33,15 @@ export const ExclusionListMenu = ({ document }) => {
 
   return (
     <Menu placement='bottom'>
-      <MenuButton as={Button} size='sm' bg='#eee' border='1px solid #cfcfcf' borderRadius='2px' fontSize='1rem'>
+      <MenuButton
+        as={Button}
+        size='sm'
+        bg='#eee'
+        border='1px solid #cfcfcf'
+        borderRadius='2px'
+        fontSize='0.9rem'
+        fontWeight='normal'
+      >
         Exclusion lists
       </MenuButton>
 

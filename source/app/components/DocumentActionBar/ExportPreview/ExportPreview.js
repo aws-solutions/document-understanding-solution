@@ -50,7 +50,8 @@ const ExportPreview = ({ document }) => {
         bg='#eee'
         border='1px solid #cfcfcf'
         borderRadius='2px'
-        fontSize='1rem'
+        fontSize='0.9rem'
+        fontWeight='normal'
       >
         Export Redacted Doc
       </Button>
