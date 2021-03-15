@@ -31,7 +31,9 @@ import {
   CLEAR_DOCUMENT_SEARCH_QUERY,
   HIGHLIGHT_DOCUMENT,
   SET_SEARCH_PERSONA,
-  FETCH_GLOBALS
+  FETCH_GLOBALS,
+  SAVE_REDACTIONS_STARTED,
+  REDACTIONS_SAVED
 } from '../../constants/action-types'
 
 import documents from './documents/data'
@@ -49,8 +51,15 @@ export default handleActions(
   {
     [FETCH_DOCUMENT]: receiveEntities,
     [FETCH_DOCUMENTS]: receiveEntities,
-    [REDACT_DOCUMENT]: receiveEntities,
-    [CLEAR_REDACTION]: (state, {payload: {documentId, pageNumber, redactions}}) => set(lensPath(['documents', documentId, 'redactions', pageNumber]), redactions, state),
+    [REDACT_DOCUMENT]: (state, action) => ({
+      ...receiveEntities(state, action),
+      areUnsavedRedactions: true,
+    }),
+    [CLEAR_REDACTION]: (state, { payload: { documentId, pageNumber, redactions } }) => ({
+      ...state,
+      documents: set(lensPath([documentId, 'redactions', pageNumber]), redactions, state.documents),
+      areUnsavedRedactions: true,
+    }),
     [HIGHLIGHT_DOCUMENT]: receiveEntities,
     [SEARCH]: receiveEntities,
     [CLEAR_SEARCH_RESULTS]: receiveEntities,
@@ -67,8 +76,10 @@ export default handleActions(
       exclusionLists,
       redactionLabels,
     }),
+    [SAVE_REDACTIONS_STARTED]: (state) => ({ ...state, isSavingRedactions: true }),
+    [REDACTIONS_SAVED]: (state) => ({ ...state, isSavingRedactions: false, areUnsavedRedactions: false, })
   },
 
   // Initial Data
-  { documents, tracks, meta, sampleDocuments, exclusionLists, redactionLabels, }
+  { documents, tracks, meta, sampleDocuments, exclusionLists, redactionLabels, isSavingRedactions: false, areUnsavedRedactions: false, }
 )

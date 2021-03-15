@@ -1,7 +1,7 @@
 import { Flex, Box, Button, HStack, useMediaQuery } from '@chakra-ui/react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import ExportPreview from './ExportPreview/ExportPreview';
-import { clearRedactions } from '../../store/entities/documents/actions';
+import { clearRedactions, saveRedactions } from '../../store/entities/documents/actions';
 import DocumentSearchBar from '../DocumentSearchBar/DocumentSearchBar';
 import OrangeButton from '../Button/Button';
 import { ExclusionListMenu } from './ExclusionListMenu/ExclusionListMenu';
@@ -9,8 +9,10 @@ import { getAreRedactionsOnDocument } from '../../utils/document';
 
 const DocumentActionBar = ({ document, isComplianceTrack, redactMatches }) => {
   const dispatch = useDispatch();
-  const { documentId } = document;
+  const { documentId, redactions } = document;
   const [showRedactionLegend] = useMediaQuery('(min-width: 1550px)');
+  const isSavingRedactions = useSelector(state => state.entities.isSavingRedactions)
+  const areUnsavedRedactions = useSelector(state => state.entities.areUnsavedRedactions)
 
   return (
     <Flex py={3} px='2.96875vw' justifyContent='space-between' alignItems='center'>
@@ -40,6 +42,19 @@ const DocumentActionBar = ({ document, isComplianceTrack, redactMatches }) => {
               fontSize='1rem'
             >
               Clear Redactions
+            </Button>
+
+            <Button
+              onClick={() => dispatch(saveRedactions(documentId, redactions))}
+              isLoading={isSavingRedactions}
+              disabled={!areUnsavedRedactions}
+              size='sm'
+              bg='#eee'
+              border='1px solid #cfcfcf'
+              borderRadius='2px'
+              fontSize='1rem'
+            >
+              Save
             </Button>
 
             <ExclusionListMenu document={document} />
