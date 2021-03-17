@@ -32,7 +32,7 @@ const DocumentActionBar = ({ document, isComplianceTrack, redactMatches }) => {
           <>
             <Button
               onClick={() => dispatch(clearRedactions(documentId))}
-              disabled={getAreRedactionsOnDocument(document)}
+              disabled={!getAreRedactionsOnDocument(document)}
               size='sm'
               bg='#eee'
               border='1px solid #cfcfcf'

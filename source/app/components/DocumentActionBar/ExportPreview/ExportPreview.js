@@ -45,7 +45,7 @@ const ExportPreview = ({ document }) => {
     <>
       <Button
         onClick={onOpen}
-        disabled={getAreRedactionsOnDocument(document)}
+        disabled={!getAreRedactionsOnDocument(document)}
         size='sm'
         bg='#eee'
         border='1px solid #cfcfcf'
