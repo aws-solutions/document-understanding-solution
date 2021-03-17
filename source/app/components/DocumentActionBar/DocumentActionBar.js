@@ -19,7 +19,7 @@ const DocumentActionBar = ({ document, isComplianceTrack, redactMatches }) => {
           aria-hidden
           pointerEvents='none'
           boxShadow='0 0 0 2px #000'
-          bg='rgba(128, 128, 128, 0.2)'
+          bg='#80808033'
           px={2}
           color='#000'
         >
