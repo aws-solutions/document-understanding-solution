@@ -562,4 +562,4 @@ export function getPageWordsBySearch(document, pageNumber, searchQueries) {
   return matchingWords
 }
 
-export const getAreRedactionsOnDocument = document => document.redactions && Object.values(document.redactions).some((redactionsOnPage) => Object.values(redactionsOnPage).length > 0);
+export const getAreRedactionsOnDocument = document => !!document.redactions && Object.values(document.redactions).some((redactionsOnPage) => Object.values(redactionsOnPage).length > 0);
