@@ -206,10 +206,6 @@ def saveDocumentRedaction(documentId, bucket, table, body):
         
     except Exception as e:
         return (400, "invalid json document")
-        
-    # validate redaction
-    if len(redaction.keys()) != REDACTION_NUM_OF_KEYS:
-        return (400, "bad request, wrong number of redaction keys")
 
     # uuid present
     if 'uuid' not in redaction:
@@ -219,22 +215,19 @@ def saveDocumentRedaction(documentId, bucket, table, body):
         return (400, "bad request, document uuid is not a string type")
 
     # check doc exists in dynamodb
-    exists = checkDocumentExists(documentId, table)
-    
-    if exists == False:
-        return (404, "document doesn't exist")
+    if not checkDocumentExists(documentId, table): return (404, "document doesn't exist")
 
     # headers
     if 'headers' not in redaction:
         return (400, "bad request, no redaction headers list provided")
 
-    if isinstance(redaction['headers'],list) == False:
-        return (400, "bad request, redaction headers provided is not a list")
+    if not isinstance(redaction['headers'],list): return (400, "bad request, redaction headers provided is not a list")
 
     numOfHeaders = len(redaction['headers'])
 
     if numOfHeaders > MAXIMUM_NUM_OF_HEADERS_FOOTERS:
-        return (400, "bad request, too many headers provided in list")
+        return (400, "bad request, too many headers in list. Maximum of headers supported is " +
+                str(MAXIMUM_NUM_OF_HEADERS_FOOTERS))
 
     statusCode, result = validateHeadersFooters(redaction['headers'], "header")
 
@@ -251,7 +244,8 @@ def saveDocumentRedaction(documentId, bucket, table, body):
     numOfFooters = len(redaction['footers'])
 
     if numOfFooters > MAXIMUM_NUM_OF_HEADERS_FOOTERS:
-        return (400, "bad request, too many footers provided in list")
+        return (400, "bad request, too many footers in list. Maximum of footers supported is " +
+                str(MAXIMUM_NUM_OF_HEADERS_FOOTERS))
 
     statusCode, result = validateHeadersFooters(redaction['footers'], "footer")
 
@@ -271,7 +265,12 @@ def saveDocumentRedaction(documentId, bucket, table, body):
         
         if statusCode != 200:
             return (statusCode, result)
-    
+
+    # validate there aren't any other keys that the requires ones
+    if len(redaction.keys()) != REDACTION_NUM_OF_KEYS:
+        return (400, "bad request, redaction has additional data that is not supported."\
+                "Please only provide uuid, headers, footers and redactedItems")
+
     S3Helper.writeToS3(json.dumps(redaction),
                        bucket,
                        'public/' + documentId + '/redaction.json')
