@@ -17,7 +17,7 @@ import json
 import os
 import re
 from helper import S3Helper, DynamoDBHelper
-import pdb
+
 
 # the maximum number of exclusion lists we support, like legal, marketing, etc
 MAXIMUM_EXCLUSION_LISTS = 100
@@ -199,9 +199,7 @@ def saveDocumentRedaction(documentId, bucket, table, body):
 
     statusCode = 400
     result = "bad request"
-    
-    #pdb.set_trace()
-    
+   
     # save the document redaction, if it parses and validates correctly
     try:
         redaction = json.loads(body)
