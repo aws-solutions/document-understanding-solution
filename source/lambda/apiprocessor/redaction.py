@@ -290,7 +290,7 @@ def getRedactionGlobal(bucket):
     # fetch redaction labels
     #
     try:
-        data = S3Helper.readFromS3(bucket, 'redactionGlobal/labels.csv')
+        data = S3Helper.readFromS3(bucket, 'redactionglobal/labels.csv')
         lines = data.splitlines()
     
         # remove csv header with column names
@@ -322,7 +322,7 @@ def getRedactionGlobal(bucket):
 
     # this may return an empty list if no exclusion files exist
     filenames = S3Helper.getFileNames(bucket,
-                                      'redactionGlobal/exclusion/',
+                                      'redactionglobal/exclusion/',
                                       MAXIMUM_EXCLUSION_LISTS,
                                       allowedFileTypes)
     numOfFiles = len(filenames)
