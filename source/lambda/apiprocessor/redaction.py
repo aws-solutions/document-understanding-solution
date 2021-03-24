@@ -226,7 +226,7 @@ def saveDocumentRedaction(documentId, bucket, table, body):
     numOfHeaders = len(redaction['headers'])
 
     if numOfHeaders > MAXIMUM_NUM_OF_HEADERS_FOOTERS:
-        return (400, "bad request, too many headers in list. Maximum of headers supported is " +
+        return (400, "bad request, too many headers in list. Maximum number of headers supported is " +
                 str(MAXIMUM_NUM_OF_HEADERS_FOOTERS))
 
     statusCode, result = validateHeadersFooters(redaction['headers'], "header")
@@ -244,7 +244,7 @@ def saveDocumentRedaction(documentId, bucket, table, body):
     numOfFooters = len(redaction['footers'])
 
     if numOfFooters > MAXIMUM_NUM_OF_HEADERS_FOOTERS:
-        return (400, "bad request, too many footers in list. Maximum of footers supported is " +
+        return (400, "bad request, too many footers in list. Maximum number of footers supported is " +
                 str(MAXIMUM_NUM_OF_HEADERS_FOOTERS))
 
     statusCode, result = validateHeadersFooters(redaction['footers'], "footer")
