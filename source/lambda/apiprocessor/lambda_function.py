@@ -87,12 +87,18 @@ def lambda_handler(event, context):
         elif(event['resource'] == '/redaction'):
             
              if event['httpMethod'] == 'GET':
-                result = getDocumentRedaction(event['queryStringParameters']['documentId'],
-                                              documentBucket)
-            
+                 
+                 if 'documentId' in event['queryStringParameters']:
+                     result = getDocumentRedaction(event['queryStringParameters']['documentId'],
+                                                   documentBucket)
+                 else:
+                     status_code = 400
+                     result = "Bad request, no document id given"
+
              elif event['httpMethod'] == 'POST':
-                result = saveDocumentRedaction(event['queryStringParameters']['documentId'],
+                status_code, result = saveDocumentRedaction(event['queryStringParameters']['documentId'],
                                                documentBucket,
+                                               os.environ['DOCUMENTS_TABLE'],
                                                event['body'])
 
         # global redaction items (labels and exclusion lists)
@@ -185,7 +191,7 @@ def lambda_handler(event, context):
 
     return {
         "isBase64Encoded": False,
-        "statusCode": 200,
+        "statusCode": status_code,
         'body': json.dumps(result),
         "headers": {
             'Content-Type': 'application/json',
