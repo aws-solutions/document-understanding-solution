@@ -12,6 +12,7 @@
 #  and limitations under the License.                                                                                #
 #####################################################################################################################
 
+from botocore.exceptions import ClientError
 import boto3
 import json
 import os
@@ -207,6 +208,11 @@ def saveDocumentRedaction(documentId, bucket, table, body):
     except Exception as e:
         return (400, "invalid json document")
 
+    # fail-fast validation
+    if len(redaction.keys()) != REDACTION_NUM_OF_KEYS:
+        return (400, "bad request, redaction has additional data that is not supported."\
+                "Please only provide uuid, headers, footers and redactedItems as top level keys")
+
     # uuid present
     if 'uuid' not in redaction:
         return (400, "bad request, no document id provided")
@@ -266,11 +272,6 @@ def saveDocumentRedaction(documentId, bucket, table, body):
         if statusCode != 200:
             return (statusCode, result)
 
-    # validate there aren't any other keys that the requires ones
-    if len(redaction.keys()) != REDACTION_NUM_OF_KEYS:
-        return (400, "bad request, redaction has additional data that is not supported."\
-                "Please only provide uuid, headers, footers and redactedItems")
-
     S3Helper.writeToS3(json.dumps(redaction),
                        bucket,
                        'public/' + documentId + '/redaction.json')
@@ -288,6 +289,8 @@ def getRedactionGlobal(bucket):
     #
     # fetch redaction labels
     #
+    import pdb
+    pdb.set_trace()
     try:
         data = S3Helper.readFromS3(bucket, 'redactionglobal/labels.csv')
         lines = data.splitlines()
@@ -306,12 +309,16 @@ def getRedactionGlobal(bucket):
                 label['description'] = tokens[2]
                 redactionGlobal['labels'].append(label)
 
-    # the labels.csv file is optional, if it doesn't exists
-    # then they are skipped
-    except Exception as e:
-        print("getredactionGlobal exception while retrieving labels.csv: " + str(e))
-    except:
-        print("getredactionGlobal exception while retrieving labels.csv")
+    # the labels.csv file is optional, if it doesn't exist in s3
+    # then we simply return an empty set of labels
+    except ClientError as  e:
+        # this is expected if the user hasn't provided a labels file
+        if e.response['Error']['Code'] == 'NoSuchKey':
+            print("no optional global redaction labels file exists in s3, an empty set will be provided")
+        # another error that terminates this processing
+        else:
+            print("getRedactionGlobal exception: " + str(e))
+            raise e
 
     #
     # fetch exclusion lists
