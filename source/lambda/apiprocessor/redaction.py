@@ -18,7 +18,7 @@ import json
 import os
 import re
 from helper import S3Helper, DynamoDBHelper
-
+import pdb
 
 # the maximum number of exclusion lists we support, like legal, marketing, etc
 MAXIMUM_EXCLUSION_LISTS = 100
@@ -208,24 +208,19 @@ def saveDocumentRedaction(documentId, bucket, table, body):
     except Exception as e:
         return (400, "invalid json document")
 
-    # fail-fast validation
-    if len(redaction.keys()) != REDACTION_NUM_OF_KEYS:
-        return (400, "bad request, redaction has additional data that is not supported."\
-                "Please only provide uuid, headers, footers and redactedItems as top level keys")
+    # validatw that we have the expected keys
+    for x in ["uuid","headers","footers","redactedItems"]:
+        if not x in redaction: return (400, "Please only provide uuid, headers, footers and redactedItems")
 
-    # uuid present
-    if 'uuid' not in redaction:
-        return (400, "bad request, no document id provided")
+    # validate that we dont have unexpected key
+    if len(redaction.keys()) != len(set(redaction.keys())):
+        return (400, "No duplicate keys allowed")
 
     if isinstance(redaction['uuid'],str) == False:
         return (400, "bad request, document uuid is not a string type")
 
     # check doc exists in dynamodb
     if not checkDocumentExists(documentId, table): return (404, "document doesn't exist")
-
-    # headers
-    if 'headers' not in redaction:
-        return (400, "bad request, no redaction headers list provided")
 
     if not isinstance(redaction['headers'],list): return (400, "bad request, redaction headers provided is not a list")
 
@@ -240,10 +235,6 @@ def saveDocumentRedaction(documentId, bucket, table, body):
     if statusCode != 200:
         return (statusCode, result)
 
-    # footers
-    if 'footers' not in redaction:
-        return (400, "bad request, no redaction footers list provided")
-
     if isinstance(redaction['footers'],list) == False:
         return (400, "bad request, redaction footers provided is not a list")
 
@@ -257,10 +248,6 @@ def saveDocumentRedaction(documentId, bucket, table, body):
 
     if statusCode != 200:
         return (statusCode, result)
-
-    # redacted items
-    if 'redactedItems' not in redaction:
-       return (statusCode, "bad request, no redacted items list provided")
 
     if isinstance(redaction['redactedItems'],list) == False:
         return (statusCode, "bad request, redacted items provided is not a list")
