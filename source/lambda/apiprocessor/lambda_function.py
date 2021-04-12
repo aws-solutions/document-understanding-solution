@@ -16,14 +16,12 @@ import os
 import json
 import boto3
 from botocore.exceptions import ClientError
-import re
-
 from documents import getDocuments
 from document import getDocument, createDocument, deleteDocument
 from redact import redact
 from search import search, deleteESItem
 from kendraHelper import KendraHelper
-
+from redaction import getDocumentRedaction, saveDocumentRedaction, getRedactionGlobal
 
 def redactHeadersFromLambdaEvent(lambdaEvent):
     lambdaEvent.pop('headers', None)
@@ -85,6 +83,30 @@ def lambda_handler(event, context):
                     request["documentId"] = event['queryStringParameters']['documentId']
                 result = search(request)
 
+        # a specific document redaction items (terms, headers and footers)
+        elif(event['resource'] == '/redaction'):
+            
+             if event['httpMethod'] == 'GET':
+                 
+                 if 'documentId' in event['queryStringParameters']:
+                     result = getDocumentRedaction(event['queryStringParameters']['documentId'],
+                                                   documentBucket)
+                 else:
+                     status_code = 400
+                     result = "Bad request, no document id given"
+
+             elif event['httpMethod'] == 'POST':
+                status_code, result = saveDocumentRedaction(event['queryStringParameters']['documentId'],
+                                               documentBucket,
+                                               os.environ['DOCUMENTS_TABLE'],
+                                               event['body'])
+
+        # global redaction items (labels and exclusion lists)
+        elif(event['resource'] == '/redactionglobal'):
+
+            if event['httpMethod'] == 'GET':
+                result = getRedactionGlobal(documentBucket)
+                    
         # search Kendra if available
         elif(event['resource'] == '/searchkendra' and event['httpMethod'] == 'POST' and 'KENDRA_INDEX_ID' in os.environ):
             kendraClient = KendraHelper()
@@ -169,7 +191,7 @@ def lambda_handler(event, context):
 
     return {
         "isBase64Encoded": False,
-        "statusCode": 200,
+        "statusCode": status_code,
         'body': json.dumps(result),
         "headers": {
             'Content-Type': 'application/json',
