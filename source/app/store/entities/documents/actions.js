@@ -31,7 +31,7 @@ import {
 } from "../../../constants/action-types";
 import { documentsSchema, documentSchema } from "./data";
 import { ENABLE_COMPREHEND_MEDICAL } from '../../../constants/configs'
-import { normalizeRedactionResponse, getRedactionsDtoFromRedactions } from "../../../utils/redaction";
+import { normalizeRedactionResponse, getRedactionsDto } from "../../../utils/redaction";
 
 const lensNextToken = lensPath(["data", "nextToken"]);
 const lensDocumentsTotal = lensPath(["data", "Total"]);
@@ -345,7 +345,7 @@ export const saveRedactions = (documentId, redactions) => {
           uuid: documentId,
           headers: [],
           footers: [],
-          redactedItems: getRedactionsDtoFromRedactions(redactions)
+          redactedItems: getRedactionsDto(redactions)
         }
       });
     } finally {

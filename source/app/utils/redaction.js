@@ -17,7 +17,7 @@ export const normalizeRedactionResponse = (redactions) => {
   return normalizedRedactions;
 };
 
-export const getRedactionsDtoFromRedactions = (redactions) =>
+export const getRedactionsDto = (redactions) =>
   Object.entries(redactions).flatMap(([page, redactionsOnPage]) =>
     Object.values(redactionsOnPage).map(({ Top: top, Left: left, Width: width, Height: height }) => ({
       page,
