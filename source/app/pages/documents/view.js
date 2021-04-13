@@ -14,10 +14,11 @@
 
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import queryString from 'query-string'
 import cs from 'classnames'
 import { Storage } from 'aws-amplify'
+import { useRouter }  from 'next/router'
 
 
 
@@ -32,7 +33,8 @@ import {
   clearRedaction,
   clearRedactions,
   addHighlights,
-  clearHighlights
+  clearHighlights,
+  saveRedactions
 
 } from '../../store/entities/documents/actions'
 import { getDocumentById } from '../../store/entities/documents/selectors'
@@ -112,6 +114,35 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   const isDocumentFetched = !!document.textractResponse && !!document.comprehendMedicalResponse && !!document.comprehendResponse
   const { status } = useFetchDocument(dispatch, id, isDocumentFetched)
   const pageCount = getDocumentPageCount(document)
+
+  const router = useRouter()
+  const areUnsavedRedactions = useSelector((state) => state.entities.areUnsavedRedactions);
+  const { documentId, redactions } = document
+
+  // prompt the user if they try and leave with unsaved changes
+  useEffect(() => {
+    if (!areUnsavedRedactions) return;
+
+    const handleWindowClose = (e) => {
+      e.preventDefault();
+      e.returnValue = 'Are you sure you would like to leave this page? Unsaved changes will be lost.'
+      return e.returnValue;
+    };
+
+    const handleBrowseAway = () => {
+      if (!window.confirm('You have unsaved changes. Would you like to save them before you leave?')) return;
+
+      dispatch(saveRedactions(documentId, redactions))
+    };
+
+    window.addEventListener('beforeunload', handleWindowClose);
+    router.events.on('routeChangeStart', handleBrowseAway);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleWindowClose);
+      router.events.off('routeChangeStart', handleBrowseAway);
+    };
+  }, [areUnsavedRedactions, documentId, redactions]);
 
 
   // Reset currentPageNumber on mount
