@@ -19,7 +19,7 @@ import Head from "next/head";
 import Router from "next/router";
 import Amplify, { Auth } from "aws-amplify";
 import { times, reject, isNil } from "ramda";
-import { Provider } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import withRedux from "next-redux-wrapper";
 import {ChakraProvider, extendTheme} from '@chakra-ui/react'
 
@@ -27,6 +27,7 @@ import initStore from "../store/store";
 import Header from "../components/Header/Header";
 
 import { setSelectedTrack, dismissWalkthrough } from "../store/ui/actions";
+import { fetchGlobals } from "../store/entities/actions";
 
 import "../styles/global.scss";
 import css from "./app.scss";
@@ -99,9 +100,10 @@ class AppLayout extends App {
     // This allows you to hard refresh a page and maintain some state
     if (localStorage) {
       const { store } = this.props;
+
       const cachedTrack = localStorage.getItem("track");
       if (cachedTrack) store.dispatch(setSelectedTrack(cachedTrack));
-
+      
       const previouslyDismissedWalkthrough = localStorage.getItem("dismissedWalkthrough");
       if (previouslyDismissedWalkthrough) store.dispatch(dismissWalkthrough());
     }
@@ -160,6 +162,7 @@ class AppLayout extends App {
 function Page({ children, pageProps, pathname }) {
   const { showNavigation, backButton, pageTitle: heading } = pageProps;
   const showGrid = useGridOverlay();
+  const dispatch = useDispatch()
 
   // All routes are protected by default. We whitelist public routes.
   // Authorization does not occur on public routes.
@@ -198,6 +201,10 @@ function Page({ children, pageProps, pathname }) {
         !isLoginRoute && Router.push("/");
       });
   }, [isLoginRoute, isPublicRoute]);
+
+  useEffect(() => {
+    if (isLoggedIn === true) dispatch(fetchGlobals());
+  }, [isLoggedIn])
 
   return (
     shouldRenderApp && (

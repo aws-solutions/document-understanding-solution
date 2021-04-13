@@ -25,6 +25,8 @@ import TableDownloader from '../TableDownloader/TableDownloader'
 import cs from 'classnames'
 import css from './DocumentViewer.module.scss'
 import {Tooltip} from '@chakra-ui/react'
+import {useDispatch} from 'react-redux';
+
 
 DocumentViewer.propTypes = {
   className: PropTypes.string,
@@ -49,24 +51,20 @@ export default function DocumentViewer({
   onRedactionClick,
   onMarkClick,
   isComplianceTrack,
+  redactMatches,
   ...rest
 }) {
-  const { documentName, searchablePdfURL, documentURL } = document
+  const { searchablePdfURL, documentURL } = document
   const isPDF = true // /.pdf$/.test(documentName)
   const viewerClassNames = classNames(css.viewer, className, isPDF && css.pdfViewer)
   const { containerRef, documentWidth, handleResize } = useDocumentResizer(isPDF, [marks, tables])
   const onLoadSuccess = useCallback(handleResize, [])
+  const dispatch = useDispatch();
 
   const pager = (
     <Pager className={css.pager} pageTotal={pageCount}>
       {currentPageNumber =>
         <>
-          {
-            isComplianceTrack && 
-              <div className={css.redactionExplanation}>
-                Redacted items <span aria-hidden className={css.redactionPreview}>Jane Doe</span> will be covered from the downloaded document with a black rectangle <span aria-hidden className={css.redaction}>Jane Doe</span>
-              </div>
-          }
           {
               isPDF ? (
                 <DocumentMarks

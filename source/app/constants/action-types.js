@@ -27,6 +27,7 @@ export const HIGHLIGHT_DOCUMENT = 'api/HIGHLIGHT_DOCUMENT'
 export const SEARCH = 'api/SEARCH'
 export const CLEAR_SEARCH_RESULTS = 'searchResults/CLEAR'
 export const SUBMIT_FEEDBACK = 'api/SUBMIT_FEEDBACK'
+export const FETCH_GLOBALS = 'api/FETCH_GLOBALS'
 
 export const SET_CURRENT_PAGE_NUMBER = 'meta/SET_CURRENT_PAGE_NUMBER'
 export const SET_DOCUMENTS_NEXT_TOKEN = 'meta/SET_DOCUMENTS_NEXT_TOKEN'

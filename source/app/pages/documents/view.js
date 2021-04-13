@@ -23,8 +23,8 @@ import { Storage } from 'aws-amplify'
 
 import Loading from '../../components/Loading/Loading'
 import DocumentViewer from '../../components/DocumentViewer/DocumentViewer'
-import DocumentSearchBar from '../../components/DocumentSearchBar/DocumentSearchBar'
 import Tabs from '../../components/Tabs/Tabs'
+import DocumentActionBar from '../../components/DocumentActionBar/DocumentActionBar'
 
 import {
   fetchDocument,
@@ -51,6 +51,8 @@ import {
   getDocumentTables,
 } from '../../utils/document'
 
+import { getEscapedStringRegExp } from '../../utils/getEscapedStringRegExp'
+
 import {
   COMPREHEND_MEDICAL_SERVICE,
   COMPREHEND_SERVICE
@@ -59,15 +61,12 @@ import {
 
 
 import css from './view.module.scss'
-import Button from '../../components/Button/Button'
 import KeyValueList from '../../components/KeyValueList/KeyValueList'
 import RawTextLines from '../../components/RawTextLines/RawTextLines'
 import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox'
 import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
 import TableResults from '../../components/TableResults/TableResults'
-import {ExportTypes, downloadRedactedDocument} from '../../utils/downloadRedactedDocument'
 import { ENABLE_COMPREHEND_MEDICAL } from '../../constants/configs'
-import ExportPreview from '../../components/ExportPreview/ExportPreview'
 
 
 Document.propTypes = {
@@ -113,7 +112,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   const isDocumentFetched = !!document.textractResponse && !!document.comprehendMedicalResponse && !!document.comprehendResponse
   const { status } = useFetchDocument(dispatch, id, isDocumentFetched)
   const pageCount = getDocumentPageCount(document)
-  const { documentName, documentURL, searchablePdfURL } = document
 
 
   // Reset currentPageNumber on mount
@@ -130,7 +128,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   // Set search results data
   const wordsMatchingSearch = useMemo(() => {
-    return getPageWordsBySearch(document, currentPageNumber, searchQuery)
+    return searchQuery ? getPageWordsBySearch(document, currentPageNumber, [new RegExp(getEscapedStringRegExp(searchQuery), 'i')]) : []
   }, [document, currentPageNumber, searchQuery])
 
   const docData = useMemo(() => {
@@ -156,6 +154,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   }, [document, document.textractResponse,document.comprehendMedicalResponse, currentPageNumber, docData.pairs, docData.entities , docData.medicalEntities , docData.tables])
 
   const [tab, selectTab] = useState('search')
+
+  const isComplianceTrack = track === 'redaction'
 
   const downloadKV = useCallback(async () => {
     const { resultDirectory } = document
@@ -207,12 +207,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     },
     [currentPageNumber, dispatch, id]
   )
-
-
-
-  const clearReds = useCallback(() => {
-    dispatch(clearRedactions(id))
-  }, [dispatch, id])
 
   const redactAllValues = useCallback(
     async (bbox, pageNumber = currentPageNumber) => {
@@ -281,22 +275,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               items={tabItems}
             />
 
-            {track === 'redaction' &&
-            document.redactions &&
-            Object.keys(document.redactions).length ? (
-                <div className={css.downloadButtons}>
-                  <Button inverted onClick={clearReds}>
-                    Clear Redaction
-                  </Button>
-                  <ExportPreview />
-                </div>
-            ) : null}
-
-
-
-
-                <div>
-
+            <div>
               <Tabs
               isTrackTab
               track={track}
@@ -308,43 +287,45 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             />
             </div>
           </div>
-          <div className={cs(css.searchBarWrapper, tab === 'search' && css.visible)}>
-            <DocumentSearchBar className={css.searchBar} placeholder="Search current document…" />
-            {track === 'redaction' ? <Button onClick={redactMatches}>Redact matches</Button> : null}
-          </div>
+
           <div className={css.content} ref={contentRef}>
-            <DocumentViewer
-              className={cs(
-                css.tabSourceViewer,
-                tab === 'kv' && css.withKv,
-                tab === 'entities' && css.withEv,
-                tab === 'medical_entities' && css.withEv,
-                tab === 'text' && css.withText
-              )
-            }
-              document={document}
-              pageCount={pageCount}
-              redactions={(document.redactions || {})[currentPageNumber]}
-              onRedactionClick={(redactionId) => dispatch(clearRedaction(document.documentId, currentPageNumber, document.redactions, redactionId))}
-              onMarkClick={(redaction) => dispatch(addRedactions(document.documentId, currentPageNumber, [redaction]))}
-              marks={
-                [
-                  ...wordsMatchingSearch,
-                  ...tab === 'text'
-                    ? pageLinesAsMarks
-                    : tab === 'kv'
-                    ? pagePairsAsMarks
-                    : tab === 'entities'
-                    ? (document.highlights || [])
-                    : tab === 'medical_entities'
-                    ? (document.highlights || [])
-                    : []
-                ]
+            <div>
+              <DocumentActionBar document={document} isComplianceTrack={isComplianceTrack} redactMatches={redactMatches} />
+
+              <DocumentViewer
+                className={cs(
+                  css.tabSourceViewer,
+                  tab === 'kv' && css.withKv,
+                  tab === 'entities' && css.withEv,
+                  tab === 'medical_entities' && css.withEv,
+                  tab === 'text' && css.withText
+                )
               }
-              tables={tab === 'tables' && pageData.tables}
-              highlightedMark={highlightedKv}
-              isComplianceTrack={track === 'redaction'}
-            />
+                document={document}
+                pageCount={pageCount}
+                redactions={(document.redactions || {})[currentPageNumber]}
+                onRedactionClick={(redactionId) => dispatch(clearRedaction(document.documentId, currentPageNumber, document.redactions, redactionId))}
+                onMarkClick={(redaction) => dispatch(addRedactions(document.documentId, currentPageNumber, [redaction]))}
+                marks={
+                  [
+                    ...wordsMatchingSearch,
+                    ...tab === 'text'
+                      ? pageLinesAsMarks
+                      : tab === 'kv'
+                      ? pagePairsAsMarks
+                      : tab === 'entities'
+                      ? (document.highlights || [])
+                      : tab === 'medical_entities'
+                      ? (document.highlights || [])
+                      : []
+                  ]
+                }
+                tables={tab === 'tables' && pageData.tables}
+                highlightedMark={highlightedKv}
+                isComplianceTrack={isComplianceTrack}
+                redactMatches={redactMatches}
+              />
+            </div>
 
             <div
               className={cs(

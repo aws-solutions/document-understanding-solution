@@ -30,13 +30,16 @@ import {
   CLEAR_SEARCH_QUERY,
   CLEAR_DOCUMENT_SEARCH_QUERY,
   HIGHLIGHT_DOCUMENT,
-  SET_SEARCH_PERSONA
+  SET_SEARCH_PERSONA,
+  FETCH_GLOBALS
 } from '../../constants/action-types'
 
 import documents from './documents/data'
 import tracks from './tracks/data'
 import meta from './meta/data'
 import sampleDocuments from './sampleDocuments/data'
+import exclusionLists from './exclusionLists/data'
+import redactionLabels from './redactionLabels/data'
 
 export function receiveEntities(state, { payload }) {
   return payload ? mergeDeepRight(state, payload) : state
@@ -59,8 +62,13 @@ export default handleActions(
     [SET_SEARCH_PERSONA]: receiveEntities,
     [CLEAR_SEARCH_QUERY]: receiveEntities,
     [CLEAR_DOCUMENT_SEARCH_QUERY]: receiveEntities,
+    [FETCH_GLOBALS]: (state, { payload: { exclusionLists, redactionLabels } }) => ({
+      ...state,
+      exclusionLists,
+      redactionLabels,
+    }),
   },
 
   // Initial Data
-  { documents, tracks, meta, sampleDocuments }
+  { documents, tracks, meta, sampleDocuments, exclusionLists, redactionLabels, }
 )

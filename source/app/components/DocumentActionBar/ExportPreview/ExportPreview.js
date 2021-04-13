@@ -16,12 +16,12 @@ import {
 } from '@chakra-ui/react';
 import { connect } from 'react-redux';
 import queryString from 'query-string';
-import { ExportTypes, downloadRedactedDocument } from '../../utils/downloadRedactedDocument';
-import { getDocumentById } from '../../store/entities/documents/selectors';
-import { getDocumentPageCount } from '../../utils/document';
+import { ExportTypes, downloadRedactedDocument } from '../../../utils/downloadRedactedDocument';
+import { getDocumentById } from '../../../store/entities/documents/selectors';
+import { getDocumentPageCount, getAreRedactionsOnDocument } from '../../../utils/document';
 import { Document, Page } from 'react-pdf';
-import Loading from '../Loading/Loading';
-import { DocumentMarks, useDocumentResizer } from '../DocumentViewer/DocumentViewer';
+import Loading from '../../Loading/Loading';
+import { DocumentMarks, useDocumentResizer } from '../../DocumentViewer/DocumentViewer';
 import DownloadIcon from './DownloadIcon';
 
 const ExportPreview = ({ document }) => {
@@ -45,12 +45,12 @@ const ExportPreview = ({ document }) => {
     <>
       <Button
         onClick={onOpen}
+        disabled={!getAreRedactionsOnDocument(document)}
         size='sm'
+        bg='#eee'
+        border='1px solid #cfcfcf'
         borderRadius='2px'
         fontSize='1rem'
-        bg='orange'
-        _hover={{ background: '#f6761d' }}
-        _active={{ background: '#f6761d' }}
       >
         Export Redacted Doc
       </Button>
