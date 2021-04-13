@@ -3,6 +3,7 @@ import { getEscapedStringRegExp } from '../../../utils/getEscapedStringRegExp';
 import { getDocumentPageCount, getPageWordsBySearch } from '../../../utils/document';
 import { addRedactions } from '../../../store/entities/documents/actions';
 import { batch, useDispatch, useSelector } from 'react-redux';
+import { ActionBarButton } from '../ActionBarButton/ActionBarButton';
 
 export const ExclusionListMenu = ({ document }) => {
   const dispatch = useDispatch();
@@ -33,17 +34,7 @@ export const ExclusionListMenu = ({ document }) => {
 
   return (
     <Menu placement='bottom'>
-      <MenuButton
-        as={Button}
-        size='sm'
-        bg='#eee'
-        border='1px solid #cfcfcf'
-        borderRadius='2px'
-        fontSize='0.9rem'
-        fontWeight='normal'
-      >
-        Exclusion lists
-      </MenuButton>
+      <MenuButton as={ActionBarButton}>Exclusion lists</MenuButton>
 
       <MenuList bg='#fff' color='#000'>
         {exclusionLists.map(({ name }, i) => (

@@ -1,11 +1,11 @@
-import { Flex, Box, Button, HStack, useMediaQuery } from '@chakra-ui/react';
+import { Flex, Box, HStack, useMediaQuery } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
 import ExportPreview from './ExportPreview/ExportPreview';
 import { clearRedactions, saveRedactions } from '../../store/entities/documents/actions';
 import DocumentSearchBar from '../DocumentSearchBar/DocumentSearchBar';
-import OrangeButton from '../Button/Button';
 import { ExclusionListMenu } from './ExclusionListMenu/ExclusionListMenu';
 import { getAreRedactionsOnDocument } from '../../utils/document';
+import { ActionBarButton } from './ActionBarButton/ActionBarButton';
 
 const DocumentActionBar = ({ document, isComplianceTrack, redactMatches }) => {
   const dispatch = useDispatch();
@@ -17,14 +17,7 @@ const DocumentActionBar = ({ document, isComplianceTrack, redactMatches }) => {
   return (
     <Flex py={3} px='2.96875vw' justifyContent={showRedactionLegend ? 'space-between' : 'flex-end'} alignItems='center'>
       {isComplianceTrack && showRedactionLegend && (
-        <Box
-          aria-hidden
-          pointerEvents='none'
-          boxShadow='0 0 0 2px #000'
-          bg='#80808033'
-          px={2}
-          color='#000'
-        >
+        <Box aria-hidden pointerEvents='none' boxShadow='0 0 0 2px #000' bg='#80808033' px={2} color='#000'>
           Redacted
         </Box>
       )}
@@ -32,55 +25,33 @@ const DocumentActionBar = ({ document, isComplianceTrack, redactMatches }) => {
       <HStack spacing={2} alignItems='center'>
         {isComplianceTrack && (
           <>
-            <Button
+            <ActionBarButton
               onClick={() => dispatch(saveRedactions(documentId, redactions))}
               isLoading={isSavingRedactions}
               disabled={!areUnsavedRedactions}
-              size='sm'
-              bg='#eee'
-              border='1px solid #cfcfcf'
-              borderRadius='2px'
-              fontSize='0.9rem'
-              fontWeight='normal'
             >
               Save
-            </Button>
+            </ActionBarButton>
 
             <ExclusionListMenu document={document} />
 
             <ExportPreview />
 
-            <Button
+            <ActionBarButton
               onClick={() => dispatch(clearRedactions(documentId))}
               disabled={!getAreRedactionsOnDocument(document)}
-              size='sm'
-              bg='#eee'
-              border='1px solid #cfcfcf'
-              borderRadius='2px'
-              fontSize='0.9rem'
-              fontWeight='normal'
             >
               Clear Redactions
-            </Button>
+            </ActionBarButton>
           </>
         )}
 
         <Flex alignItems='center'>
           <Box as={DocumentSearchBar} placeholder='Search current document…' />
           {isComplianceTrack && (
-            <Button
-              onClick={redactMatches}
-              ml={2}
-              size='sm'
-              bg='#f90'
-              borderRadius='2px'
-              fontSize='0.9rem'
-              fontWeight='normal'
-              fontSize='0.9rem'
-              fontWeight='normal'
-            >
+            <ActionBarButton onClick={redactMatches} ml={2} bg='#f90'>
               Redact matches
-            </Button>
+            </ActionBarButton>
           )}
         </Flex>
       </HStack>

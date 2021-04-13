@@ -23,6 +23,7 @@ import { Document, Page } from 'react-pdf';
 import Loading from '../../Loading/Loading';
 import { DocumentMarks, useDocumentResizer } from '../../DocumentViewer/DocumentViewer';
 import DownloadIcon from './DownloadIcon';
+import { ActionBarButton } from '../ActionBarButton/ActionBarButton';
 
 const ExportPreview = ({ document }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -43,18 +44,9 @@ const ExportPreview = ({ document }) => {
 
   return (
     <>
-      <Button
-        onClick={onOpen}
-        disabled={!getAreRedactionsOnDocument(document)}
-        size='sm'
-        bg='#eee'
-        border='1px solid #cfcfcf'
-        borderRadius='2px'
-        fontSize='0.9rem'
-        fontWeight='normal'
-      >
+      <ActionBarButton onClick={onOpen} disabled={!getAreRedactionsOnDocument(document)}>
         Export Redacted Doc
-      </Button>
+      </ActionBarButton>
 
       <Modal isOpen={isOpen} onClose={onClose} isCentered size='6xl' scrollBehavior='inside'>
         <ModalOverlay />
