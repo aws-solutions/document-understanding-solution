@@ -15,10 +15,12 @@
   input {
     background: #fff;
     color: #000;
-    width: 275px;
+    width: 250px;
+    font-size: 0.9rem;
 
 
     &::placeholder{
+      font-size: 0.9rem;
       color: #666;
     }
 
