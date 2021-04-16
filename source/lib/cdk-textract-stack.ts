@@ -1118,6 +1118,7 @@ export class CdkTextractStack extends cdk.Stack {
           actions: [
             "comprehend:BatchDetectEntities",
             "comprehend:DetectEntities",
+            "comprehend:DetectPiiEntities"
           ],
           resources: ["*"], // Currently, Comprehend does not support resource level permissionshttps://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazontextract.html#amazontextract-resources-for-iam-policies
         }),
