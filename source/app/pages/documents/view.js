@@ -207,6 +207,14 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     window.open(url)
   }, [ document])
 
+  const downloadPIIEntities = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}/comprehend/comprehendPIIEntities.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
   const downloadMedicalEntities = useCallback(async () => {
     const { resultDirectory } = document
     const url = await Storage.get(`${resultDirectory}/comprehend/comprehendMedicalEntities.json`, {
@@ -424,8 +432,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 onRedactAll={redactAllValues}
                 onDownload={downloadKV}
                 visible={tab === 'piiEntities'}
-                comprehendService={COMPREHEND_SERVICE}
-                onDownloadPrimary = {downloadEntities}
+                comprehendService={COMPREHEND_PII}
+                onDownloadPrimary = {downloadPIIEntities}
                 onDownloadSecondary = {null}
                 document = {document}
               />
