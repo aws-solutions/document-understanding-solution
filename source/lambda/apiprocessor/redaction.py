@@ -18,7 +18,6 @@ import json
 import os
 import re
 from helper import S3Helper, DynamoDBHelper
-import pdb
 
 # the maximum number of exclusion lists we support, like legal, marketing, etc
 MAXIMUM_EXCLUSION_LISTS = 100
@@ -276,8 +275,6 @@ def getRedactionGlobal(bucket):
     #
     # fetch redaction labels
     #
-    import pdb
-    pdb.set_trace()
     try:
         data = S3Helper.readFromS3(bucket, 'redactionglobal/labels.csv')
         lines = data.splitlines()
