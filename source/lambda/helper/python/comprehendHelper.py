@@ -313,9 +313,7 @@ class ComprehendHelper:
 
                     if e['Type'] not in pii_entities_to_index:
                         pii_entities_to_index[e['Type']] = []
-                    
-                    #pii_entities_to_index[ e['Type']].append(e['Text'])
-                    pii_entities_to_index[e['Type']].append("PII")
+                    pii_entities_to_index[e['Type']].append(e['Text'])
         
                     # make a note of this added entity
                     entities.add(e['Text'].upper())
