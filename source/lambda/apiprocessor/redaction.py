@@ -32,7 +32,7 @@ HEADER_FOOTER_ITEM_KEYS = 4
 MAXIMUM_NUM_OF_HEADERS_FOOTERS = 3
 
 # we expect a redacted item to have 6 keys: page, top, left, width, height label
-REDACTED_ITEM_KEYS = 6
+REDACTED_ITEM_NUM_KEYS = 5
 
 # get the redacted items of this document
 def getDocumentRedaction(documentId, bucket):
@@ -130,10 +130,23 @@ def validateHeadersFooters(items, typeStr):
                     
                     
 def validateRedactedItem(item):
-                    
-    if len(item.keys()) != REDACTED_ITEM_KEYS:
+    
+    numOfkeys = len(item.keys())
+    
+    # the default number of mandatory keys
+    if numOfkeys == REDACTED_ITEM_NUM_KEYS:
+        pass
+    # case of the optional label key added, validate it here
+    elif numOfkeys == (REDACTED_ITEM_NUM_KEYS + 1):
+        
+        if 'label' not in item:
+            return (400, "bad request, redacted item optional key is not a redaction label")
+        
+        if isinstance(item['label'], str) == False:
+            return (400, "bad request, redacted item label is not a string")
+    else:
         return (400, "bad request, redacted item has invalid number of keys")
-            
+
     # validate page number
     if 'page' not in item:
         return (400, "bad request, redacted item has no page number")
@@ -183,13 +196,6 @@ def validateRedactedItem(item):
 
     if item['height'] < 0.0:
         return (400, "bad request, redacted item height number is invalid")
-
-   # validate label string
-    if 'label' not in item:
-        return (400, "bad request, redacted item has no label")
-
-    if isinstance(item['label'], str) == False:
-        return (400, "bad request, redacted item label is not a string")
 
     return (200, "ok")
 
