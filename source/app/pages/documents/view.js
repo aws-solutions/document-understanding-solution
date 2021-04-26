@@ -57,7 +57,8 @@ import { getEscapedStringRegExp } from '../../utils/getEscapedStringRegExp'
 
 import {
   COMPREHEND_MEDICAL_SERVICE,
-  COMPREHEND_SERVICE
+  COMPREHEND_SERVICE,
+  COMPREHEND_PII
 } from '../../utils/dus-constants'
 
 
@@ -104,6 +105,7 @@ const tabItems = [
   { id: 'kv', title: `Key-Value Pairs` },
   { id: 'tables', title: `Tables` },
   { id: 'entities', title: `Entities` },
+  { id: 'piiEntities', title: `PII Entities` },
 ]
 
 if (ENABLE_COMPREHEND_MEDICAL) tabItems.push({ id: 'medical_entities', title: `Medical Entities` })
@@ -167,8 +169,9 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     const tables = getDocumentTables(document)
     const lines = getDocumentLines(document)
     const entities = getDocumentEntityPairs(document, COMPREHEND_SERVICE)
+    const piiEntities = getDocumentEntityPairs(document, COMPREHEND_PII)
     const medicalEntities = ENABLE_COMPREHEND_MEDICAL? getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE) : []
-    return { pairs, tables, lines, entities , medicalEntities }
+    return { pairs, tables, lines, entities , piiEntities, medicalEntities }
     // eslint-disable-next-line
 
   }, [document, document.textractResponse ,document.medicalComprehendResponse, document.comprehendResponse])
@@ -199,6 +202,14 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
   const downloadEntities = useCallback(async () => {
     const { resultDirectory } = document
     const url = await Storage.get(`${resultDirectory}/comprehend/comprehendEntities.json`, {
+      expires: 300,
+    })
+    window.open(url)
+  }, [ document])
+
+  const downloadPIIEntities = useCallback(async () => {
+    const { resultDirectory } = document
+    const url = await Storage.get(`${resultDirectory}/comprehend/comprehendPIIEntities.json`, {
       expires: 300,
     })
     window.open(url)
@@ -328,6 +339,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                   css.tabSourceViewer,
                   tab === 'kv' && css.withKv,
                   tab === 'entities' && css.withEv,
+                  tab === 'piiEntities' && css.withEv,
                   tab === 'medical_entities' && css.withEv,
                   tab === 'text' && css.withText
                 )
@@ -344,9 +356,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                       ? pageLinesAsMarks
                       : tab === 'kv'
                       ? pagePairsAsMarks
-                      : tab === 'entities'
-                      ? (document.highlights || [])
-                      : tab === 'medical_entities'
+                      : ['entities', 'medical_entities', 'piiEntities'].includes(tab) 
                       ? (document.highlights || [])
                       : []
                   ]
@@ -361,7 +371,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='piiEntities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
               )
             }
             >
@@ -407,6 +417,23 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 visible={tab === 'entities'}
                 comprehendService={COMPREHEND_SERVICE}
                 onDownloadPrimary = {downloadEntities}
+                onDownloadSecondary = {null}
+                document = {document}
+              />
+              
+              <EntitiesCheckbox
+                entities={docData.piiEntities}
+                pageCount={pageCount}
+                currentPageNumber={currentPageNumber}
+                showRedaction={track === 'redaction'}
+                onHighlight={highlightEntities}
+                onSwitchPage={switchPage}
+                onRedact={redactEntityMatches}
+                onRedactAll={redactAllValues}
+                onDownload={downloadKV}
+                visible={tab === 'piiEntities'}
+                comprehendService={COMPREHEND_PII}
+                onDownloadPrimary = {downloadPIIEntities}
                 onDownloadSecondary = {null}
                 document = {document}
               />

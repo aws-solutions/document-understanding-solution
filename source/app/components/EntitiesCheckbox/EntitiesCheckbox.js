@@ -25,6 +25,7 @@ import {
 
 import {
   COMPREHEND_MEDICAL_SERVICE,
+  COMPREHEND_PII,
   COMPREHEND_SERVICE
 } from '../../utils/dus-constants'
 
@@ -63,11 +64,14 @@ export default function EntitiesCheckbox({
   if (!entities.length&& visible) {
     return <p className={css.noEntity}>No {is_comprehend_medical? (`Medical `):null}Entities detected</p>
   }
+
+  const entityLabel = is_comprehend_medical ? 'Medical Entities' : comprehendService === COMPREHEND_PII ? 'PII Entities' : 'Entities';
+
   return (
 
     <div className={cs(css.entityList, visible && css.visible,)} ref={container}>
       <ul>
-        <h4>{is_comprehend_medical? (`Medical `):null}Entities: {entities.length || 0} Found</h4>
+        <h4>{entityLabel}: {entities.length || 0} Found</h4>
         {groupWith((a, b) => a.pageNumber === b.pageNumber)(entities).map((pairs, i) => (
           <Fragment key={pairs[0].pageNumber}>
             {pageCount > 1 ? (
@@ -128,7 +132,7 @@ export default function EntitiesCheckbox({
       <footer className={css.actions}>
       <div className={css.downloadButtons}>
       <Button  onClick={onDownloadPrimary}>
-      ⬇ {is_comprehend_medical? (`Medical `):null} Entities
+      ⬇ {entityLabel}
       </Button></div>
       {is_comprehend_medical?
       ( <div className={css.downloadButtons}><Button className={css.downloadButton} onClick={onDownloadSecondary}>
