@@ -31,8 +31,11 @@ HEADER_FOOTER_ITEM_KEYS = 4
 # there can be 0 up to 3 headers maximum, same for footers
 MAXIMUM_NUM_OF_HEADERS_FOOTERS = 3
 
-# we expect a redacted item to have 6 keys: page, top, left, width, height label
-REDACTED_ITEM_NUM_KEYS = 5
+# we expect a redacted item to have 5 mandatory keys: page, top, left, width, height
+REDACTED_ITEM_NUM_MANDATORY_KEYS = 5
+
+# a redacted item may have an optional "label" key, for a total of 6 keys
+REDACTED_ITEM_NUM_MANDATORY_AND_OPTIONAL_KEYS = 6
 
 # get the redacted items of this document
 def getDocumentRedaction(documentId, bucket):
@@ -134,10 +137,10 @@ def validateRedactedItem(item):
     numOfkeys = len(item.keys())
     
     # the default number of mandatory keys
-    if numOfkeys == REDACTED_ITEM_NUM_KEYS:
+    if numOfkeys == REDACTED_ITEM_NUM_MANDATORY_KEYS:
         pass
     # case of the optional label key added, validate it here
-    elif numOfkeys == (REDACTED_ITEM_NUM_KEYS + 1):
+    elif numOfkeys == (REDACTED_ITEM_NUM_MANDATORY_AND_OPTIONAL_KEYS):
         
         if 'label' not in item:
             return (400, "bad request, redacted item optional key is not a redaction label")
