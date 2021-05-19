@@ -4,9 +4,11 @@ export const normalizeRedactionResponse = (redactions) => {
   const normalizedRedactions = {};
 
   redactions.forEach((redaction) => {
-    if (!normalizedRedactions[redaction.page]) normalizedRedactions[redaction.page] = {};
+    const page = redaction.page.toString()
 
-    normalizedRedactions[redaction.page][uuid()] = {
+    if (!normalizedRedactions[page]) normalizedRedactions[page] = {};
+
+    normalizedRedactions[page][uuid()] = {
       Top: redaction.top,
       Left: redaction.left,
       Width: redaction.width,
@@ -20,7 +22,7 @@ export const normalizeRedactionResponse = (redactions) => {
 export const getRedactionsDto = (redactions) =>
   Object.entries(redactions).flatMap(([page, redactionsOnPage]) =>
     Object.values(redactionsOnPage).map(({ Top: top, Left: left, Width: width, Height: height }) => ({
-      page,
+      page: Number(page),
       top,
       left,
       width,

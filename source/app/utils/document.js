@@ -35,7 +35,8 @@ import {
 
 import {
   COMPREHEND_MEDICAL_SERVICE,
-  COMPREHEND_SERVICE
+  COMPREHEND_SERVICE,
+  COMPREHEND_PII
 } from './dus-constants'
 
 import {getEscapedStringRegExp} from './getEscapedStringRegExp'
@@ -310,9 +311,11 @@ export function getPageEntityPairs(document, pageNumber,comprehendService) {
   // Get all blocks of Entities for a PAGE
   let blocks = []
   if (comprehendService == COMPREHEND_MEDICAL_SERVICE){
-   blocks = document.comprehendMedicalRespone["results"]
-  }else{
-   blocks = document.comprehendRespone["results"]  
+    blocks = document.comprehendMedicalRespone.results
+  } else if (comprehendService === COMPREHEND_PII) {
+    blocks = document.comprehendPIIResponse.results
+  } else{
+    blocks = document.comprehendRespone.results
   }
   const pageBlocks= blocks.filter(
     ({ Entities, Page }) =>

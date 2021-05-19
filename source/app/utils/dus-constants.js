@@ -13,4 +13,5 @@
  *********************************************************************************************************************/
 
 export const COMPREHEND_SERVICE = 'COMPREHEND'
+export const COMPREHEND_PII = 'COMPREHEND_PII'
 export const COMPREHEND_MEDICAL_SERVICE = 'COMPREHEND_MEDICAL'

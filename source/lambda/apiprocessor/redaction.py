@@ -18,7 +18,6 @@ import json
 import os
 import re
 from helper import S3Helper, DynamoDBHelper
-import pdb
 
 # the maximum number of exclusion lists we support, like legal, marketing, etc
 MAXIMUM_EXCLUSION_LISTS = 100
@@ -32,8 +31,11 @@ HEADER_FOOTER_ITEM_KEYS = 4
 # there can be 0 up to 3 headers maximum, same for footers
 MAXIMUM_NUM_OF_HEADERS_FOOTERS = 3
 
-# we expect a redacted item to have 6 keys: page, top, left, width, height label
-REDACTED_ITEM_KEYS = 6
+# we expect a redacted item to have 5 mandatory keys: page, top, left, width, height
+REDACTED_ITEM_NUM_MANDATORY_KEYS = 5
+
+# a redacted item may have an optional "label" key, for a total of 6 keys
+REDACTED_ITEM_NUM_MANDATORY_AND_OPTIONAL_KEYS = 6
 
 # get the redacted items of this document
 def getDocumentRedaction(documentId, bucket):
@@ -131,10 +133,23 @@ def validateHeadersFooters(items, typeStr):
                     
                     
 def validateRedactedItem(item):
-                    
-    if len(item.keys()) != REDACTED_ITEM_KEYS:
+    
+    numOfkeys = len(item.keys())
+    
+    # the default number of mandatory keys
+    if numOfkeys == REDACTED_ITEM_NUM_MANDATORY_KEYS:
+        pass
+    # case of the optional label key added, validate it here
+    elif numOfkeys == (REDACTED_ITEM_NUM_MANDATORY_AND_OPTIONAL_KEYS):
+        
+        if 'label' not in item:
+            return (400, "bad request, redacted item optional key is not a redaction label")
+        
+        if isinstance(item['label'], str) == False:
+            return (400, "bad request, redacted item label is not a string")
+    else:
         return (400, "bad request, redacted item has invalid number of keys")
-            
+
     # validate page number
     if 'page' not in item:
         return (400, "bad request, redacted item has no page number")
@@ -184,13 +199,6 @@ def validateRedactedItem(item):
 
     if item['height'] < 0.0:
         return (400, "bad request, redacted item height number is invalid")
-
-   # validate label string
-    if 'label' not in item:
-        return (400, "bad request, redacted item has no label")
-
-    if isinstance(item['label'], str) == False:
-        return (400, "bad request, redacted item label is not a string")
 
     return (200, "ok")
 
@@ -276,8 +284,6 @@ def getRedactionGlobal(bucket):
     #
     # fetch redaction labels
     #
-    import pdb
-    pdb.set_trace()
     try:
         data = S3Helper.readFromS3(bucket, 'redactionglobal/labels.csv')
         lines = data.splitlines()

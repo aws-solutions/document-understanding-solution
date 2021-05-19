@@ -160,6 +160,7 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const resultDirectory = `${documentId}/output`;
   const textractResponsePath = `${resultDirectory}/textract/response.json`;
   const comprehendMedicalResponsePath = `${resultDirectory}/comprehend/comprehendMedicalEntities.json` 
+  const comprehendPIIResponsePath = `${resultDirectory}/comprehend/comprehendPIIEntities.json` 
   const comprehendResponsePath = `${resultDirectory}/comprehend/comprehendEntities.json` 
   
   
@@ -204,6 +205,13 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
     const s3ComprehendMedicalResponseText = await s3ComprehendMedicalResponse.Body?.text()
     comprehendMedicalRespone = JSON.parse(s3ComprehendMedicalResponseText);
   }
+
+  const s3ComprehendPIIResponse = await Storage.get(comprehendPIIResponsePath, {
+    download: true
+  });
+  const s3ComprehendPIIResponseText = await s3ComprehendPIIResponse.Body?.text()
+  const comprehendPIIResponse = JSON.parse(s3ComprehendPIIResponseText);
+
   // Get the raw comprehend response data from a json file on S3
   const s3ComprehendResponse = await Storage.get(comprehendResponsePath, {
     download: true
@@ -222,6 +230,7 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
       textractResponse,
       textractFetchedAt: Date.now(),
       comprehendMedicalRespone,
+      comprehendPIIResponse,
       comprehendRespone,
       resultDirectory,
       redactions,

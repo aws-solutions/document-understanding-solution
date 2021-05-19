@@ -126,11 +126,44 @@ class ComprehendHelper:
         for i in range(0, pagesToProcess):
             comprehendEntities[pageStartIndex +
                                i] = response['ResultList'][i]
+
+    #
+    # thread execution calling Comprehend PII synchronously for each page
+    #
+
+    def comprehendDetectPIISync(self,
+                                rawPages,
+                                index,
+                                comprehendPIIEntities,
+                                mutex):
+        config = Config(
+                        retries = {
+                        'max_attempts': MAX_API_RETRIES,
+                        'mode': 'standard'
+                        }
+        )
+        
+        client = boto3.client('comprehend', config=config)
     
+        # service limit is 10tps, sdk implements 3 retries with backoff
+        # if that's not enough then fail
+        response = client.detect_pii_entities(Text=rawPages[index],
+                                              LanguageCode='en')
+
+        # save results for later processing
+        if 'Entities' not in response:
+            return
+
+        mutex.acquire()
+        comprehendPIIEntities[index] = response['Entities']
+        mutex.release()
+
+
+
     #
     # thread execution calling ComprehendMedical Entities synchronously for each page
     #
-    
+
     def comprehendMedicalDetectEntitiesSync(self,
                                             rawPages,
                                             index,
@@ -237,6 +270,59 @@ class ComprehendHelper:
         S3Helper.writeToS3(json.dumps(data), bucket,
                            comprehendOutputPath + "comprehendEntities.json")
         return entities_to_index
+
+    #
+    # processes all ComprehendMedical results for all pages
+    #
+    def processAndReturnComprehendPIIEntities(self,
+                                         comprehendPIIEntities,
+                                         rawPages,
+                                         numOfPages,
+                                         bucket,
+                                         comprehendOutputPath):
+
+        data = {}
+        data['results'] = []
+        pii_entities_to_index = {}
+        
+        for p in range(0, numOfPages):
+            
+            page = {}
+            # page numbers start at 1
+            page['Page'] = p + 1
+            page['Entities'] = []
+
+            # to detect and skip duplicates
+            entities = set()
+
+            for e in comprehendPIIEntities[p]:
+                
+                # comprehend doesn't return the text of the entity it detected, we must
+                # get it from the page we sent it originally
+                e['Text'] = rawPages[p][e['BeginOffset']:e['EndOffset']]
+                
+                # add this entity if not already present
+                if e['Text'].upper() not in entities:
+                    
+                    # add entity to results list
+                    entity = {}
+                    entity['Text'] = e['Text']
+                    entity['Type'] = e['Type']
+                    entity['Score'] = e['Score']
+                    page['Entities'].append(entity)
+
+                    if e['Type'] not in pii_entities_to_index:
+                        pii_entities_to_index[e['Type']] = []
+                    pii_entities_to_index[e['Type']].append(e['Text'])
+        
+                    # make a note of this added entity
+                    entities.add(e['Text'].upper())
+
+            data['results'].append(page)
+                
+        # create results file in S3 under document folder
+        S3Helper.writeToS3(json.dumps(data), bucket, comprehendOutputPath + "comprehendPIIEntities.json")
+        return pii_entities_to_index
 
     #
     # processes all ComprehendMedical results for all pages
@@ -364,7 +450,6 @@ class ComprehendHelper:
                           isComprehendMedicalEnabled,
                           maxPages=200):
 
-
         # get textract results from S3
         textractFile = S3Helper.readFromS3(
             bucket, textractResponseLocation)
@@ -394,6 +479,7 @@ class ComprehendHelper:
             numOfBatches += 1
 
         # to store comprehend and medical API calls results.
+        comprehendPIIEntities = [None] * numOfPages
         comprehendEntities = [None] * numOfPages
         comprehendMedicalEntities = [None] * numOfPages
         comprehendMedicalICD10 = [None] * numOfPages
@@ -450,7 +536,22 @@ class ComprehendHelper:
                                             medicalICD10Mutex))
                     x.start()
                     threads.append(x)
+            
+                # comprehendPII is shared among threads
+                PIIMutex = threading.Lock()
 
+                for index in range(0, pagesToProcess):
+
+                    # Comprehend PII can only handle one page at a time synchronously. The SDK handles
+                    # throttling by the service.
+                    x = threading.Thread(target=self.comprehendDetectPIISync,
+                                        args=(rawPages,
+                                            pageStartIndex + index,
+                                            comprehendPIIEntities,
+                                            PIIMutex))
+                    x.start()
+                    threads.append(x)
+        
             # wait on all threads to finish their work
             for index, thread in enumerate(threads):
                 thread.join()
@@ -478,6 +579,13 @@ class ComprehendHelper:
                                        bucket,
                                        comprehendOutputPath)
 
+        # process comprehend PII data, create the entities result file in S3
+        comprehendPIIEntities = self.processAndReturnComprehendPIIEntities(comprehendPIIEntities,
+                                                                                   rawPages,
+                                                                                   numOfPages,
+                                                                                   bucket,
+                                                                                   comprehendOutputPath)
+                                       
         if(isComprehendMedicalEnabled):
             # process comprehend medical data, create the entities result file in S3
             comprehendMedicalEntities = self.processAndReturnComprehendMedicalEntities(comprehendMedicalEntities,
