@@ -153,25 +153,28 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const textractResponsePath = `${resultDirectory}/textract/response.json`;
   const comprehendMedicalResponsePath = `${resultDirectory}/comprehend/comprehendMedicalEntities.json` 
   const comprehendResponsePath = `${resultDirectory}/comprehend/comprehendEntities.json` 
+  const searchablePdfURL = `${resultDirectory}/${fileNameWithoutExtension}-searchable.pdf`
   
   
   // Get a pre-signed URL for the original document upload
-  const [documentData, searchablePdfData] = await Promise.all([
+  const [documentData] = await Promise.all([
     Storage.get(documentPublicSubPath, {
       bucket: bucketName,
       download: true
-    }),
-    Storage.get(`${resultDirectory}/${fileNameWithoutExtension}-searchable.pdf`, {
-      download: true
     })
+    /*Storage.get(`${resultDirectory}/${fileNameWithoutExtension}-searchable.pdf`, {
+      download: true
+    })*/
   ]);
 
   const documentBlob = new Blob([documentData.Body], {
     type: documentData.contentType
   });
-  const searchablePdfBlob = new Blob([searchablePdfData.Body], {
+  const searchablePdfBlob = documentBlob
+  
+  /*const searchablePdfBlob = new Blob([searchablePdfData.Body], {
     type: "application/pdf"
-  });
+  });*/
 
   // Get the raw textract response data from a json file on S3
   const s3Response = await Storage.get(textractResponsePath, {
@@ -197,7 +200,7 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
     {
       ...document,
       documentURL: URL.createObjectURL(documentBlob),
-      searchablePdfURL: URL.createObjectURL(searchablePdfBlob),
+      searchablePdfURL,
       documentName,
       textractResponse,
       textractFetchedAt: Date.now(),
