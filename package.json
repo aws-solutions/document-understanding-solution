@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@aws/s3-managed-downloader": "^0.9.0"
-  }
-}

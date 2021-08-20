@@ -89,7 +89,7 @@ export default function DocumentViewer({
       {documentURL && isPDF && (
         <Document
           className={css.document}
-          file={documentURL}
+          file={searchablePdfURL}
           loading={<Loading />}
           onLoadSuccess={onLoadSuccess}
         >

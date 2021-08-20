@@ -24,8 +24,7 @@ export default function DocumentPreview({
   pageCount,
   visible,
   track,
-  document,
-  onDownloadSearchable
+  document
 }) {
   const container = useRef()
 
@@ -50,13 +49,14 @@ export default function DocumentPreview({
 
         <footer className={css.actions}>
             {track === 'search' ? (
-                    <div className={css.downloadButtons}><Button className={css.downloadButton} onClick={onDownloadSearchable}>
+                  <div className={css.downloadButtons}>
+                  <Button
+                  download={document.documentName.split('.')[0]+"-searchable.pdf"}
+                  href={document.searchablePdfURL}
+                  >
                     ⬇ Searchable PDF
-            </Button></div>) : null}
-
-
-              
-
+                  </Button>
+                </div>) : null}
 
                 <div className={css.downloadButtons}>
               <Button

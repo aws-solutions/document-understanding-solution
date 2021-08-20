@@ -14,13 +14,12 @@
     "Firefox ESR"
   ],
   "stack": {
-    "stackname": "CUS",
-    "region": "us-east-1"
+    "stackname": "DUS",
+    "region": "%%REGION%%"
   },
   "cicd": "false",
   "isROMode": "false",
-  "enableComprehendMedical": "true",
-  "searchMode": "AMAZON_ES_ONLY",
+  "enableKendra": "false",
   "email": "%%USER_EMAIL%%",
   "scripts": {
     "bootstrap": "AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk bootstrap --toolkit-stack-name DocumentUnderstandingCDKToolkit",
@@ -31,7 +30,7 @@
     "deploy:client": "yarn export && yarn update-es-logs-and-stack-variables && AWS_REGION=$npm_package_stack_region STACKNAME=$npm_package_stack_stackname cdk deploy --toolkit-stack-name DocumentUnderstandingCDKToolkit --require-approval never -v true -a \"node bin/deploy-client-stack.js\"",
     "deploy:setup-user": "AWS_REGION=$npm_package_stack_region node bin/user-setup.js",
     "deploy:setup-samples": "AWS_REGION=$npm_package_stack_region ENABLE_KENDRA=$npm_package_enableKendra bash ./bin/upload-samples.sh",
-    "deploy-all": "yarn add-service-linked-role && yarn compile-ts-stacks && yarn bootstrap && yarn deploy:backend && yarn deploy:client && yarn deploy:setup-samples",
+    "deploy-all": "yarn add-service-linked-role && yarn run:tests && yarn compile-ts-stacks && yarn bootstrap && yarn deploy:backend && yarn deploy:client && yarn deploy:setup-samples",
     "deploy": "yarn install-all && yarn deploy-all && yarn update-pdf-lambda-code",
     "deploy:frontend": "yarn deploy:client && yarn deploy:setup-samples",
     "destroy": "STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region cdk destroy -v true -a \"node bin/deploy-client-stack.js\" && STACKNAME=$npm_package_stack_stackname AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email cdk destroy -v true",
@@ -80,7 +79,7 @@
     "next": "10.0.4",
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-fetch": "^2.6.1",
-    "node-sass": "^4.14.0",
+    "node-sass": "^4.14.1",
     "normalizr": "^3.4.0",
     "query-string": "^6.8.1",
     "ramda": "^0.26.1",

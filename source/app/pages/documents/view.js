@@ -56,6 +56,7 @@ import {
 } from '../../utils/dus-constants'
 
 
+
 import css from './view.scss'
 import Button from '../../components/Button/Button'
 import KeyValueList from '../../components/KeyValueList/KeyValueList'
@@ -150,14 +151,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     })
     window.open(url)
   }, [currentPageNumber, document])
-
-  const downloadSearchable = useCallback(async () => {
-    const { resultDirectory } = document
-    const url = await Storage.get(document.searchablePdfURL, {
-      expires: 120,
-    })
-    window.open(url)
-  }, [ document])
 
   const downloadEntities = useCallback(async () => {
     const { resultDirectory } = document
@@ -413,7 +406,6 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 pageCount={pageCount}
                 visible={tab === 'search'}
                 track = {track}
-                onDownloadSearchable={downloadSearchable}
               />
 
               <RawTextLines
