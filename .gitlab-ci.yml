@@ -1,0 +1,5 @@
+image: alpine:latest
+
+test_simple:
+  script:
+    - exit 1
