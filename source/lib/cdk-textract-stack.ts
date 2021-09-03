@@ -24,6 +24,9 @@ import snsSubscriptions = require("@aws-cdk/aws-sns-subscriptions");
 import sqs = require("@aws-cdk/aws-sqs");
 import apigateway = require("@aws-cdk/aws-apigateway");
 import ec2 = require("@aws-cdk/aws-ec2");
+
+import * as path from "path";
+
 import {
   DynamoEventSource,
   SqsEventSource,
@@ -388,6 +391,8 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+
+
     // Textract service IAM role
     const textractServiceRole = new iam.Role(
       this,
@@ -497,6 +502,27 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     const syncJobsQueue = new sqs.Queue(this, this.resourceName("SyncJobs"), {
+      visibilityTimeout: cdk.Duration.seconds(900),
+      retentionPeriod: cdk.Duration.seconds(1209600),
+      encryption: QueueEncryption.KMS_MANAGED,
+      deadLetterQueue: {
+        maxReceiveCount: 3,
+        queue: syncJobsDLQueue,
+      },
+    });
+
+    // Barcode Queues
+        const syncBarcodeJobsDLQueue = new sqs.Queue(
+      this,
+      this.resourceName("SynBarcodeJobsDLQ"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(120),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED,
+      }
+    );
+
+    const syncBarcodeJobsQueue = new sqs.Queue(this, this.resourceName("SyncBarcodeJobs"), {
       visibilityTimeout: cdk.Duration.seconds(900),
       retentionPeriod: cdk.Duration.seconds(1209600),
       encryption: QueueEncryption.KMS_MANAGED,
@@ -839,6 +865,7 @@ export class CdkTextractStack extends cdk.Stack {
         tracing: lambda.Tracing.ACTIVE,
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
+          SYNC_BARCODE_QUEUE_URL: syncBarcodeJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
@@ -860,6 +887,7 @@ export class CdkTextractStack extends cdk.Stack {
     //Permissions
     documentsTable.grantReadWriteData(documentProcessor);
     syncJobsQueue.grantSendMessages(documentProcessor);
+    syncBarcodeJobsQueue.grantSendMessages(documentProcessor);
     asyncJobsQueue.grantSendMessages(documentProcessor);
     jobErrorHandlerQueue.grantSendMessages(documentProcessor);
     documentsS3Bucket.grantRead(documentProcessor);
@@ -937,6 +965,25 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+    // Sync Barcode Jobs Processor (Process jobs using sync APIs)
+     // Configure path to Dockerfile
+    const dockerfile = path.join(__dirname, "../../../document_barcodes");
+
+    console.log("Dir Dockerfile: "+dockerfile)
+    // Create AWS Lambda function and push image to ECR
+
+    const syncBarcodeProcessor = new lambda.DockerImageFunction(this, "function", {
+      code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
+    });
+
+     syncBarcodeProcessor.addEventSource(
+      new SqsEventSource(syncBarcodeJobsQueue, {
+        batchSize: 1,
+      })
+    );
+
+//------------------------------------------------------------
+
     //Layer
     syncProcessor.addLayers(helperLayer);
     syncProcessor.addLayers(textractorLayer);
@@ -950,12 +997,26 @@ export class CdkTextractStack extends cdk.Stack {
       })
     );
 
+
+     syncBarcodeProcessor.addEventSource(
+      new SqsEventSource(syncBarcodeJobsQueue, {
+        batchSize: 1,
+      })
+    );
+
     //Permissions
     documentsS3Bucket.grantReadWrite(syncProcessor);
     samplesS3Bucket.grantReadWrite(syncProcessor);
     outputTable.grantReadWriteData(syncProcessor);
     documentsTable.grantReadWriteData(syncProcessor);
     esEncryptionKey.grantEncryptDecrypt(syncProcessor);
+
+
+    documentsS3Bucket.grantReadWrite(syncBarcodeProcessor);
+    samplesS3Bucket.grantReadWrite(syncBarcodeProcessor);
+    outputTable.grantReadWriteData(syncBarcodeProcessor);
+    documentsTable.grantReadWriteData(syncBarcodeProcessor);
+
 
     syncProcessor.addToRolePolicy(
       new iam.PolicyStatement({
