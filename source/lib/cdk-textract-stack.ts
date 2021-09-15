@@ -81,7 +81,7 @@ export class CdkTextractStack extends cdk.Stack {
     this.resourceName = (name: any) =>
       `${id}-${name}-${this.uuid}`.toLowerCase();
 
-    this.uuid = uuid.generate();
+    this.uuid = "dus23"
 
     const corsRule = {
       allowedOrigins: ["*"],
