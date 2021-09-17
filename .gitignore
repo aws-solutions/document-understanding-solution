@@ -1,1 +1,6 @@
 source/cdk.out/
+.idea/
+node_modules/
+**/venv/
+**/python/
+**/*/*.zip
