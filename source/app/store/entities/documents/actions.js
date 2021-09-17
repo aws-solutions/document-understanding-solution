@@ -152,9 +152,9 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const resultDirectory = `${documentId}/output`;
   const textractResponsePath = `${resultDirectory}/textract/response.json`;
   const comprehendMedicalResponsePath = `${resultDirectory}/comprehend/comprehendMedicalEntities.json` 
-  const comprehendResponsePath = `${resultDirectory}/comprehend/comprehendEntities.json` 
-  
-  
+  const comprehendResponsePath = `${resultDirectory}/comprehend/comprehendEntities.json`
+    const barcodeResponsePath = `${resultDirectory}/barcodes/barcodes.json`
+
   // Get a pre-signed URL for the original document upload
   const [documentData, searchablePdfData] = await Promise.all([
     Storage.get(documentPublicSubPath, {
@@ -193,6 +193,13 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const s3ComprehendResponseText = await s3ComprehendResponse.Body?.text()
   const comprehendRespone = JSON.parse(s3ComprehendResponseText);
 
+  // Get the raw barcode response data from a json file on S3
+    const s3BarcodeResponse = await Storage.get(barcodeResponsePath, {
+        download: true
+    });
+    const s3BarcodeResponseText = await s3BarcodeResponse.Body?.text()
+    const barcodeResponse = JSON.parse(s3BarcodeResponseText);
+
   return normalize(
     {
       ...document,
@@ -203,7 +210,8 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
       textractFetchedAt: Date.now(),
       comprehendMedicalRespone,
       comprehendRespone,
-      resultDirectory
+      resultDirectory,
+        barcodeResponse
     },
     documentSchema
   ).entities;
