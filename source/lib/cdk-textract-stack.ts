@@ -974,13 +974,11 @@ export class CdkTextractStack extends cdk.Stack {
 
     const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor"), {
       code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
+        functionName: "barcode extractor",
+        description: "barcode extraction for pdf documents",
+        timeout: Duration.minutes(2),
+        memorySize: 5024,
     });
-
-     syncBarcodeProcessor.addEventSource(
-      new SqsEventSource(syncBarcodeJobsQueue, {
-        batchSize: 1,
-      })
-    );
 
 //------------------------------------------------------------
 
