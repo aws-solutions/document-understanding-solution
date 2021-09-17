@@ -3,4 +3,5 @@ source/cdk.out/
 node_modules/
 **/venv/
 **/python/
-**/*/*.zips
+**/*/*.zip
+**/*/*.js
