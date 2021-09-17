@@ -84,7 +84,7 @@ export class CdkTextractStack extends cdk.Stack {
     this.resourceName = (name: any) =>
       `${id}-${name}-${this.uuid}`.toLowerCase();
 
-    this.uuid = uuid.generate();
+    this.uuid = "NoUUID";
 
     const corsRule = {
       allowedOrigins: ["*"],
@@ -972,7 +972,7 @@ export class CdkTextractStack extends cdk.Stack {
     console.log("Dir Dockerfile: "+dockerfile)
     // Create AWS Lambda function and push image to ECR
 
-    const syncBarcodeProcessor = new lambda.DockerImageFunction(this, "function", {
+    const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor"), {
       code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
     });
 
