@@ -5,4 +5,5 @@ node_modules/
 **/python/
 **/*/*.zip
 **/*/*.js
-/source/app/
+/source/app/.next
+/source/app/out
