@@ -948,6 +948,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("SyncProcessor"),
       {
+          description: "executes textracts fro images in sync mode",
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
@@ -972,12 +973,21 @@ export class CdkTextractStack extends cdk.Stack {
     console.log("Dir Dockerfile: "+dockerfile)
     // Create AWS Lambda function and push image to ECR
 
-    const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor"), {
+    const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor2"), {
       code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
-        functionName: "barcodeExtractor",
         description: "barcode extraction for pdf documents",
-        timeout: Duration.minutes(2),
         memorySize: 5024,
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
+        timeout: cdk.Duration.minutes(2),
+        tracing: lambda.Tracing.ACTIVE,
+        environment: {
+            OUTPUT_BUCKET: documentsS3Bucket.bucketName,
+            OUTPUT_TABLE: outputTable.tableName,
+            DOCUMENTS_TABLE: documentsTable.tableName,
+            ES_DOMAIN: elasticSearch.attrDomainEndpoint,
+            PDF_LAMBDA: pdfGenerator.functionName,
+        },
+        // vpc: vpc
     });
 
 //------------------------------------------------------------

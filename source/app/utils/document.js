@@ -380,6 +380,10 @@ export function getDocumentTables(document) {
   return (isEmpty(blocksByPage) ? [] : [].concat.apply([], blocksByPage))
 }
 
+export function getDocumentBarcodes(document) {
+return document.barcodes
+}
+
 /**
  * Get tables/rows/cells found in a page.
  * @param {Number} pageNumber The page number to get results for
