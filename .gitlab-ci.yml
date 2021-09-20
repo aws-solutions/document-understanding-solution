@@ -1,134 +1,96 @@
-# In order to add container scanning for known vulnerabilities on your built Docker images, please refer to https://gitlab.cern.ch/gitlabci-examples/container_scanning
+stages:
+  - cloudformation-deploy
+  - build-images
+  - test-images
 
-# Using Kaniko
-# ------------
+variables:
+  ECR_CFN_STACK_NAME: Ecr
+  # Set in GitLab CI/CD variables:
+  # AWS_ACCESS_KEY_ID
+  # AWS_SECRET_ACCESS_KEY
+  # AWS_SESSION_TOKEN
 
-# Kaniko is the recommended method for running Docker-builds as of May 2019.
-# See https://docs.gitlab.com/ee/ci/docker/using_kaniko.html for GitLab's documentation.
-build_kaniko_command:
-  stage: build
+# Create the ECR repository for the image
+cloudformation-deploy:
+  stage: cloudformation-deploy
+  # only:
+  #   - master
   variables:
-    # To push to a specific docker tag other than latest(the default), amend the --destination parameter, e.g. --destination $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
-    # See https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#variables-reference for available variables
-    IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:latest
+    AWS_DEFAULT_REGION: us-gov-west-1
+    CFN_DEPLOY_EXTRA_ARGS: ''
   image:
-    # We recommend using the CERN version of the Kaniko image: gitlab-registry.cern.ch/ci-tools/docker-image-builder
-    name: gitlab-registry.cern.ch/ci-tools/docker-image-builder
-    entrypoint: [""]
+    name: amazon/aws-cli
+    entrypoint: ['']
+  before_script:
+    - aws --version
   script:
-    # Prepare Kaniko configuration file
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    # Build and push the image from the Dockerfile at the root of the project.
-    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $IMAGE_DESTINATION
-    # Print the full registry path of the pushed image
-    - echo "Image pushed successfully to ${IMAGE_DESTINATION}"
+    - aws cloudformation deploy --template-file cloudformation/ecr.yml --stack-name "$ECR_CFN_STACK_NAME" $CFN_DEPLOY_EXTRA_ARGS
 
-# Features:
-# * Multi-stage builds: https://docs.docker.com/develop/develop-images/multistage-build/
-# * CVMFS is available if specifying the `cvmfs` tag
-# * Customise your build script
-
-# Limitations
-# * If your base image does not have a PATH value, your Dockerfile will require to specify one. Ref. https://github.com/GoogleContainerTools/kaniko/issues/650
-# * Kaniko depends on the Docker image repositories supporting schema2 (https://docs.docker.com/registry/spec/manifest-v2-2/), both for pulling and pushing, so it will not work otherwise. As of July 2019, this is the case with quay.io. Ref https://github.com/moby/buildkit/issues/409
-
-
-# Using Kaniko to make multi-stage builds
-# --------------------------------------
-
-# This is useful when in the process of creating an image, part of the files created are not needed in the final image.
-# For example, a go file with several module dependencies that will be later compiled into a single binary. With this method only
-# the compiled binary is copied to the image that is pushed to the registry. If done without multi staged builds, to obtain the same result, several GitLab stages would have been necessary, and the binary must have been passed using artifacts. This is a much simpler solution.
-build_kaniko_command multistage build:
-  stage: build
-  variables:
-    # To push to a specific docker tag other than latest(the default), amend the --destination parameter, e.g. --destination $CI_REGISTRY_IMAGE:$CI_BUILD_REF_NAME
-    # See https://docs.gitlab.com/ee/ci/variables/predefined_variables.html#variables-reference for available variables
-    IMAGE_DESTINATION: ${CI_REGISTRY_IMAGE}:latest
+# Build the image with kaniko
+build-example-image:
+  stage: build-images
   image:
-    # We recommend using the CERN version of the Kaniko image: gitlab-registry.cern.ch/ci-tools/docker-image-builder
-    name: gitlab-registry.cern.ch/ci-tools/docker-image-builder
-    entrypoint: [""]
-  script:
-    # Prepare Kaniko configuration file
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    # Build and push the image from the Dockerfile at the root of the project.
-    - /kaniko/executor --context $CI_PROJECT_DIR/multistage_builds --dockerfile $CI_PROJECT_DIR/multistage_builds/Dockerfile --destination $IMAGE_DESTINATION
-    # Print the full registry path of the pushed image
-    - echo "Image pushed successfully to ${IMAGE_DESTINATION}"
-
-# Using privileged runners
-# ------------------------
-
-# If you want to use DinD for your Docker-build jobs, you can use our privileged shared
-# GitLab-runners. This allows to directly build the image yourself as per https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#use-docker-in-docker-workflow-with-docker-executor
-build docker image with dind:
-  stage: build
-  tags:
-    - docker-privileged
-  # Use specific version of the official docker client image (as well as the docker-in-docker image) as recommended by
-  # https://about.gitlab.com/2019/07/31/docker-in-docker-with-docker-19-dot-03/
-  image: docker:19.03.1
-  services:
-    # To obtain a Docker daemon, request a Docker-in-Docker service
-    - docker:19.03.1-dind
-  # Note about internal IPs Clash
-  # If the internal private network assigned to the dind service clashes with any service/host used on the job,
-  # you can specify a different IP subnet to avoid the clash. Useful command to inspect the assigned IP range
-  # is `docker network inspect bridge`.
-  # To effectively assign a different IP subnet, replace the previous service definition with the following:
-  #  services:
-  #  # To obtain a Docker daemon, request a Docker-in-Docker service
-  #  - name: docker:19.03.1-dind
-  #    # Add to the dockerd command a specific bridge Ip, in this case the range 10.200.0.1/24 (to be adapted)
-  #    command: ["--bip=10.200.0.1/24"]
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: ['']
   variables:
-    # As of GitLab 12.5, privileged runners at CERN mount a /certs/client docker volume that enables use of TLS to
-    # communicate with the docker daemon. This avoids a warning about the docker service possibly not starting
-    # successfully.
-    # See https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
-    DOCKER_TLS_CERTDIR: "/certs"
-    # Note that we do not need to set DOCKER_HOST when using the official docker client image: it automatically
-    # defaults to tcp://docker:2376 upon seeing the TLS certificate directory.
-    #DOCKER_HOST: tcp://docker:2376/
+    AWS_DEFAULT_REGION: us-gov-west-1
+    DOCKER_REGISTRY: 538184175068.dkr.ecr.us-gov-west-1.amazonaws.com
+    IMAGE: example-image
+    KANIKO_EXTRA_ARGS: ''
+  before_script:
+    - /kaniko/executor version
   script:
-    - docker info
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
-    - docker push "$CI_REGISTRY_IMAGE"
+    # Debugging
+    # - set -x
+    # - env
+    # - /kaniko/executor --help
+    # - export KANIKO_EXTRA_ARGS="$KANIKO_EXTRA_ARGS --verbosity debug"
 
-# Features
-# * Allows your job to have access to the host, as it runs in privileged mode
-# * Allows to use docker-build directly
+    # Exit on error
+    - set -e
 
-# Limitations
-# * Privileged runners take around 1-2 minutes to spawn a VM for your job and do not cache Docker-images
-# * These runners will not be available during Openstack Nova API downtime
+    # Docker Registry Authentication with ecr-login (pre-installed on kaniko 'debug' image)
+    #   https://github.com/awslabs/amazon-ecr-credential-helper
+    - mkdir -p /kaniko/.docker
+    - >
+      echo "{\"credHelpers\": {\"$DOCKER_REGISTRY\": \"ecr-login\"}}" > /kaniko/.docker/config.json
 
+    # verify IMAGE set
+    - if [ -z "$IMAGE" ]; then
+    -   echo "Variable IMAGE must be set!"
+    -   exit 1
+    - fi
 
-# DEPRECATED Docker-build
-# ------------------------
+    - export DOCKER_IMAGE="$DOCKER_REGISTRY/$IMAGE"
 
-# For backwards compatibility, we still support the following Docker-build jobs, but this is now decrepated
-# Please use the previous CI job type of jobs instead
-deprecated_build:
-  stage: build
-  tags:
-    - docker-image-build
-  script: "echo" # unused but this line is required by GitLab CI
-    # Uncomment this section and add the variables you need if you want to
-    # push your image to a different Docker registry than gitlab-registry.cern.ch
-    # or you want to customize the build process of your image
-    #variables:
-    #TO: your.registry.example.com/your_image # where to push resulting image. Default, the GitLab registry
-    # DOCKER_LOGIN_SERVER: your.registry.example.com # If different that gitlab-registry.cern.ch,
-    # we need to authenticate against your docker registry to push this image
-  # DOCKER_LOGIN_USERNAME and DOCKER_LOGIN_PASSWORD to be provided as Secure Variables
+    # Tag master branch builds as latest
+    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+      export KANIKO_EXTRA_ARGS="$KANIKO_EXTRA_ARGS --destination $DOCKER_IMAGE:latest";
+      fi
 
-# Features
-# * Simplicity
-# * No provisioning time
+    # Build image
+    - /kaniko/executor
+      --context $CI_PROJECT_DIR/$IMAGE
+      --destination $DOCKER_IMAGE:$CI_COMMIT_SHA
+      --destination $DOCKER_IMAGE:$CI_COMMIT_REF_SLUG
+      --build-arg "CI_JOB_TOKEN=$CI_JOB_TOKEN"
+      --log-timestamp
+      $KANIKO_EXTRA_ARGS
 
-# Limitations
-# * Builder image only allows certain level of configuration
-# * Cannot use latest Doccker-build features such as multistage building
+# Test the image by starting using it in a GitLab job
+# This requires the Docker ECR Credential helper installed on the GitLab Runner. It cannot
+# be installed during the job (the job will fail to pull the image).
+# test-example-image:
+#   stage: test-images
+#   image: "$DOCKER_REGISTRY/$IMAGE:$CI_COMMIT_SHA"
+#   variables:
+#     # Docker Registry Authentication with ecr-login configured on the gitlab runner
+#     #   https://github.com/awslabs/amazon-ecr-credential-helper
+#     DOCKER_REGISTRY: 538184175068.dkr.ecr.us-gov-west-1.amazonaws.com
+#     IMAGE: example-image
+#   script:
+#     - set -e
+
+#     # Verify installed packages
+#     - node --version
+#     - npm --version
