@@ -381,7 +381,7 @@ export function getDocumentTables(document) {
 }
 
 export function getDocumentBarcodes(document) {
-return document.barcodes
+return document.barcodeResponse
 }
 
 /**

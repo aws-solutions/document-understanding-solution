@@ -133,6 +133,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
 
   }, [document, document.textractResponse ,document.medicalComprehendResponse, document.comprehendResponse])
 
+
   // Set the paged content for each tab
   const pageData = useMemo(() => {
     const lines = getPageLines(document, currentPageNumber)
@@ -468,7 +469,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
               />
 
               <BarcodeResults
-                  barcodes={docData.barcodeResponse}
+                  barcodes={docData.barcodes}
                   pageCount={pageCount}
                   currentPageNumber={currentPageNumber}
                   onSwitchPage={switchPage}
