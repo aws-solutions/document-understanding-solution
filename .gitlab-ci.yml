@@ -1,3 +1,9 @@
+image: alpine:latest
+
+test_simple:
+  script:
+    - exit 0
+
 build:
   stage: build
   image:
