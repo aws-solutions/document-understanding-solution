@@ -8,3 +8,4 @@ node_modules/
 /source/app/.next
 /source/app/out
 /source/.env
+/source/lib/cdk-textract-client-stack.js-e
