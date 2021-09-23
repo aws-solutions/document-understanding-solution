@@ -7,3 +7,4 @@ node_modules/
 **/*/*.js
 /source/app/.next
 /source/app/out
+/source/.env
