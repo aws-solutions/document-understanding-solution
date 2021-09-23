@@ -1,0 +1,27 @@
+Parameters:
+  RepositoryName:
+    Type: String
+    Default: example-image
+  RepositoryAdminPrincipals:
+    Type: CommaDelimitedList
+    Default: arn:aws-us-gov:iam::538184175068:role/IsengardAdmin
+
+Resources:
+  cicd:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref RepositoryName
+      RepositoryPolicyText:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: RepositoryAdmins
+            Effect: Allow
+            Principal:
+              AWS: !Ref RepositoryAdminPrincipals
+            Action: 'ecr:*'
+      # TODO: Define lifecycle rules for images. Example:
+      #   - keep 3 "master" tagged images
+      #   - keep other images for only 1 month
+      #   See https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html
+      # LifecyclePolicy:
+      #   LifecyclePolicy

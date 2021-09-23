@@ -7,7 +7,7 @@ from moto import mock_dynamodb2
 from helper import S3Helper
 from helper import DynamoDBHelper
 
-BUCKET_NAME = "test-bucket"
+BUCKET_NAME = "testmydus-bucket"
 S3_FILE_NAME = "test_file_name.txt"
 TABLE_NAME = "TestsTable"
 

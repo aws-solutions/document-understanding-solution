@@ -31,6 +31,12 @@ All notable changes to this project will be documented in this file.
 - Update `aws-amplify` from 2.1.0 to 3.3.17, `next` from 10.0.3 to 10.0.6, `elliptic` from 6.5.3 to 6.5.4
 - Remove `next-sass`
 
+## [1.0.2] - 2021-04-29
+- Update `next` from 10.0.3 to 10.0.4
+- Update `aws-amplify` 2.1.0 to 3.3.25
+- Remove `sass-lint`
+- Resolve `netmask` and `y18n` vulnerabilities
+
 ## [1.0.1] - 2021-01-04
 
 ### Changed

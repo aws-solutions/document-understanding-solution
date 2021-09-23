@@ -288,7 +288,7 @@ export class CdkTextractStack extends cdk.Stack {
       );
 
       /****                      ES Resources                        ****/
-      
+
       const esIndexLogGroup = new LogGroup(
         this,
         this.resourceName("ElasticSearchIndexLogGroup"),
@@ -371,7 +371,7 @@ export class CdkTextractStack extends cdk.Stack {
         ],
         resources: [`${elasticSearch.attrArn}/*`],
       })
-     
+
     }
     const jobResultsKey = new kms.Key(
       this,
@@ -518,6 +518,27 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
     const syncJobsQueue = new sqs.Queue(this, this.resourceName("SyncJobs"), {
+      visibilityTimeout: cdk.Duration.seconds(900),
+      retentionPeriod: cdk.Duration.seconds(1209600),
+      encryption: QueueEncryption.KMS_MANAGED,
+      deadLetterQueue: {
+        maxReceiveCount: 3,
+        queue: syncJobsDLQueue,
+      },
+    });
+
+    // Barcode Queues
+        const syncBarcodeJobsDLQueue = new sqs.Queue(
+      this,
+      this.resourceName("SynBarcodeJobsDLQ"),
+      {
+        visibilityTimeout: cdk.Duration.seconds(120),
+        retentionPeriod: cdk.Duration.seconds(1209600),
+        encryption: QueueEncryption.KMS_MANAGED,
+      }
+    );
+
+    const syncBarcodeJobsQueue = new sqs.Queue(this, this.resourceName("SyncBarcodeJobs"), {
       visibilityTimeout: cdk.Duration.seconds(900),
       retentionPeriod: cdk.Duration.seconds(1209600),
       encryption: QueueEncryption.KMS_MANAGED,
@@ -862,6 +883,7 @@ export class CdkTextractStack extends cdk.Stack {
         tracing: lambda.Tracing.ACTIVE,
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
+          SYNC_BARCODE_QUEUE_URL: syncBarcodeJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
@@ -883,6 +905,7 @@ export class CdkTextractStack extends cdk.Stack {
     //Permissions
     documentsTable.grantReadWriteData(documentProcessor);
     syncJobsQueue.grantSendMessages(documentProcessor);
+    syncBarcodeJobsQueue.grantSendMessages(documentProcessor);
     asyncJobsQueue.grantSendMessages(documentProcessor);
     jobErrorHandlerQueue.grantSendMessages(documentProcessor);
     documentsS3Bucket.grantRead(documentProcessor);
@@ -943,6 +966,7 @@ export class CdkTextractStack extends cdk.Stack {
       this,
       this.resourceName("SyncProcessor"),
       {
+          description: "executes textract for images in sync mode",
         runtime: lambda.Runtime.PYTHON_3_8,
         code: lambda.Code.asset("lambda/syncprocessor"),
         handler: "lambda_function.lambda_handler",
@@ -960,6 +984,32 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
+    // Sync Barcode Jobs Processor (Process jobs using sync APIs)
+     // Configure path to Dockerfile
+    const dockerfile = path.join(__dirname, "../../../document_barcodes");
+
+    console.log("Dir Dockerfile: "+dockerfile)
+    // Create AWS Lambda function and push image to ECR
+
+    const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor2"), {
+      code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
+        description: "barcode extraction for pdf documents",
+        memorySize: 5024,
+        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
+        timeout: cdk.Duration.minutes(2),
+        tracing: lambda.Tracing.ACTIVE,
+        environment: {
+            OUTPUT_BUCKET: documentsS3Bucket.bucketName,
+            OUTPUT_TABLE: outputTable.tableName,
+            DOCUMENTS_TABLE: documentsTable.tableName,
+            ES_DOMAIN: elasticSearch.attrDomainEndpoint,
+            PDF_LAMBDA: pdfGenerator.functionName,
+        },
+        // vpc: vpc
+    });
+
+//------------------------------------------------------------
+
     //Layer
     syncProcessor.addLayers(helperLayer);
     syncProcessor.addLayers(textractorLayer);
@@ -973,12 +1023,19 @@ export class CdkTextractStack extends cdk.Stack {
       })
     );
 
+
+     syncBarcodeProcessor.addEventSource(
+      new SqsEventSource(syncBarcodeJobsQueue, {
+        batchSize: 1,
+      })
+    );
+
     //Permissions
     documentsS3Bucket.grantReadWrite(syncProcessor);
     samplesS3Bucket.grantReadWrite(syncProcessor);
     outputTable.grantReadWriteData(syncProcessor);
     documentsTable.grantReadWriteData(syncProcessor);
-    
+
     //------------------------------------------------------------
 
     // Async Job Processor (Start jobs using Async APIs)
@@ -997,7 +1054,7 @@ export class CdkTextractStack extends cdk.Stack {
           SNS_TOPIC_ARN: jobCompletionTopic.topicArn,
           SNS_ROLE_ARN: textractServiceRole.roleArn,
         },
-        vpc: props.enableElasticsearch ? vpc : null, 
+        vpc: props.enableElasticsearch ? vpc : null,
       }
     );
 
@@ -1318,11 +1375,11 @@ export class CdkTextractStack extends cdk.Stack {
         apiProcessor.addEnvironment("ES_DOMAIN", elasticSearch.attrDomainEndpoint);
         syncProcessor.addEnvironment("ES_DOMAIN", elasticSearch.attrDomainEndpoint);
         jobResultProcessor.addEnvironment("ES_DOMAIN", elasticSearch.attrDomainEndpoint);
-            
+
         //  -------  Adding Permissions ------ //
         esEncryptionKey.grantEncryptDecrypt(syncProcessor);
         syncProcessor.addToRolePolicy(esPolicy);
-        esEncryptionKey.grantEncryptDecrypt(jobResultProcessor); 
+        esEncryptionKey.grantEncryptDecrypt(jobResultProcessor);
         jobResultProcessor.addToRolePolicy(esPolicy);
         esEncryptionKey.grantEncryptDecrypt(apiProcessor);
         apiProcessor.addToRolePolicy(esPolicy);

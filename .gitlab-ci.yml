@@ -1,0 +1,96 @@
+stages:
+  - cloudformation-deploy
+  - build-images
+  - test-images
+
+variables:
+  ECR_CFN_STACK_NAME: Ecr
+  # Set in GitLab CI/CD variables:
+  # AWS_ACCESS_KEY_ID
+  # AWS_SECRET_ACCESS_KEY
+  # AWS_SESSION_TOKEN
+
+# Create the ECR repository for the image
+cloudformation-deploy:
+  stage: cloudformation-deploy
+  # only:
+  #   - master
+  variables:
+    AWS_DEFAULT_REGION: us-gov-west-1
+    CFN_DEPLOY_EXTRA_ARGS: ''
+  image:
+    name: amazon/aws-cli
+    entrypoint: ['']
+  before_script:
+    - aws --version
+  script:
+    - aws cloudformation deploy --template-file cloudformation/ecr.yml --stack-name "$ECR_CFN_STACK_NAME" $CFN_DEPLOY_EXTRA_ARGS
+
+# Build the image with kaniko
+build-example-image:
+  stage: build-images
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: ['']
+  variables:
+    AWS_DEFAULT_REGION: us-gov-west-1
+    DOCKER_REGISTRY: 538184175068.dkr.ecr.us-gov-west-1.amazonaws.com
+    IMAGE: example-image
+    KANIKO_EXTRA_ARGS: ''
+  before_script:
+    - /kaniko/executor version
+  script:
+    # Debugging
+    # - set -x
+    # - env
+    # - /kaniko/executor --help
+    # - export KANIKO_EXTRA_ARGS="$KANIKO_EXTRA_ARGS --verbosity debug"
+
+    # Exit on error
+    - set -e
+
+    # Docker Registry Authentication with ecr-login (pre-installed on kaniko 'debug' image)
+    #   https://github.com/awslabs/amazon-ecr-credential-helper
+    - mkdir -p /kaniko/.docker
+    - >
+      echo "{\"credHelpers\": {\"$DOCKER_REGISTRY\": \"ecr-login\"}}" > /kaniko/.docker/config.json
+
+    # verify IMAGE set
+    - if [ -z "$IMAGE" ]; then
+    -   echo "Variable IMAGE must be set!"
+    -   exit 1
+    - fi
+
+    - export DOCKER_IMAGE="$DOCKER_REGISTRY/$IMAGE"
+
+    # Tag master branch builds as latest
+    - if [ "$CI_COMMIT_REF_NAME" = "master" ]; then
+      export KANIKO_EXTRA_ARGS="$KANIKO_EXTRA_ARGS --destination $DOCKER_IMAGE:latest";
+      fi
+
+    # Build image
+    - /kaniko/executor
+      --context $CI_PROJECT_DIR/$IMAGE
+      --destination $DOCKER_IMAGE:$CI_COMMIT_SHA
+      --destination $DOCKER_IMAGE:$CI_COMMIT_REF_SLUG
+      --build-arg "CI_JOB_TOKEN=$CI_JOB_TOKEN"
+      --log-timestamp
+      $KANIKO_EXTRA_ARGS
+
+# Test the image by starting using it in a GitLab job
+# This requires the Docker ECR Credential helper installed on the GitLab Runner. It cannot
+# be installed during the job (the job will fail to pull the image).
+# test-example-image:
+#   stage: test-images
+#   image: "$DOCKER_REGISTRY/$IMAGE:$CI_COMMIT_SHA"
+#   variables:
+#     # Docker Registry Authentication with ecr-login configured on the gitlab runner
+#     #   https://github.com/awslabs/amazon-ecr-credential-helper
+#     DOCKER_REGISTRY: 538184175068.dkr.ecr.us-gov-west-1.amazonaws.com
+#     IMAGE: example-image
+#   script:
+#     - set -e
+
+#     # Verify installed packages
+#     - node --version
+#     - npm --version

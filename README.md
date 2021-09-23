@@ -35,12 +35,18 @@ Current concurrent document uploads (via UI ) supported : **100**
 _Note:_ You will have to create an S3 bucket with the template 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution.
 
 For example, you create a bucket called `my-solutions-bucket-us-east-1`,
-
+```
+export MY_BUCKET=my-dus2-us-east-1
+export MY_SOLUTION=barcode2
+export VERSION=v1.0.0
+export EMAIL=arlnocaj@amazon.com
+aws s3 mb s3://$MY_BUCKET
+```
 - Now build the distributable:
 
 ```
 chmod +x ./deployment/build-s3-dist.sh
-./deployment/build-s3-dist.sh <bucket-name-minus-region> <solution-name> <version>
+./deployment/build-s3-dist.sh $MY_BUCKET $MY_SOLUTION $VERSION
 ```
 
 For example,
@@ -52,17 +58,25 @@ For example,
 - Deploy the distributable to an Amazon S3 bucket in your account. _Note:_ you must have the AWS Command Line Interface installed.
 
 ```
-aws s3 cp ./deployment/global-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
-aws s3 cp ./deployment/regional-s3-assets/ s3://my-bucket-name-<aws_region>/<solution_name>/<my-version>/ --recursive --acl bucket-owner-full-control --profile aws-cred-profile-name
+aws s3 cp ./deployment/global-s3-assets/ s3://$MY_BUCKET/$MY_SOLUTION/$VERSION/ --recursive --acl bucket-owner-full-control --profile arlnocaj+dus-Admin
+aws s3 cp ./deployment/regional-s3-assets/ s3://$MY_BUCKET/$MY_SOLUTION/$VERSION/ --recursive --acl bucket-owner-full-control --profile arlnocaj+dus-Admin
 ```
+
+
 
 - Get the link of the document-understanding-solution.template uploaded to your Amazon S3 bucket.
 - Deploy the Document Understanding solution to your account by launching a new AWS CloudFormation stack using the link of the document-understanding-solution.template.
-- DUS supports Different Modes. When running the below `create-stack` command, please set the appropriate parameter values. For more Information, refer to [DUS Modes](#DUS-Modes)
+- If you wish to manually choose whether to enable Kendra or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=KendraEnabled,ParameterValue=<true_or_false>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
 
 ```
-aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://my-bucket-name-<aws_region>.s3.amazonaws.com/<solution_name>/<my_version>/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email>
-ParameterKey=SearchMode,ParameterValue=<AMAZON_ES_ONLY,AMAZON_KENDRA_ONLY,AMAZON_ES_AND_KENDRA> ParameterKey=ComprehendMedicalEnabled,ParameterValue=<true_or_false> ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>  --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://$MY_BUCKET.s3.amazonaws.com/$MY_SOLUTION/$VERSION/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> ParameterKey=KendraEnabled,ParameterValue=<true_or_false> ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+```
+
+example
+
+```
+
+aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD-2 --template-url https://$MY_BUCKET.s3.amazonaws.com/$MY_SOLUTION/$VERSION/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=$EMAIL ParameterKey=KendraEnabled,ParameterValue=false ParameterKey=ReadOnlyMode,ParameterValue=false --capabilities CAPABILITY_NAMED_IAM --disable-rollback
 ```
 
 This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).
@@ -126,13 +140,19 @@ To deploy using this approach, you must first set few values inside the `package
   _Note_ : The AWS services used in this solution are not all available in all AWS Regions. Supported regions include us-east-1,us-west-2,eu-west-1. Please refer the [AWS Regions Table](https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/) for the most up to date information on which regions support the all services in DUS are available.
 
 - Enter your email into the `email` property, replacing `"%%USER_EMAIL%%"`
-- If you want to choose between the Search modes, set the `searchMode` parameter to one of the following - AMAZON_ES_ONLY,AMAZON_KENDRA_ONLY,AMAZON_ES_AND_KENDRA. More Info on Search Modes [here](#1-Search-Mode)
+- If you want to use the [Classic mode](#classic-mode), set the enableKendra flag to `false`. For [Kendra-enabled mode](#kendra-enabled-mode), set the flag as `true`
 - If you want to use the [Read-only (RO) mode](#read-only-mode), set the is isROMode flag to `true`.
 
 Now switch to the source directory, and use yarn to deploy the solution:
 
 ```
 cd ./source
+```
+
+Define the default aws profile for cdk:
+
+```
+export CDK_DEFAULT_ACCOUNT=arlnocaj+dus2-Admin
 ```
 
 ```
@@ -196,35 +216,18 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 ## DUS Modes:
 
-### 1 Search-Mode
+### Classic Mode
 
-DUS offers both Amazon Elasticsearch and Amazon Kendra as two options for indexing and searching data across documents
+This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract, Amazon Comprehend and Amazon Comprehend Medical that allow digitization, information extraction and indexing in DUS.
 
-#### 1.1. Amazon Elasticsearch Only
+### Kendra-Enabled Mode
 
-In this version, DUS supports searching/indexing of documents using Amazon Elasticsearch. The document data and metadata are indexed in the Amazon ES cluster to provide the traditional search experience.
-
-For Development Deploy, Set `searchMode: "AMAZON_ES_ONLY` in package.json  For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
-
-#### 1.2. Amazon Kendra Only 
-
-In the Amazon Kendra enabled mode, Amazon Kendra is can be used for exploring features such as Semantic Search, Adding FAQs and User Context Based Filtering.
-
-For Development Deploy, Set `searchMode: "AMAZON_KENDRA_ONLY"` in package.json  For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
-
+In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
+In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
+Simply set the ` enableKendra: "true"` in package.json
 _Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
 
-#### 1.3. Amazon ES and Kendra  
-
-In this mode, your data is indexed, stored and available to search in both Amazon ES and Amazon Kendra indexes. There is also a comparitive view available to see the difference in both the search modes.
-
-For Development Deploy, Set `searchMode: "AMAZON_ES_AND_KENDRA"` in package.json  For CICD Deploy, set the SearchMode parameter in the CloudFormation template.
-
-### 2. Comprehend Medical Enabled Mode
-In the Comprehend Medical Enabled mode, DUS provides the additional capability to extract medical information such as Medical Entities, ICD-10 and RX Norm onotlogies from uploaded documents.
-To enable this mode, set the ` enableComprehendMedical: "true"` in package.json
-
-### 3. Read-Only Mode
+### Read-Only Mode
 
 In this mode, DUS will only be available in Read-Only mode and you will only be able to analyze the pre-loaded documents. You will not be able to upload documents from the web application UI. In order to enable the Read-Only mode, set ` isROMode: "true"` in package.json. By default, this mode is disabled.
 
