@@ -127,8 +127,9 @@ def processRecord(record, syncQueueUrl, syncBarcodeQueueUrl, asyncQueueUrl, erro
         request['errorHandlerQueueUrl'] = errorHandlerQueueUrl
         processRequest(request)
 
-        request['asyncQueueUrl'] = syncBarcodeQueueUrl
-        processRequest(request)
+        if syncBarcodeQueueUrl:
+            request['asyncQueueUrl'] = syncBarcodeQueueUrl
+            processRequest(request)
 
 
 def lambda_handler(event, context):
@@ -138,7 +139,7 @@ def lambda_handler(event, context):
         print("Event: {}".format(event))
 
         syncQueueUrl = os.environ['SYNC_QUEUE_URL']
-        syncBarcodeQueueUrl = os.environ['SYNC_BARCODE_QUEUE_URL']
+        syncBarcodeQueueUrl = os.getenv('SYNC_BARCODE_QUEUE_URL', None)
         asyncQueueUrl = os.environ['ASYNC_QUEUE_URL']
         errorHandlerQueueUrl = os.environ['ERROR_HANDLER_QUEUE_URL']
         if("Records" in event and event["Records"]):

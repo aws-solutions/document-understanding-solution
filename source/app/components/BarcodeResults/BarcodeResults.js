@@ -14,25 +14,19 @@
 
 import React,{useRef} from 'react'
 
-import css from './BarcodeResults.scss'
+import css from './BarcodeResults.module.scss'
 import cs from "classnames";
 
 export default function BarcodeResults({
   barcodes,
   visible,
-  pageCount,
   currentPageNumber,
-  onSwitchPage,
-  onHighlight,
-  onDownload,
   document
 }) {
-    const container = useRef();
-console.log(document)
-    console.log(barcodes)
-    if (!visible) return (<div></div>);
 
-  if (!barcodes || !barcodes.BarcodesRaw || barcodes.length==0 ) {
+    if (!visible) return (<div>Barcodes not visible.</div>);
+
+  if (!barcodes || !barcodes.BarcodesRaw || barcodes.length===0 ) {
     return <p className={cs(css.noKv)}>No Barcodes detected</p>
   }
 

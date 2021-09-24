@@ -58,8 +58,8 @@ For example,
 - Deploy the distributable to an Amazon S3 bucket in your account. _Note:_ you must have the AWS Command Line Interface installed.
 
 ```
-aws s3 cp ./deployment/global-s3-assets/ s3://$MY_BUCKET/$MY_SOLUTION/$VERSION/ --recursive --acl bucket-owner-full-control --profile arlnocaj+dus-Admin
-aws s3 cp ./deployment/regional-s3-assets/ s3://$MY_BUCKET/$MY_SOLUTION/$VERSION/ --recursive --acl bucket-owner-full-control --profile arlnocaj+dus-Admin
+aws s3 cp ./deployment/global-s3-assets/ s3://$MY_BUCKET/$MY_SOLUTION/$VERSION/ --recursive --acl bucket-owner-full-control
+aws s3 cp ./deployment/regional-s3-assets/ s3://$MY_BUCKET/$MY_SOLUTION/$VERSION/ --recursive --acl bucket-owner-full-control
 ```
 
 
@@ -69,14 +69,14 @@ aws s3 cp ./deployment/regional-s3-assets/ s3://$MY_BUCKET/$MY_SOLUTION/$VERSION
 - If you wish to manually choose whether to enable Kendra or Read-only mode (default 'true' and 'false', respectively), you need to add `ParameterKey=KendraEnabled,ParameterValue=<true_or_false>` and `ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false>` after the email parameter when calling `create-stack`.
 
 ```
-aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://$MY_BUCKET.s3.amazonaws.com/$MY_SOLUTION/$VERSION/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> ParameterKey=KendraEnabled,ParameterValue=<true_or_false> ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD --template-url https://$MY_BUCKET.s3.amazonaws.com/$MY_SOLUTION/$VERSION/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=<my_email> ParameterKey=ReadOnlyMode,ParameterValue=<true_or_false> --capabilities CAPABILITY_NAMED_IAM --disable-rollback
 ```
 
 example
 
 ```
 
-aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD-2 --template-url https://$MY_BUCKET.s3.amazonaws.com/$MY_SOLUTION/$VERSION/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=$EMAIL ParameterKey=KendraEnabled,ParameterValue=false ParameterKey=ReadOnlyMode,ParameterValue=false --capabilities CAPABILITY_NAMED_IAM --disable-rollback
+aws cloudformation create-stack --stack-name DocumentUnderstandingSolutionCICD-2 --template-url https://$MY_BUCKET.s3.amazonaws.com/$MY_SOLUTION/$VERSION/document-understanding-solution.template --parameters ParameterKey=Email,ParameterValue=$EMAIL ParameterKey=ReadOnlyMode,ParameterValue=false --capabilities CAPABILITY_NAMED_IAM --disable-rollback
 ```
 
 This solutions will create 7 S3 buckets that need to be manually deleted when the stack is destroyed (Cloudformation will only delete the solution specific CDK toolkit bucket. The rest are preserved to prevent accidental data loss).

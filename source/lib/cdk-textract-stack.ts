@@ -24,6 +24,9 @@ import snsSubscriptions = require("@aws-cdk/aws-sns-subscriptions");
 import sqs = require("@aws-cdk/aws-sqs");
 import apigateway = require("@aws-cdk/aws-apigateway");
 import ec2 = require("@aws-cdk/aws-ec2");
+
+import * as path from "path";
+
 import {
   DynamoEventSource,
   SqsEventSource,
@@ -50,7 +53,6 @@ import { LogGroupLogDestination } from "@aws-cdk/aws-apigateway";
 import * as s3n from "@aws-cdk/aws-s3-notifications";
 import { CustomResource, Duration } from "@aws-cdk/core";
 import * as cr from "@aws-cdk/custom-resources";
-import { Runtime } from "@aws-cdk/aws-lambda";
 import { Peer, Port } from "@aws-cdk/aws-ec2";
 
 const API_CONCURRENT_REQUESTS = 30; //approximate number of 1-2 page documents to be processed parallelly
@@ -62,6 +64,7 @@ export interface TextractStackProps {
   enableKendra: boolean;
   enableElasticsearch: boolean;
   enableComprehendMedical: boolean;
+  enableBarcodes: boolean;
 }
 
 export class CdkTextractStack extends cdk.Stack {
@@ -81,7 +84,7 @@ export class CdkTextractStack extends cdk.Stack {
     super(scope, id, props);
 
     this.resourceName = (name: any) =>
-      `${id}-${name}-${this.uuid}`.toLowerCase();
+      `${id}-${name}`.toLowerCase();
 
     this.uuid = uuid.generate();
 
@@ -527,26 +530,6 @@ export class CdkTextractStack extends cdk.Stack {
       },
     });
 
-    // Barcode Queues
-        const syncBarcodeJobsDLQueue = new sqs.Queue(
-      this,
-      this.resourceName("SynBarcodeJobsDLQ"),
-      {
-        visibilityTimeout: cdk.Duration.seconds(120),
-        retentionPeriod: cdk.Duration.seconds(1209600),
-        encryption: QueueEncryption.KMS_MANAGED,
-      }
-    );
-
-    const syncBarcodeJobsQueue = new sqs.Queue(this, this.resourceName("SyncBarcodeJobs"), {
-      visibilityTimeout: cdk.Duration.seconds(900),
-      retentionPeriod: cdk.Duration.seconds(1209600),
-      encryption: QueueEncryption.KMS_MANAGED,
-      deadLetterQueue: {
-        maxReceiveCount: 3,
-        queue: syncJobsDLQueue,
-      },
-    });
 
     const asyncJobsDLQueue = new sqs.Queue(
       this,
@@ -883,13 +866,14 @@ export class CdkTextractStack extends cdk.Stack {
         tracing: lambda.Tracing.ACTIVE,
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
-          SYNC_BARCODE_QUEUE_URL: syncBarcodeJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
           ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
         vpc: props.enableElasticsearch? vpc : null
       }
     );
+
+
 
     documentProcessor.addLayers(helperLayer);
     documentProcessor.addLayers(boto3Layer);
@@ -905,7 +889,6 @@ export class CdkTextractStack extends cdk.Stack {
     //Permissions
     documentsTable.grantReadWriteData(documentProcessor);
     syncJobsQueue.grantSendMessages(documentProcessor);
-    syncBarcodeJobsQueue.grantSendMessages(documentProcessor);
     asyncJobsQueue.grantSendMessages(documentProcessor);
     jobErrorHandlerQueue.grantSendMessages(documentProcessor);
     documentsS3Bucket.grantRead(documentProcessor);
@@ -940,6 +923,9 @@ export class CdkTextractStack extends cdk.Stack {
     //Permissions
     documentsTable.grantReadWriteData(jobErrorHandler);
 
+
+    const code_location = props.isCICDDeploy ? cicdPDFLoc : yarnPDFLoc
+      console.log("PDFGenerator Code location: "+ JSON.stringify(code_location))
     //------------------------------------------------------------
     // PDF Generator
     const pdfGenerator = new lambda.Function(
@@ -947,7 +933,7 @@ export class CdkTextractStack extends cdk.Stack {
       this.resourceName("PdfGenerator"),
       {
         runtime: lambda.Runtime.JAVA_8,
-        code: props.isCICDDeploy ? cicdPDFLoc : yarnPDFLoc,
+        code: code_location,
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
@@ -984,29 +970,6 @@ export class CdkTextractStack extends cdk.Stack {
       }
     );
 
-    // Sync Barcode Jobs Processor (Process jobs using sync APIs)
-     // Configure path to Dockerfile
-    const dockerfile = path.join(__dirname, "../../../document_barcodes");
-
-    console.log("Dir Dockerfile: "+dockerfile)
-    // Create AWS Lambda function and push image to ECR
-
-    const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor2"), {
-      code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
-        description: "barcode extraction for pdf documents",
-        memorySize: 5024,
-        reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
-        timeout: cdk.Duration.minutes(2),
-        tracing: lambda.Tracing.ACTIVE,
-        environment: {
-            OUTPUT_BUCKET: documentsS3Bucket.bucketName,
-            OUTPUT_TABLE: outputTable.tableName,
-            DOCUMENTS_TABLE: documentsTable.tableName,
-            ES_DOMAIN: elasticSearch.attrDomainEndpoint,
-            PDF_LAMBDA: pdfGenerator.functionName,
-        },
-        // vpc: vpc
-    });
 
 //------------------------------------------------------------
 
@@ -1024,11 +987,6 @@ export class CdkTextractStack extends cdk.Stack {
     );
 
 
-     syncBarcodeProcessor.addEventSource(
-      new SqsEventSource(syncBarcodeJobsQueue, {
-        batchSize: 1,
-      })
-    );
 
     //Permissions
     documentsS3Bucket.grantReadWrite(syncProcessor);
@@ -1466,6 +1424,65 @@ export class CdkTextractStack extends cdk.Stack {
 
       const searchKendraResource = api.root.addResource("searchkendra");
       addCorsOptionsAndMethods(searchKendraResource, ["POST"]);
+    }
+
+
+    if(props.enableBarcodes){
+
+        // Barcode Queues
+        const syncBarcodeJobsDLQueue = new sqs.Queue(
+            this,
+            this.resourceName("SynBarcodeJobsDLQ"),
+            {
+                visibilityTimeout: cdk.Duration.seconds(120),
+                retentionPeriod: cdk.Duration.seconds(1209600),
+                encryption: QueueEncryption.KMS_MANAGED,
+            }
+        );
+
+        const syncBarcodeJobsQueue = new sqs.Queue(this, this.resourceName("SyncBarcodeJobs"), {
+            visibilityTimeout: cdk.Duration.seconds(900),
+            retentionPeriod: cdk.Duration.seconds(1209600),
+            encryption: QueueEncryption.KMS_MANAGED,
+            deadLetterQueue: {
+                maxReceiveCount: 3,
+                queue: syncJobsDLQueue,
+            },
+        });
+
+
+        // Sync Barcode Jobs Processor (Process jobs using sync APIs)
+        // Configure path to Dockerfile
+        const dockerfile = path.join(__dirname, "../../../document_barcodes");
+
+        console.log("Dir Dockerfile: "+dockerfile)
+        // Create AWS Lambda function and push image to ECR
+
+        const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor"), {
+            code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
+            description: "barcode extraction for pdf documents",
+            memorySize: 5024,
+            reservedConcurrentExecutions: Math.floor(API_CONCURRENT_REQUESTS / 3),
+            timeout: cdk.Duration.minutes(2),
+            tracing: lambda.Tracing.ACTIVE,
+            environment: {
+                OUTPUT_BUCKET: documentsS3Bucket.bucketName,
+                OUTPUT_TABLE: outputTable.tableName,
+                DOCUMENTS_TABLE: documentsTable.tableName,
+                ES_DOMAIN: elasticSearch.attrDomainEndpoint,
+                PDF_LAMBDA: pdfGenerator.functionName,
+            },
+            vpc: props.enableElasticsearch? vpc : null
+        });
+
+        syncBarcodeProcessor.addEventSource(
+            new SqsEventSource(syncBarcodeJobsQueue, {
+                batchSize: 1,
+            })
+        );
+
+        documentProcessor.addEnvironment("SYNC_BARCODE_QUEUE_URL",syncBarcodeJobsQueue.queueUrl)
+        syncBarcodeJobsQueue.grantSendMessages(documentProcessor);
     }
 
     /*** CFN NAG SUPPRESSIONS - These do not affect the functionality of the solution ***/
