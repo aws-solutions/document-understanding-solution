@@ -30,7 +30,7 @@ import {
   REDACTIONS_SAVED,
 } from "../../../constants/action-types";
 import { documentsSchema, documentSchema } from "./data";
-import { ENABLE_COMPREHEND_MEDICAL } from '../../../constants/configs'
+import {ENABLE_BARCODES, ENABLE_COMPREHEND_MEDICAL} from '../../../constants/configs'
 import { normalizeRedactionResponse, getRedactionsDto } from "../../../utils/redaction";
 
 const lensNextToken = lensPath(["data", "nextToken"]);
@@ -222,11 +222,15 @@ export const fetchDocument = createAction(FETCH_DOCUMENT, async documentid => {
   const redactions = normalizeRedactionResponse(redactionsResponse.data.redactedItems)
 
     // Get the raw barcode response data from a json file on S3
-    const s3BarcodeResponse = await Storage.get(barcodeResponsePath, {
-        download: true
-    });
-    const s3BarcodeResponseText = await s3BarcodeResponse.Body?.text()
-    const barcodeResponse = JSON.parse(s3BarcodeResponseText);
+  let barcodeResponse = null;
+  if (ENABLE_BARCODES){
+      const s3BarcodeResponse = await Storage.get(barcodeResponsePath, {
+          download: true
+      });
+      const s3BarcodeResponseText = await s3BarcodeResponse.Body?.text()
+      barcodeResponse = JSON.parse(s3BarcodeResponseText);
+  }
+
 
   return normalize(
     {

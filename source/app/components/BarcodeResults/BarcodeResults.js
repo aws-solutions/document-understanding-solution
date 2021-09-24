@@ -24,7 +24,7 @@ export default function BarcodeResults({
   document
 }) {
 
-    if (!visible) return (<div>Barcodes not visible.</div>);
+    if (!visible) return (<div></div>);
 
   if (!barcodes || !barcodes.BarcodesRaw || barcodes.length===0 ) {
     return <p className={cs(css.noKv)}>No Barcodes detected</p>

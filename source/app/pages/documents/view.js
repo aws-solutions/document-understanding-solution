@@ -70,7 +70,7 @@ import RawTextLines from '../../components/RawTextLines/RawTextLines'
 import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox'
 import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
 import TableResults from '../../components/TableResults/TableResults'
-import { ENABLE_COMPREHEND_MEDICAL } from '../../constants/configs'
+import {ENABLE_BARCODES, ENABLE_COMPREHEND_MEDICAL} from '../../constants/configs'
 
 import BarcodeResults from '../../components/BarcodeResults/BarcodeResults'
 
@@ -108,10 +108,10 @@ const tabItems = [
   { id: 'tables', title: `Tables` },
   { id: 'entities', title: `Entities` },
   { id: 'piiEntities', title: `PII Entities` },
-  { id: 'barcodes', title: `Barcodes` },
 ]
 
 if (ENABLE_COMPREHEND_MEDICAL) tabItems.push({ id: 'medical_entities', title: `Medical Entities` })
+if (ENABLE_BARCODES) tabItems.push({ id: 'barcodes', title: `Barcodes` })
 
 function Document({ currentPageNumber, dispatch, id, document, pageTitle, searchQuery, track }) {
   // TODO: Ensure id corresponds to a valid resource, otherwise 404

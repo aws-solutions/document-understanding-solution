@@ -923,17 +923,14 @@ export class CdkTextractStack extends cdk.Stack {
     //Permissions
     documentsTable.grantReadWriteData(jobErrorHandler);
 
-
-    const code_location = props.isCICDDeploy ? cicdPDFLoc : yarnPDFLoc
-      console.log("PDFGenerator Code location: "+ JSON.stringify(code_location))
     //------------------------------------------------------------
     // PDF Generator
     const pdfGenerator = new lambda.Function(
       this,
       this.resourceName("PdfGenerator"),
       {
-        runtime: lambda.Runtime.JAVA_8,
-        code: code_location,
+          runtime: lambda.Runtime.JAVA_8,
+        code: props.isCICDDeploy ? cicdPDFLoc : yarnPDFLoc,
         reservedConcurrentExecutions: API_CONCURRENT_REQUESTS,
         handler: "DemoLambdaV2::handleRequest",
         memorySize: 3000,
@@ -1482,7 +1479,14 @@ export class CdkTextractStack extends cdk.Stack {
         );
 
         documentProcessor.addEnvironment("SYNC_BARCODE_QUEUE_URL",syncBarcodeJobsQueue.queueUrl)
+
+        // Permissions for barcode processor
         syncBarcodeJobsQueue.grantSendMessages(documentProcessor);
+        //Permissions
+        documentsS3Bucket.grantReadWrite(syncBarcodeProcessor);
+        samplesS3Bucket.grantReadWrite(syncBarcodeProcessor);
+        outputTable.grantReadWriteData(syncBarcodeProcessor);
+        documentsTable.grantReadWriteData(syncBarcodeProcessor);
     }
 
     /*** CFN NAG SUPPRESSIONS - These do not affect the functionality of the solution ***/
