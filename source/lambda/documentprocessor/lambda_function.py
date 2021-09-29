@@ -127,7 +127,9 @@ def processRecord(record, syncQueueUrl, syncBarcodeQueueUrl, asyncQueueUrl, erro
         request['errorHandlerQueueUrl'] = errorHandlerQueueUrl
         processRequest(request)
 
+        # send for barcode processing to the same queue, not matter if its pdf or png
         if syncBarcodeQueueUrl:
+            request['syncQueueUrl'] = syncBarcodeQueueUrl
             request['asyncQueueUrl'] = syncBarcodeQueueUrl
             processRequest(request)
 
