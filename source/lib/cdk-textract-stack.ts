@@ -1443,7 +1443,7 @@ export class CdkTextractStack extends cdk.Stack {
             encryption: QueueEncryption.KMS_MANAGED,
             deadLetterQueue: {
                 maxReceiveCount: 3,
-                queue: syncJobsDLQueue,
+                queue: syncBarcodeJobsDLQueue,
             },
         });
 
@@ -1452,9 +1452,7 @@ export class CdkTextractStack extends cdk.Stack {
         // Configure path to Dockerfile
         const dockerfile = path.join(__dirname, "../../../document_barcodes");
 
-        console.log("Dir Dockerfile: "+dockerfile)
         // Create AWS Lambda function and push image to ECR
-
         const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor"), {
             code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
             description: "barcode extraction for pdf documents",
