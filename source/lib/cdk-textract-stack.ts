@@ -1427,8 +1427,7 @@ export class CdkTextractStack extends cdk.Stack {
     if(props.enableBarcodes){
 
         // Barcode Queues
-        const syncBarcodeJobsDLQueue = new sqs.Queue(
-            this,
+        const syncBarcodeJobsDLQueue = new sqs.Queue(this,
             this.resourceName("SynBarcodeJobsDLQ"),
             {
                 visibilityTimeout: cdk.Duration.seconds(120),
@@ -1437,7 +1436,8 @@ export class CdkTextractStack extends cdk.Stack {
             }
         );
 
-        const syncBarcodeJobsQueue = new sqs.Queue(this, this.resourceName("SyncBarcodeJobs"), {
+        const syncBarcodeJobsQueue = new sqs.Queue(this,
+            this.resourceName("SyncBarcodeJobs"), {
             visibilityTimeout: cdk.Duration.seconds(900),
             retentionPeriod: cdk.Duration.seconds(1209600),
             encryption: QueueEncryption.KMS_MANAGED,
@@ -1453,7 +1453,8 @@ export class CdkTextractStack extends cdk.Stack {
         const dockerfile = path.join(__dirname, "../../../document_barcodes");
 
         // Create AWS Lambda function and push image to ECR
-        const syncBarcodeProcessor = new lambda.DockerImageFunction(this, this.resourceName("SyncBarcodeProcessor"), {
+        const syncBarcodeProcessor = new lambda.DockerImageFunction(this,
+            this.resourceName("SyncBarcodeProcessor"), {
             code: lambda.DockerImageCode.fromImageAsset(dockerfile, {exclude:[]}),
             description: "barcode extraction for pdf documents",
             memorySize: 5024,
