@@ -1450,8 +1450,7 @@ export class CdkTextractStack extends cdk.Stack {
 
         // Sync Barcode Jobs Processor (Process jobs using sync APIs)
         // Configure path to Dockerfile
-        // const dockerfile = path.join(__dirname, "../../../document_barcodes");
-        const dockerfile = path.join(__dirname, "../");
+        const dockerfile = path.join(__dirname, "../lambda/barcodeprocessor");
 
         // Create AWS Lambda function and push image to ECR
         const syncBarcodeProcessor = new lambda.DockerImageFunction(this,
