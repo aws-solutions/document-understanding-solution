@@ -1450,7 +1450,8 @@ export class CdkTextractStack extends cdk.Stack {
 
         // Sync Barcode Jobs Processor (Process jobs using sync APIs)
         // Configure path to Dockerfile
-        const dockerfile = path.join(__dirname, "../../../document_barcodes");
+        // const dockerfile = path.join(__dirname, "../../../document_barcodes");
+        const dockerfile = path.join(__dirname, "../");
 
         // Create AWS Lambda function and push image to ECR
         const syncBarcodeProcessor = new lambda.DockerImageFunction(this,
@@ -1464,13 +1465,12 @@ export class CdkTextractStack extends cdk.Stack {
             environment: {
                 OUTPUT_BUCKET: documentsS3Bucket.bucketName,
                 OUTPUT_TABLE: outputTable.tableName,
-                DOCUMENTS_TABLE: documentsTable.tableName,
-                ES_DOMAIN: elasticSearch.attrDomainEndpoint,
-                PDF_LAMBDA: pdfGenerator.functionName,
+                DOCUMENTS_TABLE: documentsTable.tableName
             },
             vpc: props.enableElasticsearch? vpc : null
         });
 
+        syncBarcodeProcessor.addEnvironment("ES_DOMAIN", elasticSearch.attrDomainEndpoint);
         syncBarcodeProcessor.addEventSource(
             new SqsEventSource(syncBarcodeJobsQueue, {
                 batchSize: 1,
