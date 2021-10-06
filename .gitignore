@@ -35,3 +35,4 @@ __pycache__/
 .idea/
 .vscode/
 /source/venv/
+venv
