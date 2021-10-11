@@ -22,7 +22,7 @@
   "enableKendra": "false",
   "enableBarcodes": "false",
   "email": "%%USER_EMAIL%%",
-  "searchmode": "AMAZON_ES_ONLY",
+  "searchMode": "AMAZON_ES_ONLY",
   "scripts": {
     "bootstrap": "AWS_REGION=$npm_package_stack_region USER_EMAIL=$npm_package_email SEARCH_MODE=$npm_package_searchMode  cdk bootstrap --toolkit-stack-name DocumentUnderstandingCDKToolkit",
     "compile-ts-stacks": "yarn compile-ts-backend-stack && yarn compile-ts-client-stack",
