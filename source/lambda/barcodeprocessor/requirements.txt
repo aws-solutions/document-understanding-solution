@@ -1,0 +1,2 @@
+boto3==1.18.53
+docbarcodes==1.0.7

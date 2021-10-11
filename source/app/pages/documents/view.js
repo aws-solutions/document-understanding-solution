@@ -48,6 +48,7 @@ import {
   getDocumentLines,
   getDocumentEntityPairs,
   getDocumentKeyValuePairs,
+  getDocumentBarcodes,
   getPageTables,
   getPageWordsBySearch,
   getDocumentTables,
@@ -69,8 +70,9 @@ import RawTextLines from '../../components/RawTextLines/RawTextLines'
 import EntitiesCheckbox from '../../components/EntitiesCheckbox/EntitiesCheckbox'
 import DocumentPreview from '../../components/DocumentPreview/DocumentPreview'
 import TableResults from '../../components/TableResults/TableResults'
-import { ENABLE_COMPREHEND_MEDICAL } from '../../constants/configs'
+import {ENABLE_BARCODES, ENABLE_COMPREHEND_MEDICAL} from '../../constants/configs'
 
+import BarcodeResults from '../../components/BarcodeResults/BarcodeResults'
 
 Document.propTypes = {
   currentPageNumber: PropTypes.number,
@@ -109,6 +111,7 @@ const tabItems = [
 ]
 
 if (ENABLE_COMPREHEND_MEDICAL) tabItems.push({ id: 'medical_entities', title: `Medical Entities` })
+if (ENABLE_BARCODES) tabItems.push({ id: 'barcodes', title: `Barcodes` })
 
 function Document({ currentPageNumber, dispatch, id, document, pageTitle, searchQuery, track }) {
   // TODO: Ensure id corresponds to a valid resource, otherwise 404
@@ -171,7 +174,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     const entities = getDocumentEntityPairs(document, COMPREHEND_SERVICE)
     const piiEntities = getDocumentEntityPairs(document, COMPREHEND_PII)
     const medicalEntities = ENABLE_COMPREHEND_MEDICAL? getDocumentEntityPairs(document, COMPREHEND_MEDICAL_SERVICE) : []
-    return { pairs, tables, lines, entities , piiEntities, medicalEntities }
+    const barcodes = getDocumentBarcodes(document)
+    return { pairs, tables, lines, entities , piiEntities, medicalEntities, barcodes }
     // eslint-disable-next-line
 
   }, [document, document.textractResponse ,document.medicalComprehendResponse, document.comprehendResponse])
@@ -183,7 +187,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
     const tables = docData.tables.filter(d => d.pageNumber === currentPageNumber)
     const entities = docData.entities.filter(d => d.pageNumber === currentPageNumber)
     const medicalEntities = docData.medicalEntities.filter(d => d.pageNumber === currentPageNumber)
-    return { lines, pairs, tables , entities , medicalEntities }
+    const barcodes = docData.barcodes
+    return { lines, pairs, tables , entities , medicalEntities, barcodes }
     // eslint-disable-next-line
   }, [document, document.textractResponse,document.comprehendMedicalResponse, currentPageNumber, docData.pairs, docData.entities , docData.medicalEntities , docData.tables])
 
@@ -341,7 +346,8 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                   tab === 'entities' && css.withEv,
                   tab === 'piiEntities' && css.withEv,
                   tab === 'medical_entities' && css.withEv,
-                  tab === 'text' && css.withText
+                  tab === 'text' && css.withText,
+                    tab === 'barcodes' && css.withKv
                 )
               }
                 document={document}
@@ -356,7 +362,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                       ? pageLinesAsMarks
                       : tab === 'kv'
                       ? pagePairsAsMarks
-                      : ['entities', 'medical_entities', 'piiEntities'].includes(tab) 
+                      : ['entities', 'medical_entities', 'piiEntities'].includes(tab)
                       ? (document.highlights || [])
                       : []
                   ]
@@ -371,7 +377,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
             <div
               className={cs(
                 css.sidebar,
-                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='piiEntities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables') && css.visible
+                (tab === 'kv' || tab === 'text' || tab === 'entities' || tab ==='piiEntities' || tab ==='medical_entities' || tab === 'search' ||tab === 'text'||tab === 'tables' || tab === 'barcodes') && css.visible
               )
             }
             >
@@ -420,7 +426,7 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 onDownloadSecondary = {null}
                 document = {document}
               />
-              
+
               <EntitiesCheckbox
                 entities={docData.piiEntities}
                 pageCount={pageCount}
@@ -462,6 +468,15 @@ function Document({ currentPageNumber, dispatch, id, document, pageTitle, search
                 onSwitchPage={switchPage}
                 visible={tab === 'tables'}
                 document = {document}
+              />
+
+              <BarcodeResults
+                  barcodes={docData.barcodes}
+                  pageCount={pageCount}
+                  currentPageNumber={currentPageNumber}
+                  onSwitchPage={switchPage}
+                  visible={tab === 'barcodes'}
+                  document = {document}
               />
             </div>
           </div>

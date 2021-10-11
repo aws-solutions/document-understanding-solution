@@ -2,7 +2,7 @@
 ######################################################################################################################
  #  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           #
  #                                                                                                                    #
- #  Licensed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
+ #  LicecomprehendPIIEntitiesnsed under the Apache License, Version 2.0 (the License). You may not use this file except in compliance    #
  #  with the License. A copy of the License is located at                                                             #
  #                                                                                                                    #
  #      http://www.apache.org/licenses/LICENSE-2.0                                                                    #
@@ -126,44 +126,11 @@ class ComprehendHelper:
         for i in range(0, pagesToProcess):
             comprehendEntities[pageStartIndex +
                                i] = response['ResultList'][i]
-
-    #
-    # thread execution calling Comprehend PII synchronously for each page
-    #
-
-    def comprehendDetectPIISync(self,
-                                rawPages,
-                                index,
-                                comprehendPIIEntities,
-                                mutex):
-        config = Config(
-                        retries = {
-                        'max_attempts': MAX_API_RETRIES,
-                        'mode': 'standard'
-                        }
-        )
-        
-        client = boto3.client('comprehend', config=config)
     
-        # service limit is 10tps, sdk implements 3 retries with backoff
-        # if that's not enough then fail
-        response = client.detect_pii_entities(Text=rawPages[index],
-                                              LanguageCode='en')
-
-        # save results for later processing
-        if 'Entities' not in response:
-            return
-
-        mutex.acquire()
-        comprehendPIIEntities[index] = response['Entities']
-        mutex.release()
-
-
-
     #
     # thread execution calling ComprehendMedical Entities synchronously for each page
     #
-
+    
     def comprehendMedicalDetectEntitiesSync(self,
                                             rawPages,
                                             index,
@@ -270,62 +237,6 @@ class ComprehendHelper:
         S3Helper.writeToS3(json.dumps(data), bucket,
                            comprehendOutputPath + "comprehendEntities.json")
         return entities_to_index
-
-    #
-    # processes all ComprehendMedical results for all pages
-    #
-    def processAndReturnComprehendPIIEntities(self,
-                                         comprehendPIIEntities,
-                                         rawPages,
-                                         numOfPages,
-                                         bucket,
-                                         comprehendOutputPath):
-
-        data = {}
-        data['results'] = []
-        pii_entities_to_index = {}
-        
-        for p in range(0, numOfPages):
-            
-            page = {}
-            # page numbers start at 1
-            page['Page'] = p + 1
-            page['Entities'] = []
-
-            # to detect and skip duplicates
-            entities = set()
-
-            entities_page = comprehendPIIEntities[p]
-
-            if entities_page:
-                for e in entities_page:
-
-                    # comprehend doesn't return the text of the entity it detected, we must
-                    # get it from the page we sent it originally
-                    e['Text'] = rawPages[p][e['BeginOffset']:e['EndOffset']]
-
-                    # add this entity if not already present
-                    if e['Text'].upper() not in entities:
-
-                        # add entity to results list
-                        entity = {}
-                        entity['Text'] = e['Text']
-                        entity['Type'] = e['Type']
-                        entity['Score'] = e['Score']
-                        page['Entities'].append(entity)
-
-                        if e['Type'] not in pii_entities_to_index:
-                            pii_entities_to_index[e['Type']] = []
-                        pii_entities_to_index[e['Type']].append(e['Text'])
-
-                        # make a note of this added entity
-                        entities.add(e['Text'].upper())
-
-            data['results'].append(page)
-                
-        # create results file in S3 under document folder
-        S3Helper.writeToS3(json.dumps(data), bucket, comprehendOutputPath + "comprehendPIIEntities.json")
-        return pii_entities_to_index
 
     #
     # processes all ComprehendMedical results for all pages
@@ -442,16 +353,14 @@ class ComprehendHelper:
     #   documentPath:               path of the document i.e. "public/1581983617022/premera.pdf/bb2186ec-51e0-11ea-a3c3-2e0ec40645f6/"
     #   maxPages:                   max number of pages to process for the document, counted from page 1. Suggested to limit
     #                               that number to 200 pages or so.
-    #   isComprehendEnabled:        flag that indicates whether or not to extract comprehend medical entities in the document. The flag value
-    #                               can be set during deployment.
     #
 
     def processComprehend(self,
                           bucket,
                           textractResponseLocation,
                           comprehendOutputPath,
-                          isComprehendMedicalEnabled,
                           maxPages=200):
+
 
         # get textract results from S3
         textractFile = S3Helper.readFromS3(
@@ -482,7 +391,6 @@ class ComprehendHelper:
             numOfBatches += 1
 
         # to store comprehend and medical API calls results.
-        comprehendPIIEntities = [None] * numOfPages
         comprehendEntities = [None] * numOfPages
         comprehendMedicalEntities = [None] * numOfPages
         comprehendMedicalICD10 = [None] * numOfPages
@@ -507,54 +415,38 @@ class ComprehendHelper:
             x.start()
             threads.append(x)
 
-            if(isComprehendMedicalEnabled):
-                # comprehendMedicalEntities is shared among threads
-                medicalEntitiesMutex = threading.Lock()
+            # comprehendMedicalEntities is shared among threads
+            medicalEntitiesMutex = threading.Lock()
 
-                # ComprehendMedical
-                for index in range(0, pagesToProcess):
+            # ComprehendMedical
+            for index in range(0, pagesToProcess):
 
-                    # Comprehend Medical can only handle one page at a time synchronously. The SDK handles
-                    # throttling by the service.
-                    x = threading.Thread(target=self.comprehendMedicalDetectEntitiesSync,
-                                        args=(rawPages,
-                                            pageStartIndex + index,
-                                            comprehendMedicalEntities,
-                                            medicalEntitiesMutex))
-                    x.start()
-                    threads.append(x)
+                # Comprehend Medical can only handle one page at a time synchronously. The SDK handles
+                # throttling by the service.
+                x = threading.Thread(target=self.comprehendMedicalDetectEntitiesSync,
+                                     args=(rawPages,
+                                           pageStartIndex + index,
+                                           comprehendMedicalEntities,
+                                           medicalEntitiesMutex))
+                x.start()
+                threads.append(x)
 
-                # comprehendMedicalEntities is shared among threads
-                medicalICD10Mutex = threading.Lock()
+            # comprehendMedicalEntities is shared among threads
+            medicalICD10Mutex = threading.Lock()
 
-                # ComprehendMedical
-                for index in range(0, pagesToProcess):
+            # ComprehendMedical
+            for index in range(0, pagesToProcess):
 
-                    # Comprehend Medical can only handle one page at a time synchronously. The SDK handles
-                    # throttling by the service.
-                    x = threading.Thread(target=self.comprehendMedicalDetectICD10Sync,
-                                        args=(rawPages,
-                                            pageStartIndex + index,
-                                            comprehendMedicalICD10,
-                                            medicalICD10Mutex))
-                    x.start()
-                    threads.append(x)
-            
-                # comprehendPII is shared among threads
-                PIIMutex = threading.Lock()
+                # Comprehend Medical can only handle one page at a time synchronously. The SDK handles
+                # throttling by the service.
+                x = threading.Thread(target=self.comprehendMedicalDetectICD10Sync,
+                                     args=(rawPages,
+                                           pageStartIndex + index,
+                                           comprehendMedicalICD10,
+                                           medicalICD10Mutex))
+                x.start()
+                threads.append(x)
 
-                for index in range(0, pagesToProcess):
-
-                    # Comprehend PII can only handle one page at a time synchronously. The SDK handles
-                    # throttling by the service.
-                    x = threading.Thread(target=self.comprehendDetectPIISync,
-                                        args=(rawPages,
-                                            pageStartIndex + index,
-                                            comprehendPIIEntities,
-                                            PIIMutex))
-                    x.start()
-                    threads.append(x)
-        
             # wait on all threads to finish their work
             for index, thread in enumerate(threads):
                 thread.join()
@@ -562,16 +454,10 @@ class ComprehendHelper:
             print("All threads joined...")
 
             # check success of threads
-            if(isComprehendMedicalEnabled):
-                for i in range(pageStartIndex, pagesToProcess):
-                    if (comprehendEntities[pageStartIndex + i] == None) or (comprehendMedicalEntities[pageStartIndex + i] == None):
-                        print("Page failed to process" + str(i))
-                        return False
-            else:
-                for i in range(pageStartIndex, pagesToProcess):
-                    if (comprehendEntities[pageStartIndex + i] == None):
-                        print("Page failed to process" + str(i))
-                        return False
+            for i in range(pageStartIndex, pagesToProcess):
+                if (comprehendEntities[pageStartIndex + i] == None) or (comprehendMedicalEntities[pageStartIndex + i] == None):
+                    print("Page failed to process" + str(i))
+                    return False
 
             # increment the number of pages processed for the next batch
             pagesProcessed += pagesToProcess
@@ -581,27 +467,19 @@ class ComprehendHelper:
                                        numOfPages,
                                        bucket,
                                        comprehendOutputPath)
+                                  
+        # process comprehend medical data, create the entities result file in S3
+        comprehendMedicalEntities = self.processAndReturnComprehendMedicalEntities(comprehendMedicalEntities,
+                                              numOfPages,
+                                              bucket,
+                                              comprehendOutputPath)
+        # final list of comprehend and comprehend medical entities to be indexed
+        processedComprehendData.update(comprehendMedicalEntities)
 
-        # process comprehend PII data, create the entities result file in S3
-        comprehendPIIEntities = self.processAndReturnComprehendPIIEntities(comprehendPIIEntities,
-                                                                                   rawPages,
-                                                                                   numOfPages,
-                                                                                   bucket,
-                                                                                   comprehendOutputPath)
-                                       
-        if(isComprehendMedicalEnabled):
-            # process comprehend medical data, create the entities result file in S3
-            comprehendMedicalEntities = self.processAndReturnComprehendMedicalEntities(comprehendMedicalEntities,
-                                                numOfPages,
-                                                bucket,
-                                                comprehendOutputPath)
-            # final list of comprehend and comprehend medical entities to be indexed
-            processedComprehendData.update(comprehendMedicalEntities)
-
-            # process comprehend medical data, create the ICD10 result file in S3
-            self.processComprehendMedicalICD10(comprehendMedicalICD10,
-                                            numOfPages,
-                                            bucket,
-                                            comprehendOutputPath)
+        # process comprehend medical data, create the ICD10 result file in S3
+        self.processComprehendMedicalICD10(comprehendMedicalICD10,
+                                           numOfPages,
+                                           bucket,
+                                           comprehendOutputPath)
 
         return processedComprehendData

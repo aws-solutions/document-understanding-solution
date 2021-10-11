@@ -1,4 +1,3 @@
-
 /**********************************************************************************************************************
  *  Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
  *                                                                                                                    *
@@ -15,14 +14,13 @@
 const cdk = require("@aws-cdk/core");
 const CdkTextractStack = require("../lib/cdk-textract-stack");
 const readlineSync = require("readline-sync");
-const fs = require("fs");
 
 const app = new cdk.App();
 const stackName = `${process.env.STACKNAME}Stack`;
 
 
 const userEmail =
-  process.env.USER_EMAIL == "%%USER_EMAIL%%"
+  process.env.USER_EMAIL === "%%USER_EMAIL%%"
     ? readlineSync.question("Please enter your email address: ")
     : process.env.USER_EMAIL;
 
@@ -36,6 +34,7 @@ const enableElasticsearch = (process.env.SEARCH_MODE == "AMAZON_ES_ONLY" || proc
 
 const isCICDDeploy = process.env.ISCICD == "false" ? false : true;
 const enableComprehendMedical = process.env.ENABLE_COMPREHEND_MEDICAL == "true"? true : false;
+const enableBarcodes = process.env.ENABLE_BARCODES === "true";
 // // eslint-disable-next-line no-new
 new CdkTextractStack.CdkTextractStack(app, stackName, {
   description : "MLSLD-S0001. Document Understanding Solution. This stack deploys the backend for DUS",
@@ -43,5 +42,6 @@ new CdkTextractStack.CdkTextractStack(app, stackName, {
   isCICDDeploy: isCICDDeploy,
   enableKendra: enableKendra,
   enableElasticsearch : enableElasticsearch,
-  enableComprehendMedical: enableComprehendMedical
+  enableComprehendMedical: enableComprehendMedical,
+  enableBarcodes: enableBarcodes
 });
