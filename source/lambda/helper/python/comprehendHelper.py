@@ -295,31 +295,30 @@ class ComprehendHelper:
             # to detect and skip duplicates
             entities = set()
 
-            entities_page = comprehendPIIEntities[p]
+            entities_page = comprehendPIIEntities.get(p,[])
 
-            if entities_page:
-                for e in entities_page:
+            for e in entities_page:
 
-                    # comprehend doesn't return the text of the entity it detected, we must
-                    # get it from the page we sent it originally
-                    e['Text'] = rawPages[p][e['BeginOffset']:e['EndOffset']]
+                # comprehend doesn't return the text of the entity it detected, we must
+                # get it from the page we sent it originally
+                e['Text'] = rawPages[p][e['BeginOffset']:e['EndOffset']]
 
-                    # add this entity if not already present
-                    if e['Text'].upper() not in entities:
+                # add this entity if not already present
+                if e['Text'].upper() not in entities:
 
-                        # add entity to results list
-                        entity = {}
-                        entity['Text'] = e['Text']
-                        entity['Type'] = e['Type']
-                        entity['Score'] = e['Score']
-                        page['Entities'].append(entity)
+                    # add entity to results list
+                    entity = {}
+                    entity['Text'] = e['Text']
+                    entity['Type'] = e['Type']
+                    entity['Score'] = e['Score']
+                    page['Entities'].append(entity)
 
-                        if e['Type'] not in pii_entities_to_index:
-                            pii_entities_to_index[e['Type']] = []
-                        pii_entities_to_index[e['Type']].append(e['Text'])
+                    if e['Type'] not in pii_entities_to_index:
+                        pii_entities_to_index[e['Type']] = []
+                    pii_entities_to_index[e['Type']].append(e['Text'])
 
-                        # make a note of this added entity
-                        entities.add(e['Text'].upper())
+                    # make a note of this added entity
+                    entities.add(e['Text'].upper())
 
             data['results'].append(page)
                 
