@@ -20,17 +20,17 @@ from helper.helper import AwsHelper, S3Helper, DynamoDBHelper
 
 import boto3
 
-from textractor.og import PUBLIC_PATH_S3_PREFIX, SERVICE_OUTPUT_PATH_S3_PREFIX, BARCODES_PATH_S3_PREFIX
-
 s3 = boto3.client('s3')
 
 import tempfile
 
 import json
 
+PUBLIC_PATH_S3_PREFIX= "public/"
+SERVICE_OUTPUT_PATH_S3_PREFIX = "output/"
+BARCODES_PATH_S3_PREFIX = "barcodes/"
 
 def processPDF(documentId, features, bucketName, outputBucketName, objectName, outputTableName, documentsTableName):
-    detectBarcodes = "Barcodes" in features
 
     with tempfile.TemporaryDirectory() as d:
         s3 = boto3.client('s3');
@@ -55,7 +55,7 @@ def processPDF(documentId, features, bucketName, outputBucketName, objectName, o
                                                      BARCODES_PATH_S3_PREFIX)
         print("Generating output for DocumentId: {} and storing in {}".format(documentId, outputPath))
 
-        S3Helper.writeToS3(json.dumps(response, ensure_ascii=False), bucketName, outputPath)
+        S3Helper.writeToS3(json.dumps(response, ensure_ascii=False), outputBucketName, outputPath)
 
         ds = datastore.DocumentStore(documentsTableName, outputTableName)
         ds.markDocumentComplete(documentId)
