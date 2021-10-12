@@ -15,8 +15,8 @@ import os
 from pathlib import Path
 
 from docbarcodes.extract import process_document
-from helper import datastore
-from helper.helper import AwsHelper, S3Helper, DynamoDBHelper
+import datastore
+from helper import AwsHelper, S3Helper, DynamoDBHelper
 
 import boto3
 

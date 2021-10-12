@@ -43,3 +43,6 @@ else
     zip -rq es.zip python
     echo "Created new es.zip"
 fi
+
+cd $current_dir/lambda/barcodeprocessor
+source ./pre-build.sh
