@@ -41,7 +41,8 @@ export class CdkTextractClientStack extends Stack {
       {
         sources: [s3deployment.Source.asset("app/out")],
         destinationBucket: clientAppS3Bucket,
-        destinationKeyPrefix: ""
+        destinationKeyPrefix: "",
+        memoryLimit: 512
       }
     );
   }
