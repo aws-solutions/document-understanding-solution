@@ -34,14 +34,14 @@ def postMessage(client, qUrl, jsonMessage, delaySeconds=0):
     print("Submitted message to queue: {}".format(message))
 
 
-def get_mime_type(request):
+def get_mime_type(bucketName, objectName):
     """
     Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
     """
     client = boto3.client('s3')
-    local_path = f"/tmp/{request['objectName'].rsplit('/',1)[-1]}"
-    client.download_file(request['bucketName'],
-                         request['objectName'], local_path)
+    local_path = f"/tmp/{objectName.rsplit('/',1)[-1]}"
+    client.download_file(bucketName,
+                         objectName, local_path)
 
     return filetype.guess(local_path)
 
@@ -94,15 +94,7 @@ def processRecord(record, syncQueueUrl, syncBarcodeQueueUrl, asyncQueueUrl, erro
         documentId, bucketName, objectName, documentStatus))
 
     if(documentId and bucketName and objectName and documentStatus):
-        request = {}
-        request["documentId"] = documentId
-        request["bucketName"] = bucketName
-        request["objectName"] = objectName
-        request['syncQueueUrl'] = syncQueueUrl
-        request['asyncQueueUrl'] = asyncQueueUrl
-        request['errorHandlerQueueUrl'] = errorHandlerQueueUrl
-
-        file_type = get_mime_type(request)
+        file_type = get_mime_type(bucketName, objectName)
         client = AwsHelper().getClient('sqs')
 
         # If not expected extension, change status to FAILED and exit
