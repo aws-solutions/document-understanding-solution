@@ -152,7 +152,6 @@ def processRequest(request):
     documentId = request['documentId']
     outputBucketName = request['outputBucketName']
     outputTable = request['outputTable']
-    documentsTable = request['documentsTable']
     documentsTable = request["documentsTable"]
     elasticsearchDomain = request["elasticsearchDomain"]
 
