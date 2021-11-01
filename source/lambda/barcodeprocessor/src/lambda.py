@@ -33,7 +33,7 @@ BARCODES_PATH_S3_PREFIX = "barcodes/"
 def processPDF(documentId, features, bucketName, outputBucketName, objectName, outputTableName, documentsTableName):
 
     with tempfile.TemporaryDirectory() as d:
-        s3 = boto3.client('s3');
+        s3 = boto3.client('s3')
         target = os.path.join(d, objectName)
         os.makedirs(Path(target).parent, exist_ok=True)
         s3.download_file(bucketName, objectName, target)
@@ -91,8 +91,6 @@ def processRequest(request):
         'body': output
     }
 
-
-# import pydevd_pycharm
 def handler(event, context):
     print("Event: {}".format(event))
     message = json.loads(event['Records'][0]['body'])
