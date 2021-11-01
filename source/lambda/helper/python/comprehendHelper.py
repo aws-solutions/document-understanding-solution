@@ -295,7 +295,7 @@ class ComprehendHelper:
             # to detect and skip duplicates
             entities = set()
 
-            entities_page = comprehendPIIEntities.get(p,[])
+            entities_page = comprehendPIIEntities[p] if comprehendPIIEntities[p] else []
 
             for e in entities_page:
 
