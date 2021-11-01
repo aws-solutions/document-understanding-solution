@@ -46,14 +46,21 @@ def processPDF(documentId, features, bucketName, outputBucketName, objectName, o
 
         response = {"BarcodesRaw": raw_dict, "BarcodesCombined": combined_dict}
 
-        dynamodb = AwsHelper().getResource("dynamodb")
-        ddb = dynamodb.Table(outputTableName)
-
         outputPath = '{}{}/{}{}barcodes.json'.format(PUBLIC_PATH_S3_PREFIX, documentId, SERVICE_OUTPUT_PATH_S3_PREFIX,
                                                      BARCODES_PATH_S3_PREFIX)
         print("Generating output for DocumentId: {} and storing in {}".format(documentId, outputPath))
 
         S3Helper.writeToS3(json.dumps(response, ensure_ascii=False), outputBucketName, outputPath)
+
+        # store the output path of the generated barcode file in dynamodb
+        dynamodb = AwsHelper().getResource("dynamodb")
+        ddb = dynamodb.Table(outputTableName)
+
+        jsonItem = {}
+        jsonItem['documentId'] = documentId
+        jsonItem['outputType'] = "barcodes/Response"
+        jsonItem['outputPath'] = outputPath
+        ddbResponse = ddb.put_item(Item=jsonItem)
 
         ds = datastore.DocumentStore(documentsTableName, outputTableName)
         ds.markDocumentComplete(documentId)
