@@ -40,13 +40,11 @@ def processPDF(documentId, features, bucketName, outputBucketName, objectName, o
 
         barcodes_raw, barcodes_combined = process_document(target, max_pages=None, use_jpype=True)
 
-        # continue processing f
+        # convert to savable json response
         raw_dict = [b._asdict() for b in barcodes_raw]
         combined_dict = [b._asdict() for b in barcodes_combined]
 
         response = {"BarcodesRaw": raw_dict, "BarcodesCombined": combined_dict}
-
-        # pydevd_pycharm.settrace('host.docker.internal', port=4200, stdoutToServer=True, stderrToServer=True)
 
         dynamodb = AwsHelper().getResource("dynamodb")
         ddb = dynamodb.Table(outputTableName)
