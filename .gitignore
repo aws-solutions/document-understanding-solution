@@ -34,3 +34,5 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+/venv/
+/source/venv/

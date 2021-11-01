@@ -46,54 +46,30 @@ def get_mime_type(request):
     return filetype.guess(local_path)
 
 
-def processRequest(request):
+def processRequest(documentId, bucketName, objectName, processingQueueUrl, errorHandlerTimeoutSeconds, jobErrorHandlerQueueUrl):
 
     output = ""
-
-    print("Request: {}".format(request))
-
-    documentId = request["documentId"]
-    bucketName = request["bucketName"]
-    objectName = request["objectName"]
-    jobErrorHandlerQueueUrl = request['errorHandlerQueueUrl']
+    print("Request: documentId {}, bucketName {}, objectName {}, processingQueueUrl {}, errorHandlerTimeoutSeconds {}, jobErrorHandlerQueueUrl {}".format(documentId, bucketName, objectName, processingQueueUrl, errorHandlerTimeoutSeconds, jobErrorHandlerQueueUrl))
 
     print("Input Object: {}/{}".format(bucketName, objectName))
 
     client = AwsHelper().getClient('sqs')
 
-    file_type = get_mime_type(request)
+    features = ["Text", "Forms", "Tables"]
+    jsonMessage = {'documentId': documentId,
+                   "features": features,
+                   'bucketName': bucketName,
+                   'objectName': objectName}
+    postMessage(client, processingQueueUrl, jsonMessage)
 
-    # If not expected extension, change status to FAILED and exit
-    if not file_type or file_type.mime not in ['application/pdf', 'image/png', 'image/jpeg']:
-        jsonErrorHandlerMessage = {
-            'documentId': documentId
-        }
-        postMessage(client, jobErrorHandlerQueueUrl, jsonErrorHandlerMessage)
-        return
-
-    if(file_type.mime in ['image/png', 'image/jpeg']):
-        qUrl = request['syncQueueUrl']
-        errorHandlerTimeoutSeconds = SYNC_JOB_TIMEOUT_SECONDS
-    elif (file_type.mime in ['application/pdf']):
-        qUrl = request['asyncQueueUrl']
-        errorHandlerTimeoutSeconds = ASYNC_JOB_TIMEOUT_SECONDS
-
-    if(qUrl):
-        features = ["Text", "Forms", "Tables"]
-        jsonMessage = {'documentId': documentId,
-                       "features": features,
-                       'bucketName': bucketName,
-                       'objectName': objectName}
-        postMessage(client, qUrl, jsonMessage)
-
-        jsonErrorHandlerMessage = {
-            'documentId': documentId
-        }
-        postMessage(client, jobErrorHandlerQueueUrl,
-                    jsonErrorHandlerMessage, errorHandlerTimeoutSeconds)
+    jsonErrorHandlerMessage = {
+        'documentId': documentId
+    }
+    postMessage(client, jobErrorHandlerQueueUrl,
+                jsonErrorHandlerMessage, errorHandlerTimeoutSeconds)
 
     output = "Completed routing for documentId: {}, object: {}/{}, to {}".format(
-        documentId, bucketName, objectName,qUrl)
+        documentId, bucketName, objectName, processingQueueUrl)
 
 
 def processRecord(record, syncQueueUrl, syncBarcodeQueueUrl, asyncQueueUrl, errorHandlerQueueUrl):
@@ -125,14 +101,32 @@ def processRecord(record, syncQueueUrl, syncBarcodeQueueUrl, asyncQueueUrl, erro
         request['syncQueueUrl'] = syncQueueUrl
         request['asyncQueueUrl'] = asyncQueueUrl
         request['errorHandlerQueueUrl'] = errorHandlerQueueUrl
-        processRequest(request)
 
-        # send for barcode processing to the same queue, not matter if its pdf or png
+        file_type = get_mime_type(request)
+        client = AwsHelper().getClient('sqs')
+
+        # If not expected extension, change status to FAILED and exit
+        if not file_type or file_type.mime not in ['application/pdf', 'image/png', 'image/jpeg']:
+            jsonErrorHandlerMessage = {
+                'documentId': documentId
+            }
+            postMessage(client, errorHandlerQueueUrl, jsonErrorHandlerMessage)
+            return
+
+        # trigger the sync or async textract pipeline
+        if (file_type.mime in ['image/png', 'image/jpeg']):
+            # sync textract pipeline
+            processRequest(documentId, bucketName, objectName, syncQueueUrl, SYNC_JOB_TIMEOUT_SECONDS,
+                           errorHandlerQueueUrl)
+        elif (file_type.mime in ['application/pdf']):
+            # async textract pipeline
+            processRequest(documentId, bucketName, objectName, asyncQueueUrl, ASYNC_JOB_TIMEOUT_SECONDS,
+                           errorHandlerQueueUrl)
+
+        # barcode pipeline accepts both pdf or images
         if syncBarcodeQueueUrl:
-            request['syncQueueUrl'] = syncBarcodeQueueUrl
-            request['asyncQueueUrl'] = syncBarcodeQueueUrl
-            processRequest(request)
-
+            processRequest(documentId, bucketName, objectName, syncBarcodeQueueUrl, ASYNC_JOB_TIMEOUT_SECONDS,
+                        errorHandlerQueueUrl)
 
 def lambda_handler(event, context):
 
@@ -144,6 +138,7 @@ def lambda_handler(event, context):
         syncBarcodeQueueUrl = os.getenv('SYNC_BARCODE_QUEUE_URL', None)
         asyncQueueUrl = os.environ['ASYNC_QUEUE_URL']
         errorHandlerQueueUrl = os.environ['ERROR_HANDLER_QUEUE_URL']
+
         if("Records" in event and event["Records"]):
             for record in event["Records"]:
                 try:
