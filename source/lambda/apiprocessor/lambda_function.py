@@ -195,8 +195,6 @@ def lambda_handler(event, context):
                         kendraClient.deindexDocument(os.environ['KENDRA_INDEX_ID'],
                                                      request["documentId"])
 
-    print("result")
-    print(result)
     return {
         "isBase64Encoded": False,
         "statusCode": status_code,
