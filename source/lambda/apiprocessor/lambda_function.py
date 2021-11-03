@@ -145,7 +145,7 @@ def lambda_handler(event, context):
                         request["objectName"] = event['queryStringParameters']['objectname']
                         if validate_create_document_request(request):
                             pipes_req_str = os.getenv('PIPES_REQUESTS', '["textract"]')
-                            pipes_requests = json.load(pipes_req_str)
+                            pipes_requests = json.loads(pipes_req_str)
                             request["pipesRequests"] = pipes_requests
                             result = createDocument(request)
                         else:
@@ -175,7 +175,7 @@ def lambda_handler(event, context):
                     request["objectName"] = body['key']
                     if validate_create_document_request(request):
                         pipes_req_str = os.getenv('PIPES_REQUESTS', '["textract"]')
-                        pipes_requests = json.load(pipes_req_str)
+                        pipes_requests = json.loads(pipes_req_str)
                         request["pipesRequests"] = pipes_requests
                         result = createDocument(request)
                     else:
@@ -195,7 +195,8 @@ def lambda_handler(event, context):
                         kendraClient.deindexDocument(os.environ['KENDRA_INDEX_ID'],
                                                      request["documentId"])
 
-
+    print("result")
+    print(result)
     return {
         "isBase64Encoded": False,
         "statusCode": status_code,

@@ -53,7 +53,7 @@ class DocumentStore:
                     ':documentstatusValue': 'IN_PROGRESS',
                     ':documentCreatedOnValue': str(datetime.datetime.utcnow()),
                     ':documentPipesRequestsValue': set(documentPipesRequests),
-                    ':documentPipesFinishedValue' : set([]),
+                    ':documentPipesFinishedValue' : set(["none"]),
                 }
             )
         except ClientError as e:
@@ -197,8 +197,8 @@ class DocumentStore:
                 'bucketName': ddbGetItemResponse['Item']['bucketName']['S'],
                 'objectName': ddbGetItemResponse['Item']['objectName']['S'],
                 'documentStatus': ddbGetItemResponse['Item']['documentStatus']['S'],
-                'documentPipesRequests': ddbGetItemResponse['Item']['documentPipesRequests']['SS'],
-                'documentPipesFinished': ddbGetItemResponse['Item']['documentPipesFinished']['SS'],
+                'documentPipesRequests': list(ddbGetItemResponse['Item']['documentPipesRequests']['SS']),
+                'documentPipesFinished': list(ddbGetItemResponse['Item']['documentPipesFinished']['SS']),
             }
 
         return itemToReturn

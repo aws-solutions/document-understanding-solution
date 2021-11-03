@@ -31,7 +31,7 @@ class TestDocumentStore(unittest.TestCase):
                 "bucketName": {"S": "dusstack-sample-s3-bucket"},
                 "documentStatus": {"S": "IN_PROGRESS"},
                 "documentPipesRequests": {"SS": ["textract"]},
-                "documentPipesFinished": {"SS": []}
+                "documentPipesFinished": {"SS": ["none"]}
             }
         )
         self.conn.put_item(
@@ -42,7 +42,7 @@ class TestDocumentStore(unittest.TestCase):
                 "bucketName": {"S": "dusstack-sample-s3-bucket"},
                 "documentStatus": {"S": "IN_PROGRESS"},
                 "documentPipesRequests": {"SS":["textract"]},
-                "documentPipesFinished": {"SS": []}
+                "documentPipesFinished": {"SS": ["none"]}
             }
         )
         self.ds = datastore.DocumentStore(DOCUMENTS_TABLE_NAME,OUTPUT_TABLE_NAME)
