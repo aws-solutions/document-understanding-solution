@@ -63,6 +63,7 @@ def processPDF(documentId, features, bucketName, outputBucketName, objectName, o
         ddbResponse = ddb.put_item(Item=jsonItem)
 
         ds = datastore.DocumentStore(documentsTableName, outputTableName)
+        ds.updateDocumentPipesFinished(documentId, ["barcodes"])
         ds.markDocumentComplete(documentId)
 
 

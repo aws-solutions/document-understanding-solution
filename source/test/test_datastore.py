@@ -69,6 +69,7 @@ class TestDocumentStore(unittest.TestCase):
     
     def test_mark_document_complete_success(self):
         documentId = "b1a54fda-1809-49d7-8f19-0d1688eb65b9"
+        self.ds.updateDocumentPipesRequest(documentId,["textract"])
         response = self.ds.markDocumentComplete(documentId)
         documentStatus = self.conn.get_item(
             Key={'documentId': {'S': documentId}},

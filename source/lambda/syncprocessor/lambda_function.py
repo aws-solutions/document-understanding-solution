@@ -135,6 +135,7 @@ def processImage(documentId, features, bucketName, outputBucketName, objectName,
         opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTableName, outputTableName)
+    ds.updateDocumentPipesFinished(documentId, ["textract"])
     ds.markDocumentComplete(documentId)
 
 # --------------- Main handler ------------------

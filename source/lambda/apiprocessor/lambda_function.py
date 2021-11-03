@@ -68,6 +68,7 @@ def lambda_handler(event, context):
     documentBucket = os.environ['CONTENT_BUCKET']
     sampleBucket = os.environ['SAMPLE_BUCKET']
 
+
     if('resource' in event):
         request = {}
         if 'ES_DOMAIN' in os.environ:
@@ -143,6 +144,9 @@ def lambda_handler(event, context):
                         request["bucketName"] = event['queryStringParameters']['bucketname']
                         request["objectName"] = event['queryStringParameters']['objectname']
                         if validate_create_document_request(request):
+                            pipes_req_str = os.getenv('PIPES_REQUESTS', '["textract"]')
+                            pipes_requests = json.load(pipes_req_str)
+                            request["pipesRequests"] = pipes_requests
                             result = createDocument(request)
                         else:
                             status_code = 400
@@ -170,6 +174,9 @@ def lambda_handler(event, context):
                     request["bucketName"] = sampleBucket if body['sample'] else documentBucket
                     request["objectName"] = body['key']
                     if validate_create_document_request(request):
+                        pipes_req_str = os.getenv('PIPES_REQUESTS', '["textract"]')
+                        pipes_requests = json.load(pipes_req_str)
+                        request["pipesRequests"] = pipes_requests
                         result = createDocument(request)
                     else:
                         status_code = 400

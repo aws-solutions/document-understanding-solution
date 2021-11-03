@@ -160,6 +160,7 @@ def processRequest(request):
         opg.indexDocument(opg_output[DOCTEXT], comprehendAndMedicalEntities)
 
     ds = datastore.DocumentStore(documentsTable, outputTable)
+    ds.updateDocumentPipesFinished(documentId, ["textract"])
     ds.markDocumentComplete(documentId)
 
     output = "Processed -> Document: {}, Object: {}/{} processed.".format(documentId, bucketName, objectName)

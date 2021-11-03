@@ -40,6 +40,7 @@ def createDocument(request):
     outputTable = request["outputTable"]
     bucketName = request["bucketName"]
     objectName = request["objectName"]
+    pipesRequests = request["pipesRequests"]
     ds = datastore.DocumentStore(documentsTable, outputTable)
     objectRootPrefix = objectName.split('/')[1]
     # if one of the available sample files, backend has to generate UUID.
@@ -47,7 +48,7 @@ def createDocument(request):
         documentId = generateDocumentID(bucketName)
     else:
         documentId = objectRootPrefix
-    ds.createDocument(documentId, bucketName, objectName)
+    ds.createDocument(documentId, bucketName, objectName, pipesRequests)
     output = {
         "documentId": documentId
     }

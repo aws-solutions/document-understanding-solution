@@ -827,6 +827,7 @@ export class CdkTextractStack extends cdk.Stack {
           DOCUMENTS_BUCKET: documentsS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
+          PIPES_REQUESTS: '["textract"]'
         },
       }
     );
@@ -866,7 +867,7 @@ export class CdkTextractStack extends cdk.Stack {
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
-          ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
+          ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,a
         },
         vpc: props.enableElasticsearch? vpc : null
       }
@@ -1180,6 +1181,7 @@ export class CdkTextractStack extends cdk.Stack {
           SAMPLE_BUCKET: samplesS3Bucket.bucketName,
           OUTPUT_TABLE: outputTable.tableName,
           DOCUMENTS_TABLE: documentsTable.tableName,
+          PIPES_REQUESTS: '["textract"]'
         },
         vpc: props.enableElasticsearch ? vpc : null,
       }
@@ -1469,7 +1471,8 @@ export class CdkTextractStack extends cdk.Stack {
         );
 
         documentProcessor.addEnvironment("SYNC_BARCODE_QUEUE_URL",syncBarcodeJobsQueue.queueUrl)
-
+        apiProcessor.addEnvironment("PIPES_REQUESTS",'["textract", "barcodes"]')
+        documentBulkProcessor.addEnvironment("PIPES_REQUESTS",'["textract", "barcodes"]')
         // Permissions for barcode processor
         syncBarcodeJobsQueue.grantSendMessages(documentProcessor);
         //Permissions
