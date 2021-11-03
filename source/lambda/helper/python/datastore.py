@@ -52,8 +52,8 @@ class DocumentStore:
                     ':objectNameValue': objectName,
                     ':documentstatusValue': 'IN_PROGRESS',
                     ':documentCreatedOnValue': str(datetime.datetime.utcnow()),
-                    ':documentPipesRequestsValue': set(documentPipesRequests),
-                    ':documentPipesFinishedValue' : set(["none"]),
+                    ':documentPipesRequestsValue': documentPipesRequests,
+                    ':documentPipesFinishedValue' : ["none"],
                 }
             )
         except ClientError as e:
@@ -124,7 +124,7 @@ class DocumentStore:
         table = dynamodb.Table(self._documentsTableName)
         doc_items = self.getDocument(documentId)
         pipesFinished = doc_items["documentPipesFinished"]
-        pipesFinished = pipesFinished + pipesJustFinished
+        pipesFinished = list(set(pipesFinished + pipesJustFinished))
 
         try:
             table.update_item(
@@ -132,7 +132,7 @@ class DocumentStore:
                 UpdateExpression='SET documentPipesFinished= :documentPipesFinishedValue',
                 ConditionExpression='attribute_exists(documentId)',
                 ExpressionAttributeValues={
-                    ':documentPipesFinishedValue': set(pipesFinished)
+                    ':documentPipesFinishedValue': pipesFinished
                 }
             )
         except ClientError as e:
@@ -197,8 +197,8 @@ class DocumentStore:
                 'bucketName': ddbGetItemResponse['Item']['bucketName']['S'],
                 'objectName': ddbGetItemResponse['Item']['objectName']['S'],
                 'documentStatus': ddbGetItemResponse['Item']['documentStatus']['S'],
-                'documentPipesRequests': list(ddbGetItemResponse['Item']['documentPipesRequests']['SS']),
-                'documentPipesFinished': list(ddbGetItemResponse['Item']['documentPipesFinished']['SS']),
+                'documentPipesRequests': [item["S"] for item in ddbGetItemResponse['Item']['documentPipesRequests']['L']],
+                'documentPipesFinished': [item["S"] for item in ddbGetItemResponse['Item']['documentPipesFinished']['L']],
             }
 
         return itemToReturn
