@@ -15,7 +15,8 @@
 import json
 import os
 import filetype
-from helper import FileHelper, AwsHelper, datastore
+from helper import FileHelper, AwsHelper
+import datastore
 import boto3
 
 ASYNC_JOB_TIMEOUT_SECONDS = 900
