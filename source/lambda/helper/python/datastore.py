@@ -52,8 +52,8 @@ class DocumentStore:
                     ':objectNameValue': objectName,
                     ':documentstatusValue': 'IN_PROGRESS',
                     ':documentCreatedOnValue': str(datetime.datetime.utcnow()),
-                    ':documentPipesRequestsValue': documentPipesRequests,
-                    ':documentPipesFinishedValue' : [],
+                    ':documentPipesRequestsValue': set(documentPipesRequests),
+                    ':documentPipesFinishedValue' : set([]),
                 }
             )
         except ClientError as e:
@@ -104,7 +104,7 @@ class DocumentStore:
                 UpdateExpression='SET documentPipesRequests= :documentPipesRequestsValue',
                 ConditionExpression='attribute_exists(documentId)',
                 ExpressionAttributeValues={
-                    ':documentPipesRequestsValue': pipesRequest
+                    ':documentPipesRequestsValue': set(pipesRequest)
                 }
             )
         except ClientError as e:
@@ -124,15 +124,15 @@ class DocumentStore:
         table = dynamodb.Table(self._documentsTableName)
         doc_items = self.getDocument(documentId)
         pipesFinished = doc_items["documentPipesFinished"]
-
         pipesFinished = pipesFinished + pipesJustFinished
+
         try:
             table.update_item(
                 Key={'documentId': documentId},
-                UpdateExpression='SET documentPipesRequests= :documentPipesRequestsValue',
+                UpdateExpression='SET documentPipesFinished= :documentPipesFinishedValue',
                 ConditionExpression='attribute_exists(documentId)',
                 ExpressionAttributeValues={
-                    ':documentPipesRequestsValue': pipesFinished
+                    ':documentPipesFinishedValue': set(pipesFinished)
                 }
             )
         except ClientError as e:
@@ -155,11 +155,8 @@ class DocumentStore:
         pipesRequests = doc_items["documentPipesRequests"]
         pipesFinished = doc_items["documentPipesFinished"]
 
-        print(f"pipes requested: {pipesRequests}")
-        print(f"pipes finished: {pipesFinished}")
-
         remainingPipes = list(set(pipesRequests)-set(pipesFinished))
-        print(f"remaining pipes to finish: {remainingPipes}")
+
         if len(remainingPipes)>0:
             print(f"Document {documentId} not completed, remaining pipes {remainingPipes}")
             return err
@@ -200,6 +197,8 @@ class DocumentStore:
                 'bucketName': ddbGetItemResponse['Item']['bucketName']['S'],
                 'objectName': ddbGetItemResponse['Item']['objectName']['S'],
                 'documentStatus': ddbGetItemResponse['Item']['documentStatus']['S'],
+                'documentPipesRequests': ddbGetItemResponse['Item']['documentPipesRequests']['SS'],
+                'documentPipesFinished': ddbGetItemResponse['Item']['documentPipesFinished']['SS'],
             }
 
         return itemToReturn

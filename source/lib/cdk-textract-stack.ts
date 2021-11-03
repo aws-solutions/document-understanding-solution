@@ -867,7 +867,7 @@ export class CdkTextractStack extends cdk.Stack {
         environment: {
           SYNC_QUEUE_URL: syncJobsQueue.queueUrl,
           ASYNC_QUEUE_URL: asyncJobsQueue.queueUrl,
-          ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,a
+          ERROR_HANDLER_QUEUE_URL: jobErrorHandlerQueue.queueUrl,
         },
         vpc: props.enableElasticsearch? vpc : null
       }

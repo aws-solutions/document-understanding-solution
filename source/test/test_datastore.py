@@ -29,7 +29,9 @@ class TestDocumentStore(unittest.TestCase):
                 "documentId": {"S" : "b1a54fda-1809-49d7-8f19-0d1688eb65b9"},
                 "objectName": {"S": "public/samples/Misc/expense.png"},
                 "bucketName": {"S": "dusstack-sample-s3-bucket"},
-                "documentStatus": {"S": "IN_PROGRESS"}
+                "documentStatus": {"S": "IN_PROGRESS"},
+                "documentPipesRequests": {"SS": ["textract"]},
+                "documentPipesFinished": {"SS": []}
             }
         )
         self.conn.put_item(
@@ -38,7 +40,9 @@ class TestDocumentStore(unittest.TestCase):
                 "documentId": {"S" : "b1a99fda-1809-49d7-8f19-0d1688eb65b9"},
                 "objectName": {"S": "public/samples/Misc/expense.png"},
                 "bucketName": {"S": "dusstack-sample-s3-bucket"},
-                "documentStatus": {"S": "IN_PROGRESS"}
+                "documentStatus": {"S": "IN_PROGRESS"},
+                "documentPipesRequests": {"SS":["textract"]},
+                "documentPipesFinished": {"SS": []}
             }
         )
         self.ds = datastore.DocumentStore(DOCUMENTS_TABLE_NAME,OUTPUT_TABLE_NAME)
@@ -66,10 +70,10 @@ class TestDocumentStore(unittest.TestCase):
         documentId = "b1333fda-1809-49d7-8f19-0d1688eb65b9"
         response = self.ds.updateDocumentStatus(documentId, "FAILED")
         self.assertEqual(response, {'Error': 'Document does not exist.'})
-    
+
     def test_mark_document_complete_success(self):
         documentId = "b1a54fda-1809-49d7-8f19-0d1688eb65b9"
-        self.ds.updateDocumentPipesRequest(documentId,["textract"])
+        res = self.ds.updateDocumentPipesFinished(documentId,["textract"])
         response = self.ds.markDocumentComplete(documentId)
         documentStatus = self.conn.get_item(
             Key={'documentId': {'S': documentId}},
