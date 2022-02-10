@@ -80,7 +80,7 @@
     "next": "10.0.4",
     "next-redux-wrapper": "^3.0.0-alpha.3",
     "node-fetch": "^2.6.1",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.0",
     "normalizr": "^3.4.0",
     "query-string": "^6.8.1",
     "ramda": "^0.26.1",
