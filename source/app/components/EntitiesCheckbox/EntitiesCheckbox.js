@@ -29,7 +29,7 @@ import {
 } from '../../utils/dus-constants'
 
 
-import css from './EntitiesCheckbox.scss'
+import css from './EntitiesCheckbox.module.scss'
 
 export default function EntitiesCheckbox({
   entities,

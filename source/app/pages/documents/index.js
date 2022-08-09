@@ -58,7 +58,7 @@ import { getSelectedTrackId, getSelectedSearch } from '../../store/ui/selectors'
 
 import { makeDocumentLink } from '../../utils/link-generators'
 
-import css from './documents.scss'
+import css from './documents.module.scss'
 import SearchBar from '../../components/SearchBar/SearchBar'
 import { setHeaderProps } from '../../store/ui/actions'
 import Link from 'next/link'

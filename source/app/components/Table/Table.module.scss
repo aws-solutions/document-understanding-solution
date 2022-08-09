@@ -1,0 +1,19 @@
+@import '../../styles/shared/index';
+
+.tableContainer {
+  max-width: 100%;
+  overflow: auto;
+
+  @include media-grid(4) {
+    padding-bottom: 1rem;
+
+    table {
+      min-width: rem(1000);
+    }
+  }
+}
+
+.muted {
+  color: color(gray, 60);
+  background-color: color(gray, 30);
+}

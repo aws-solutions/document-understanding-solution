@@ -1,0 +1,63 @@
+@import '../../styles/shared/index';
+
+.wrapper {
+  display: inline-block;
+  color: #fff;
+  position: relative;
+}
+
+.personaLabel {
+
+  padding: .25em .5em;
+  border-radius: .25em;
+  background: $link-blue;
+  line-height: 1.3;
+  cursor: pointer;
+
+  &:after {
+    content: '▼';
+    margin-left: .5em;
+  }
+}
+
+.removePersona {
+  @include type-body-primary();
+  cursor: pointer;
+  color: $link-blue;
+  text-transform: none;
+  letter-spacing: normal;
+  position: relative;
+  top: 2px;
+  margin-left: 1em;
+  font-style: italic;
+}
+
+.menu {
+  position: absolute;;
+  top: 0;
+  left: 0;
+  z-index: 300;
+  background: $link-blue;
+  border-radius: .25em;
+  white-space: nowrap;
+  min-width: 100%;
+
+  a {
+    cursor: pointer;
+    padding: 0 .5em;
+    display: block;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}

@@ -1,0 +1,65 @@
+@import '../../styles/shared/index';
+
+.icon {
+  flex: 0 0 24px;
+  margin-right: em(12);
+}
+
+.filename {
+  flex: 1 1 0px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: rem(10);
+}
+
+.extension {
+  flex: 0 0 rem(100);
+}
+
+.processing {
+  flex: 0 0 rem(100);
+  color: color(orange, 20)
+}
+
+.ready {
+  flex: 0 0 rem(100);
+  color: color(teal, 10)
+}
+
+.failed {
+  flex: 0 0 rem(100);
+  color: color(red, 10)
+}
+
+.deleteSpacer {
+  flex: 0 0 24px;
+}
+
+.deleteButton {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border: none;
+  box-shadow: none;
+  display: inline-block;
+  background: url(/static/images/icon_delete_01.png);
+  opacity: 0.6;
+  cursor: pointer;
+
+  &:hover, &:focus {
+    opacity: 1;
+  }
+}
+
+.failedFileRow{
+
+  background-color: #7c7f83;
+  opacity: 0.5;
+
+  &:hover, &:focus {
+    background-color: #595f68;
+    opacity: 0.5;
+
+  }
+}

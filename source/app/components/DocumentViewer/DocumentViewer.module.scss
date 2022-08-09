@@ -1,0 +1,109 @@
+@import '../../styles/shared/index';
+
+.viewer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: scroll;
+  @include site-gutters;
+}
+
+.pdfViewer {
+  overflow-y: hidden;
+  align-items: stretch;
+}
+
+.document {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.pager {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 66.11296vw;
+  max-width: 90%;
+  align-self: center;
+}
+
+.page {
+}
+
+.imageWrapper {
+  flex: 1 1 0px;
+  text-align: center;
+
+  .canvas {
+    width: 100%;
+    display: inline-flex;
+  }
+}
+
+.image {
+  width: 100%;
+}
+
+.canvas {
+  box-shadow: 0 2px 10px rgba(color(gray, 80), 0.1);
+  position: relative;
+  display: flex;
+  flex: 1;
+  font-size: 0;
+  align-self: center;
+  flex: column;
+  justify-content: center;
+}
+
+.pdfViewer .canvasWrapper {
+  flex: 1 1 0px;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-y: auto;
+  align-items: center;
+}
+
+.highlight {
+  position: absolute;
+  display: block;
+  background-color: rgba(#fee385, 0.5);
+  box-shadow: 0 0 0 2px color(orange);
+  box-sizing: content-box;
+  transition: all 1000ms 1000ms linear;
+  transition-property: background-color, box-shadow;
+
+  @supports(mix-blend-mode: multiply) {
+    background-color: #fee385;
+    mix-blend-mode: multiply;
+  }
+
+  &:global(.key) {
+    background-color: rgba(#16bf9f, 0.5);
+    box-shadow: 0 0 0 2px #16bf9f;
+  }
+
+  &.highlighted {
+    background-color: rgba(#0095ff, 0.5);
+    box-shadow: 0 0 0 2px #0095ff;
+    transition: none;
+  }
+}
+
+.redact {
+  position: absolute;
+  display: block;
+  background-color: #000;
+  box-shadow: 0 0 0 2px #000;
+  box-sizing: content-box;
+  z-index: 4;
+}
+
+.cellHighlight {
+  position: absolute;
+  display: block;
+  background: transparent;
+  box-shadow: 0 0 0 0.5px color(orange);
+  pointer-events: none;
+}

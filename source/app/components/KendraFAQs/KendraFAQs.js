@@ -15,7 +15,7 @@ import React from "react";
 import KendraFAQItem from "../KendraFAQItem/KendraFAQItem";
 import TooltipButton from "../TooltipButton/TooltipButton";
 
-import css from "./KendraFAQs.scss";
+import css from "./KendraFAQs.module.scss";
 
 export default function KendraFAQs({ results, submitFeedback }) {
   if (!results.length) return null;

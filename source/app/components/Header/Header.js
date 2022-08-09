@@ -25,7 +25,7 @@ import LinkWithClickHandler from '../LinkWithClickHandler/LinkWithClickHandler'
 
 import { getHeaderProps } from '../../store/ui/selectors'
 
-import css from './Header.scss'
+import css from './Header.module.scss'
 import { clearSearchQuery, setSearchPersona } from '../../store/entities/meta/actions'
 
 Header.propTypes = {

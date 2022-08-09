@@ -18,7 +18,7 @@ import PropTypes from 'prop-types'
 import { useDispatch } from 'react-redux'
 import {  setSelectedTrack} from '../../store/ui/actions'
 
-import css from './Tabs.scss'
+import css from './Tabs.module.scss'
 
 Tabs.propTypes = {
   children: PropTypes.node,

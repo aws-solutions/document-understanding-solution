@@ -19,6 +19,7 @@ import os
 import uuid
 from helper import FileHelper, AwsHelper, S3Helper
 from datastore import DocumentStore
+from urllib.parse import unquote_plus
 
 
 def generateDocumentID(bucketName, s3Client):
@@ -75,6 +76,8 @@ def processDocument(record):
     ingestionBucketName = record['s3']['bucket']['name']
     ingestionDocumentKey = record['s3']['object']['key']
     ingestionDocumentFilename = record['s3']['object']['key'].split('/')[1]
+    ingestionDocumentFilename = unquote_plus(ingestionDocumentFilename)
+    ingestionDocumentKey = unquote_plus(ingestionDocumentKey)
 
     s3Client = boto3.client('s3', region_name=os.environ['AWS_REGION'])
 
@@ -184,3 +187,4 @@ def lambda_handler(event, context):
                 processQueueRecord(queueRecord)
             except Exception as e:
                 print("Failed to process queue record. Exception: {}".format(e))
+
