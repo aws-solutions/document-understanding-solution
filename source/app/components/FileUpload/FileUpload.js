@@ -30,7 +30,7 @@ import CameraCapture from '../CameraCapture/CameraCapture'
 import { submitDocument } from '../../store/entities/documents/actions'
 import { clearSearchQuery } from '../../store/entities/meta/actions'
 
-import css from './FileUpload.scss'
+import css from './FileUpload.module.scss'
 
 const {
   publicRuntimeConfig:{

@@ -57,7 +57,7 @@ import {
 
 
 
-import css from './view.scss'
+import css from './view.module.scss'
 import Button from '../../components/Button/Button'
 import KeyValueList from '../../components/KeyValueList/KeyValueList'
 import RawTextLines from '../../components/RawTextLines/RawTextLines'

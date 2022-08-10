@@ -1,0 +1,81 @@
+@import '../../styles/shared/index';
+
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  padding: em(10) 0;
+}
+
+.wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+}
+
+.search {
+  display: block;
+  flex: 1;
+}
+
+.clear {
+  position: absolute;
+  right: 0;
+  z-index: 2;
+  margin: 0;
+  border: none;
+  padding: 0;
+  top: 3px;
+  right: 8px;
+
+  svg {
+    margin: 0 !important;
+  }
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  margin-top: 3px;
+  background: color(gray, 80);
+  border: 1px solid color(gray, 60);
+  display: none;
+  border-radius: 1em;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    border-radius: inherit;
+  }
+
+  li {
+    padding: 1em;
+    cursor: pointer;
+
+    &:hover {
+      background: color(gray, 90);
+    }
+
+    &:first-child {
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+    }
+
+    &:last-child {
+      border-bottom-left-radius: inherit;
+      border-bottom-right-radius: inherit;
+    }
+  }
+}
+
+.wrapper:focus-within,
+.wrapper:active {
+  .suggestions {
+    display: block;
+  }
+}

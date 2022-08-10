@@ -17,7 +17,7 @@ import cs from "classnames";
 
 import Button from "../../components/Button/Button";
 
-import css from "./KeyValueList.scss";
+import css from "./KeyValueList.module.scss";
 
 export default function KeyValueList({
   kvPairs,

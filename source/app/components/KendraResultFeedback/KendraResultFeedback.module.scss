@@ -1,0 +1,40 @@
+@import '../../styles/shared/index';
+
+.button {
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  width: 35px;
+  height: 35px;
+  position: relative;
+  border-radius: 50%;
+  border: 1.2px solid currentColor;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.2;
+  margin-left: 10px;
+
+  svg {
+    height: 100%;
+    width: 100%;
+  }
+
+  path {
+    fill: currentColor;
+  }
+
+  &:hover {
+    opacity: .6;
+  }
+
+  &:disabled {
+    opacity: 0.2;
+  }
+
+  &.selected {
+    opacity: 1;
+    background: $link-blue;
+  }
+}

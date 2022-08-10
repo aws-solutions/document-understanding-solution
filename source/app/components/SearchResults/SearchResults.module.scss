@@ -1,0 +1,143 @@
+@import '../../styles/shared/index';
+
+.searchResults {
+  position: relative;
+  width: rem(800);
+  min-height: 300px;
+
+  > header {
+    &.comparing {
+      text-align: center;
+
+      h2 {
+        margin-bottom: 0;
+      }
+
+      p {
+        margin-top: 0;
+      }
+    }
+  }
+
+  svg {
+    display: inline-block;
+    margin-top: rem(-2);
+    margin-right: 0.5rem;
+    fill: color(gray, 30);
+  }
+
+  a {
+    display: block;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    border-radius: inherit;
+
+    &:hover,
+    &:focus {
+      outline: 0;
+    }
+
+
+    &:hover {
+      background-color: rgba(color(gray, 40), 0.2);
+    }
+
+    &:focus {
+      color: color(orange, 40);
+      background-color: color(gray, 90);
+      outline: 0;
+
+      svg {
+        fill: color(orange, 40);
+      }
+    }
+  }
+
+  @include media-grid(8) {
+    width: 100%;
+  }
+
+  @include media-grid(4) {
+    header {
+      margin-bottom: 0.5em;
+      flex-wrap: wrap;
+    }
+
+    svg {
+      transform: translateY(rem(4));
+    }
+  }
+}
+
+
+.resultItem {
+  border-radius: em(8);
+  background-color: color(gray, 80);
+
+  &:nth-child(even) {
+    background: color(gray, 70);
+  }
+
+  header {
+    display: flex;
+    margin-bottom: 0.25em;
+    align-items: center;
+  }
+
+  h3 {
+    font-size: 1.25em;
+    margin: 0;
+    padding-bottom: .25em;
+    color: $link-blue;
+  }
+}
+
+
+.count {
+  @include type-body-supplemental(color(gray, 20));
+  @include all-caps;
+  margin: rem(2) 0 0 auto;
+
+  @include media-grid(4) {
+    width: 100%;
+    margin: 0 0 0 rem(32);
+  }
+}
+
+.lines {
+  @include type-body-secondary(color(gray, 20));
+
+  li {
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+
+  @include media-grid(4) {
+    margin-left: 0;
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+
+.searchSummary {
+  @include type-body-supplemental(color(orange, 20));
+  @include all-caps;
+  margin: 0.5rem 0;
+  font-weight: 500;
+  line-height: 2;
+}
+
+.noContent {
+  @include no-content;
+  margin: 2em 0;
+}

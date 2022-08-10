@@ -18,7 +18,7 @@ import { reject, isNil } from 'ramda'
 
 import Button from '../components/Button/Button'
 
-import css from './error.scss'
+import css from './error.module.scss'
 
 Error.propTypes = {
   statusCode: PropTypes.number,

@@ -65,7 +65,7 @@ Metadata:
 Mappings:
   BuildEnv:
     Images:
-      Standard3: "aws/codebuild/amazonlinux2-x86_64-standard:2.0"
+      Standard5: "aws/codebuild/standard:5.0"
     CDK:
       StackName: "DUS"
       ClientStackName: "DUSClient"
@@ -178,10 +178,10 @@ Resources:
           phases:
             install:
               runtime-versions:
-                nodejs: 12
-                ruby: 2.6
+                nodejs: 14
+                ruby: 2.7
               commands:
-                - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:2.0"
+                - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:4.0"
                 - node --version
                 - echo "Installing jq package"
                 - wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
@@ -191,8 +191,8 @@ Resources:
                 - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
                 - python get-pip.py
                 - echo "Installing moto for running tests"
-                - pip install moto==1.3.14
-                - npm install -g cdk@1.42.0
+                - pip install moto==2.3.2
+                - npm install -g cdk@1.158.0
                 - cdk --version
                 - npm install -g typescript
                 - tsc --version
@@ -219,8 +219,8 @@ Resources:
             files:
               - '**/*'
       Environment:
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: !FindInMap [BuildEnv, Images, Standard3]
+        ComputeType: BUILD_GENERAL1_MEDIUM
+        Image: !FindInMap [BuildEnv, Images, Standard5]
         Type: LINUX_CONTAINER
         EnvironmentVariables:
           - Name: BUILD_OUTPUT_BUCKET
@@ -252,6 +252,10 @@ Resources:
         rules_to_suppress:
           - id: W58
             reason: "Customer resource needs no additional permission to log to Cloudwatch"
+          - id: W92
+            reason: "Impossible for us to define the correct concurrency for clients"
+          - id: W89
+            reason: "No VPC used in this solution, therefore no need to deploy lambda inside a VPC"
     Properties:
       Description: "Document Understanding Solution CICD helper"
       Code:
@@ -272,7 +276,7 @@ Resources:
             ],
           ]
       Handler: index.handler
-      Runtime: nodejs12.x
+      Runtime: nodejs16.x
       Role: !GetAtt CICDHelperRole.Arn
       Timeout: 900
       MemorySize: 2048
@@ -601,6 +605,7 @@ Resources:
                           "s3:GetBucketAcl",
                           "s3:PutBucketAcl",
                           "s3:GetEncryptionConfiguration",
+                          "s3:PutBucketTagging",
                           "s3:PutEncryptionConfiguration",
                           "s3:PutPublicAccessBlock",
                           "s3:GetPublicAccessBlock",
@@ -930,7 +935,7 @@ Outputs:
     Value: !Sub ${CodeCommitRepository}
   PipelineBuildImage:
     Description: "Image used to build this pipeline"
-    Value: !FindInMap [BuildEnv, Images, Standard3]
+    Value: !FindInMap [BuildEnv, Images, Standard5]
   PipelineS3Artifacts:
     Description: "Bucket for CodePipeline to store build artifacts"
     Value: !Ref ArtifactS3Bucket

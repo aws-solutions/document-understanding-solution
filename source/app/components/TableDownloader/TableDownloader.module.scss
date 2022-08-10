@@ -1,0 +1,14 @@
+@import '../../styles/shared/index';
+
+.button {
+  position: absolute;
+  z-index: 5;
+  opacity: 0;
+  margin-left: -2px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+mark:hover + .button, .button:hover {
+  opacity: 1;
+}

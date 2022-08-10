@@ -25,7 +25,7 @@ import {
 } from "../../store/entities/meta/actions";
 import { getDocumentSearchQuery } from "../../store/entities/meta/selectors";
 
-import css from "./DocumentSearchBar.scss";
+import css from "./DocumentSearchBar.module.scss";
 
 DocumentSearchBar.propTypes = {
   className: PropTypes.string,

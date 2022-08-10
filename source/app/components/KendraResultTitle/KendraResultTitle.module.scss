@@ -1,0 +1,17 @@
+@import '../../styles/shared/index';
+
+.title {
+  font-size: 1.25em;
+  margin: 0;
+  padding-bottom: .25em;
+}
+
+.header {
+  a {
+    text-decoration: none;
+  }
+
+  h3 {
+    color: $link-blue;
+  }
+}

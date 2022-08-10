@@ -19,7 +19,7 @@ import cs from 'classnames'
 
 import { groupWith } from 'ramda'
 
-import css from './TableResults.scss'
+import css from './TableResults.module.scss'
 
 
 export default function TableResults({

@@ -1,0 +1,97 @@
+@import '../../styles/shared/index';
+
+// List
+.list {
+  display: block;
+  width: span(8);
+  margin: 0 auto;
+
+  a {
+    display: flex;
+    padding: em(16) em(36) em(15);
+    color: $type-color-default;
+    text-decoration: none;
+    border-radius: inherit;
+    cursor: pointer;
+    align-items: center;
+
+    &:hover {
+      background-color: rgba(color(gray, 40), 0.2);
+    }
+
+    &:focus {
+      color: color(orange, 40);
+      background-color: color(gray, 90);
+      outline: 0;
+
+      svg {
+        fill: color(orange, 40);
+      }
+    }
+  }
+
+  li {
+    border-radius: em(8);
+    background-color: color(gray, 80);
+
+    &:nth-child(even) {
+      background: color(gray, 70);
+    }
+  }
+
+  svg {
+    @include relative(-1px);
+    vertical-align: middle;
+    fill: color(gray, 30);
+  }
+
+
+  @include media-grid(4) {
+    border-right: 0;
+    border-left: 0;
+
+    a {
+      padding-right: $gutter-site-4col;
+      padding-left: $gutter-site-4col;
+    }
+  }
+}
+
+
+.listHeader {
+  display: flex;
+  padding: em(6) em(36) em(5);
+  background: color(gray, 90);
+  border-radius: em(8);
+
+  span {
+    @include type-body-supplemental();
+  }
+
+  @include media-grid(4) {
+    padding-right: $gutter-site-4col;
+    padding-left: $gutter-site-4col;
+  }
+}
+
+.leftSpace {
+  flex: 0 0 24px;
+  margin-right: em(12);
+}
+
+.nameHeader {
+  flex: 1 1 0px;
+  margin-right: rem(10);
+}
+
+.typeHeader {
+  flex: 0 0 rem(100);
+}
+
+.statusHeader {
+  flex: 0 0 rem(100);
+}
+
+.rightSpace {
+  flex: 0 0 24px;
+}

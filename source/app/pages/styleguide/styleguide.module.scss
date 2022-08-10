@@ -1,0 +1,104 @@
+@import '../../styles/shared/index';
+
+.colors {
+  padding: 0;
+  margin: 0 -1%;
+  list-style-type: none;
+
+  li {
+    position: relative;
+    display: inline-block;
+    width: 18%;
+    padding-top: 12%;
+    margin: 1%;
+    border: 1px solid color(gray, 40);
+
+    @include media('<tabletPortrait') {
+      width: 31%;
+      padding-top: 24%;
+    }
+
+    @include media('<mobileLandscape') {
+      width: 48%;
+      padding-top: 35%;
+    }
+  }
+
+  span {
+    @include type-body-supplemental();
+    @include absolute(null, 0, 0, 0);
+    display: block;
+    padding: 0.5em 1em;
+    background-color: color(white);
+    border-top: 1px solid color(gray, 40);
+  }
+}
+
+// Generate class names for each color. Only for use in the styleguide.
+@each $palette, $tones in $palettes {
+  @each $tone, $color in $tones {
+    .color-#{"" + $palette}-#{$tone} {
+      background: $color;
+    }
+  }
+}
+
+
+.lead {
+  @include type-body-lead();
+}
+
+.primary {
+  @include type-body-primary();
+}
+
+.supplemental {
+  @include type-body-secondary();
+}
+
+.small {
+  @include type-body-supplemental();
+}
+
+
+.grid {
+  height: 20rem;
+  background: susy-svg-grid($grid-12col, color(orange)) no-repeat scroll;
+
+  @include media-grid(8) {
+    background-image: susy-svg-grid($grid-8col, color(blue));
+  }
+
+  @include media-grid(4) {
+    background-image: susy-svg-grid($grid-4col, color(purple));
+  }
+}
+
+
+.buttons {
+  > div {
+    display: inline-block;
+    width: span(6);
+    margin-right: gutter();
+    margin-bottom: gutter();
+    vertical-align: top;
+
+    &:nth-child(odd) {
+      margin-right: 0;
+    }
+  }
+
+  a,
+  button {
+    margin-right: 1em;
+  }
+}
+
+
+.loading {
+  position: relative;
+  min-height: 200px;
+  padding: 1em;
+  background: color(white);
+  border: 1px solid color(gray, 50);
+}
