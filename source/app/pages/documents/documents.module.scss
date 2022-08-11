@@ -1,0 +1,179 @@
+@import '../../styles/shared/index';
+
+.documents {
+  position: relative;
+  min-height: rem(320);
+  padding-bottom: rem(32);
+}
+
+.list {
+  @include media-grid(8) {
+    width: 100%;
+  }
+
+  @include media-grid(4) {
+    @include full-bleed;
+    width: auto;
+  }
+}
+
+.intro {
+  @include full-bleed;
+  @include site-gutters();
+  background: color(gray, 90);
+  padding-bottom: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  min-height: 102px;
+  z-index: 300;
+
+  > * {
+    width: 100%;
+  }
+
+  h3 {
+    max-width: span(8);
+    margin: 0;
+    margin-top: 2em;
+
+    + * {
+      margin-bottom: 3em;
+    }
+
+    @include media-grid(8) {
+      max-width: 100%;
+    }
+  }
+}
+
+.searchBar {
+  max-width: span(8);
+
+  @include media-grid(8) {
+    max-width: 100%;
+  }
+}
+
+.loadingItems {
+  display: flex;
+  height: 10em;
+  align-items: center;
+  justify-content: center;
+}
+
+.sentinel {
+  height: 6em;
+  margin-top: 4em;
+}
+
+.listDetails {
+  @include full-bleed();
+  @include site-gutters();
+  padding-top: 1em;
+  padding-bottom: 1em;
+  background-color: rgba(color(gray, 80), 0.9);
+  transition: none;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  h3 {
+    width: span(8);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+
+    @include media-grid(8) {
+      width: 100%;
+    }
+  }
+
+  p {
+    width: span(8);
+    margin: 0 auto;
+
+    @include media-grid(8) {
+      width: 100%;
+    }
+  }
+
+  .fileCount {
+    @include type-body-supplemental(color(orange, 20));
+    @include all-caps;
+    font-weight: 500;
+    float: right;
+  }
+
+  a {
+    color: $link-blue;
+  }
+
+  @include media-grid(8) {
+    p {
+      width: 100%;
+    }
+  }
+}
+
+.timeUploaded {
+  margin-bottom: rem(4);
+  color: color(gray, 60);
+
+  a:focus &,
+  a:hover & {
+    color: color(gray, 20);
+  }
+}
+
+.timeProcessed {
+  color: color(gray, 50);
+
+  a:focus &,
+  a:hover & {
+    color: color(gray, 10);
+  }
+}
+
+.processing {
+  color: color(gray, 50);
+
+  a:focus &,
+  a:hover & {
+    color: color(orange, 40);
+  }
+}
+
+.searchResultContainer {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  justify-content: center;
+
+  > * {
+    flex: 0 1 auto;
+    overflow: hidden;
+  }
+
+  > * + * {
+    margin-left: rem(16);
+  }
+}
+
+.compareButton {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 4em;
+  color: $link-blue;
+  font-style: italic;
+
+  img {
+    position: relative;
+    top: .2em;
+    margin-right: .5em;
+  }
+}

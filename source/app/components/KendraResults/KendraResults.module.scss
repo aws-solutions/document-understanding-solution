@@ -1,0 +1,45 @@
+@import '../../styles/shared/index';
+
+.base {
+  width: rem(800);
+}
+
+.doubleWidth {
+  width: rem(1600);
+}
+
+.resultContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  > * {
+    flex: 0 1 rem(800);
+    overflow: hidden;
+  }
+
+  > * + * {
+    margin-left: rem(40);
+  }
+}
+
+.topNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  > header {
+    &.comparing {
+      width: 100%;
+      text-align: center;
+
+      h2 {
+        margin-bottom: 0;
+      }
+
+      p {
+        margin-top: 0;
+      }
+    }
+  }
+}

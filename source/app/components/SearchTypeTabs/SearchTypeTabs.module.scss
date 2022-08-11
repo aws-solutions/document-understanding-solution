@@ -1,0 +1,37 @@
+@import '../../styles/shared/index';
+
+$header-bg-color: color(gray, 90);
+
+.wrapper {
+  @include full-bleed;
+  background: $header-bg-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  top: 102px;
+  z-index: 206;
+}
+
+.tab {
+  flex: 0 1 20%;
+  white-space: nowrap;
+  padding-left: 1em;
+  padding-right: 1em;;
+  padding-top: 1em;
+  padding-bottom: 0.5em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top-left-radius: .5em;
+  border-top-right-radius: .5em;
+  cursor: pointer;
+
+  span {
+    font-size: 0.7em;
+  }
+}
+
+.selected {
+  background-color: color(gray, 80);
+}

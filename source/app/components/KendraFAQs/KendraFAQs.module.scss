@@ -1,0 +1,32 @@
+@import '../../styles/shared/index';
+
+.faqs {
+  border: 1px solid color(gray, 60);
+  background: color(gray, 70);
+  border-radius: 1em;
+  margin-top: 2em;
+
+  > header {
+    padding: 1em 1.5em;
+  }
+
+  h2 {
+    font-size: 1em;
+    color: color(gray, 60);
+    margin: 0;
+    padding: 0;
+  }
+
+  > header a {
+    color: $link-blue;
+    margin-left: 1em;
+    font-style: italic;
+    font-weight: normal;
+
+    img {
+      position: relative;
+      top: .2em;
+      margin-right: .5em;
+    }
+  }
+}

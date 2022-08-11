@@ -17,7 +17,7 @@ import { groupWith } from 'ramda'
 import cs from 'classnames'
 
 import Button from '../Button/Button'
-import css from './DocumentPreview.scss'
+import css from './DocumentPreview.module.scss'
 
 
 export default function DocumentPreview({

@@ -1,0 +1,116 @@
+@import '../../styles/shared/index';
+
+.document {
+  position: relative;
+  height: 100%;
+  min-height: rem(300);
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs,
+.tabs nav {
+  margin-bottom: 3em;
+}
+
+.tabWrapper {
+  @include full-bleed;
+  @include site-gutters;
+  background: color(gray, 95);
+}
+
+// Search Bar
+.searchBarWrapper {
+  width: span(8);
+  margin: 0 auto;
+
+  @include media-grid(8) {
+    width: span(6, $grid-8col);
+  }
+
+  @include media-grid(4) {
+    width: 100%;
+  }
+}
+
+.downloadButtons {
+  > * + * {
+    margin-left: rem(10);
+  }
+}
+
+.tabSourceViewer {
+  flex: 1;
+  margin: 0 auto;
+  transition: width 300ms ease;
+}
+
+.downloadRedacted {
+  margin-left: rem(5);
+}
+
+.content {
+  @include full-bleed;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  position: relative;
+}
+
+.tabWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.searchBar {
+  flex: 1;
+  // margin-right: rem(20);
+
+  + * {
+    margin-left: rem(20);
+  }
+}
+
+.searchBarWrapper {
+  transition: flex-basis 300ms ease;
+  flex: 0 0 0px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  &.visible {
+    flex: 0 0 64px;
+  }
+}
+
+.trackBorder{
+  border-style: dotted;
+}
+.sidebar {
+  transition: flex-basis 300ms ease, opacity 300ms ease;
+  flex: 0 0 0px;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  margin: 0;
+  background: color(gray, 70);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+
+
+  &.visible {
+    opacity: 1;
+    flex: 0 0 30%;
+
+  }
+
+  &.wide {
+    flex: 0 0 50%;
+  }
+}

@@ -1,0 +1,18 @@
+@import '../../styles/shared/index';
+
+.resultList {
+  display: flex;
+  flex-direction: column;
+
+  > h3 {
+    text-align: center;
+  }
+}
+
+.searchSummary {
+  @include type-body-supplemental(color(orange, 20));
+  @include all-caps;
+  margin: 0.5rem 0;
+  font-weight: 500;
+  line-height: 2;
+}

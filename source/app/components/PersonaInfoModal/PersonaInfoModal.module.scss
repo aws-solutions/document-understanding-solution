@@ -1,0 +1,85 @@
+@import '../../styles/shared/index';
+
+.actions {
+  text-align: right;
+}
+
+.personas {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin: 0 1em;
+
+  > * {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0px;
+    min-width: 100px;
+    max-width: 200px;
+    margin: 0 1em;
+    overflow: hidden;
+    align-items: center;
+    font-size: 0.8em;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  img {
+    max-width: 100px;
+    margin-bottom: .5em;
+  }
+
+  h4 {
+    @include type-heading-h5(inherit);
+    margin-bottom: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.notes {
+  font-style: italic;
+  margin-top: 1em;
+}
+
+.stepLabel {
+  float: left;
+  margin-right: 1em;
+  font-size: 1.25em;
+  font-weight: bold;
+}
+
+.sampleQueries {
+  list-style-type: none;
+
+  li {
+    cursor: pointer;
+    color: color(blue, 20)
+  }
+}
+
+.toggleAPI {
+  margin: 1em -1.5em -1.5em;
+  padding: 1.5em;
+  color: $link-blue;
+  cursor: pointer;
+  font-weight: bold;
+  border-top: 1px solid color(gray, 40);
+
+  &:before {
+    content: '▶\fe0e';
+    margin-right: 1em;
+  }
+
+  &.expanded:before {
+    content: '▼'
+  }
+}
+
+.learnMore {
+  a {
+    color: $link-blue;
+  }
+}

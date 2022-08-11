@@ -24,7 +24,7 @@ import KendraHighlightedText from "../KendraHighlightedText/KendraHighlightedTex
 import KendraResultFooter from "../KendraResultFooter/KendraResultFooter";
 import TooltipButton from "../TooltipButton/TooltipButton";
 
-import styles from "./KendraTopResults.scss";
+import styles from "./KendraTopResults.module.scss";
 import cs from "classnames";
 
 function getTopAnswer(text) {

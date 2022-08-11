@@ -1,0 +1,12 @@
+@import '../../styles/shared/index';
+
+// Highlight mark wrapper
+.match {
+  font-weight: 500;
+  background-color: color(orange, 30);
+  color: #fff;
+  margin: -1px -2px;
+  padding: 1px 2px;
+  border-radius: 3px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}

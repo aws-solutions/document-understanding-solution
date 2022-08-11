@@ -1,0 +1,94 @@
+@import '../../styles/shared/index';
+
+$card-palettes: (
+  black: color(gray, 80),
+  blue: color(blue, 20),
+  teal: color(teal, 20),
+  purple: color(purple, 20),
+);
+
+// Card
+.card {
+  display: flex;
+  flex-direction: column;
+  padding: rem(25);
+  padding-top: rem(35);
+  margin: rem(10);
+  cursor: pointer;
+  background-color: color(gray, 90);
+  border: 1px solid color(gray, 60);
+  border-radius: 10px;
+  box-shadow: 0 0 2px rgba(color(black), 0.05);
+  align-items: center;
+  transition: all 250ms ease;
+
+  &:focus,
+  &:hover {
+    border-color: color(gray, 60);
+    outline: 0;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(color(black), 0.15);
+  }
+
+  @include media-grid(4) {
+    text-align: center;
+    flex-direction: column;
+  }
+}
+
+
+// Title
+.title {
+  @include type-heading-h4();
+  margin: 0;
+  text-align: center;
+
+  .loud & {
+    @include type-heading-h2();
+  }
+
+  .quiet & {
+    @include type-heading-h5();
+  }
+}
+
+// Subtitle
+.subtitle {
+  margin: em(4) 0 0;
+  text-align: center;
+
+  .loud & {
+    @include type-body-lead();
+    margin-top: 0;
+  }
+
+  .quiet & {
+    @include type-body-secondary();
+    margin-top: 0;
+  }
+}
+
+// Icon
+.icon {
+  margin-bottom: rem(24);
+  font-size: 0;
+
+  @include media-grid(4) {
+    margin-right: 0;
+    margin-bottom: rem(24);
+  }
+}
+
+// Palettes
+@each $palette, $color in $card-palettes {
+  .#{$palette} {
+    &:focus,
+    &:hover {
+      border-color: $color;
+    }
+
+    .title {
+      color: $color;
+    }
+  }
+}

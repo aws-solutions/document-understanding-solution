@@ -1,0 +1,10 @@
+@import '../styles/shared/index';
+
+.error {
+  min-height: rem(300);
+  text-align: center;
+}
+
+.message {
+  @include no-content;
+}
