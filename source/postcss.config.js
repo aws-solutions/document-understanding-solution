@@ -12,8 +12,6 @@
  *  and limitations under the License.                                                                                *
  *********************************************************************************************************************/
 
-const autoprefixer = require('autoprefixer')
-
 module.exports = {
-  plugins: [autoprefixer()],
+  plugins: ['autoprefixer'],
 }
