@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- update `certifi` to 2022.12.07
-- update `query-string` to 7.1.3
+- Node and python library updates
+- remove unused files
 
 ## [1.0.6] - 2022-11-15
 
