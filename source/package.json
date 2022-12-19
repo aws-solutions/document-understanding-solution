@@ -81,7 +81,7 @@
     "next-redux-wrapper": "5.0.0",
     "node-fetch": "^3.2.10",
     "normalizr": "^3.6.2",
-    "query-string": "^7.1.1",
+    "query-string": "^7.1.3",
     "ramda": "^0.28.0",
     "react": "17.0.2",
     "react-dom": "18.2.0",
