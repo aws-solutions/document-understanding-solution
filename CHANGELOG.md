@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - 2023-02-13
+
+### Fixed
+
+- AWS CodePipeline role permissions missing `sns:TagResource` causing the AWS CodeDeploy to fail
+
+## [1.0.8] - 2023-01-09
+
+### Changed
+
+- Node module updates
+
+## [1.0.7] - 2022-12-12
+
+### Changed
+
+- Node and python library updates
+- remove unused files
+
 ## [1.0.6] - 2022-11-15
 
 ### Changed

@@ -820,7 +820,8 @@ Resources:
                           "sns:SetTopicAttributes",
                           "sns:SetSubscriptionAttributes",
                           "sns:Subscribe",
-                          "sns:Unsubscribe"
+                          "sns:Unsubscribe",
+                          "sns:TagResource"
                         ]
                     },
                     {
