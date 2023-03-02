@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] - 2023-03-06
+
+### Added
+- Support for GovCloud deployment. Note: because of the absence of Amazon CloudFront in GovCloud, the deployment would need 
+setting up a webserver outside of the deployment and copying the client app (UI) to the webserver resource for the front-end 
+to work.
+
+### Fixed
+- Bug fix - address AWS CodePipeline and hence deployment failure because of an incorrect option in the `aws logs` API call
+
 ## [1.0.9] - 2023-02-13
 
 ### Fixed

@@ -170,7 +170,7 @@ Resources:
       Name: !Sub ${CodeCommitRepository}-CDK
       Description: "CDK project to deploy custom components for document understanding"
       ServiceRole: !Sub ${CodeBuildRole.Arn}
-      EncryptionKey: !Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3
+      EncryptionKey: !Sub arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3
       Source:
         Type: CODEPIPELINE
         BuildSpec: |
@@ -362,10 +362,12 @@ Resources:
               - !Join [
                   "",
                   [
-                    "arn:aws:logs:",
+                    "arn:",
+                    !Ref "AWS::Partition",
+                    ":logs:",
                     Ref: "AWS::Region",
                     ":",
-                    Ref: "AWS::AccountId",
+                    !Ref "AWS::AccountId",
                     ":log-group:/aws/lambda/",
                     !Ref CICDHelper,
                     ":*",
@@ -387,14 +389,14 @@ Resources:
             Action:
               - "apigateway:Delete*"
             Resource:
-              - !Sub "arn:aws:apigateway:${AWS::Region}::*"
+              - !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}::*"
           - Effect: "Allow"
             Action:
               - "cloudformation:DeleteStack"
               - "cloudformation:Describe*"
               - "cloudformation:Delete*"
             Resource:
-              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "cognito-idp:AdminDeleteUser"
@@ -402,32 +404,32 @@ Resources:
               - "cognito-idp:DeleteUserPool"
               - "cognito-idp:DeleteUserPoolClient"
             Resource:
-              - !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:cognito-idp:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "cognito-identity:DeleteIdentityPool"
               - "cognito-identity:SetIdentityPoolRoles"
             Resource:
-              - !Sub "arn:aws:cognito-identity:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:cognito-identity:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "dynamodb:DeleteTable"
               - "dynamodb:Describe*"
             Resource:
-              - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "es:DeleteElasticsearchDomain"
               - "es:DescribeElasticsearchDomain"
             Resource:
-              - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*"
+              - !Sub "arn:${AWS::Partition}:es:${AWS::Region}:${AWS::AccountId}:domain/*"
           - Effect: "Allow"
             Action:
               - "iam:Delete*"
               - "iam:Describe*"
               - "iam:DetachRolePolicy"
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "lambda:GetEventSourceMapping"
@@ -437,7 +439,7 @@ Resources:
               - "lambda:DeleteLayerVersion"
               - "lambda:DeleteEventSourceMapping"
             Resource:
-              - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "lambda:GetEventSourceMapping"
@@ -449,19 +451,19 @@ Resources:
               - "sns:GetTopicAttributes"
               - "sns:Unsubscribe"
             Resource:
-              - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "sqs:SetQueueAttributes"
               - "sqs:DeleteQueue"
             Resource:
-              - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:*"
           - Effect: "Allow"
             Action:
               - "s3:DeleteBucketPolicy"
               - "s3:DeleteBucket"
             Resource:
-              - !Sub "arn:aws:s3:::*"
+              - !Sub "arn:${AWS::Partition}:s3:::*"
           - Effect: "Allow"
             Action:
               - "cloudfront:Get*"
@@ -477,7 +479,9 @@ Resources:
               - !Join [
                   "",
                   [
-                    "arn:aws:s3:::",
+                    "arn:",
+                    !Ref "AWS::Partition",
+                    ":s3:::",
                     !FindInMap ["SourceCode", "Source", "S3Bucket"],
                     "-",
                     !Ref "AWS::Region",
@@ -510,7 +514,7 @@ Resources:
                 "Statement": [
                     {
                         "Action": [ "s3:GetBucketVersioning" ],
-                        "Resource": [ "arn:aws:s3:::${ArtifactS3Bucket}" ],
+                        "Resource": [ "arn:${AWS::Partition}:s3:::${ArtifactS3Bucket}" ],
                         "Effect": "Allow"
                     },
                     {
@@ -520,7 +524,7 @@ Resources:
                             "S3:GetObjectVersion"
                         ],
                         "Resource": [
-                            "arn:aws:s3:::${ArtifactS3Bucket}/*"
+                            "arn:${AWS::Partition}:s3:::${ArtifactS3Bucket}/*"
                         ],
                         "Effect": "Allow"
                     },
@@ -532,7 +536,7 @@ Resources:
                             "codecommit:List*",
                             "codecommit:GitPull"
                         ],
-                        "Resource": "arn:aws:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepository}",
+                        "Resource": "arn:${AWS::Partition}:codecommit:${AWS::Region}:${AWS::AccountId}:${CodeCommitRepository}",
                         "Effect": "Allow"
                     },
                     {
@@ -541,7 +545,7 @@ Resources:
                             "codebuild:StartBuild"
                         ],
                         "Resource": [
-                            "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuildCDK}"
+                            "arn:${AWS::Partition}:codebuild:${AWS::Region}:${AWS::AccountId}:project/${CodeBuildCDK}"
                         ],
                         "Effect": "Allow"
                     }
@@ -571,7 +575,7 @@ Resources:
                 "Statement": [
                     {
                         "Effect": "Allow",
-                        "Resource": [ "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*" ],
+                        "Resource": [ "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:*" ],
                         "Action": [
                           "logs:CreateLogGroup",
                           "logs:CreateLogStream",
@@ -585,7 +589,7 @@ Resources:
                     {
                         "Effect": "Allow",
                         "Resource": [
-                            "arn:aws:s3:::*"
+                            "arn:${AWS::Partition}:s3:::*"
                         ],
                         "Action": [
                           "s3:DeleteBucket",
@@ -623,7 +627,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:apigateway:${AWS::Region}::*",
+                        "Resource": "arn:${AWS::Partition}:apigateway:${AWS::Region}::*",
                         "Action": [
                           "apigateway:Post",
                           "apigateway:Get*",
@@ -645,7 +649,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:cloudfront::${AWS::AccountId}:distribution/*",
+                        "Resource": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/*",
                         "Action": [
                             "cloudfront:CreateDistribution",
                             "cloudfront:DeleteDistribution",
@@ -656,7 +660,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:*",
+                        "Resource": "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:*",
                         "Action": [
                             "cloudformation:GetTemplate",
                             "cloudformation:DescribeStacks",
@@ -691,7 +695,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:*",
+                        "Resource": "arn:${AWS::Partition}:dynamodb:${AWS::Region}:${AWS::AccountId}:*",
                         "Action": [
                           "dynamodb:CreateTable",
                           "dynamodb:DeleteTable",
@@ -741,7 +745,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*",
+                        "Resource": "arn:${AWS::Partition}:es:${AWS::Region}:${AWS::AccountId}:domain/*",
                         "Action": [
                           "es:Describe*",
                           "es:CreateElasticsearchDomain",
@@ -754,7 +758,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:iam::${AWS::AccountId}:*",
+                        "Resource": "arn:${AWS::Partition}:iam::${AWS::AccountId}:*",
                         "Action": [
                           "iam:PassRole",
                           "iam:CreateRole",
@@ -808,7 +812,7 @@ Resources:
                     },
                     {
                         "Effect": "Allow",
-                        "Resource": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*",
+                        "Resource": "arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:*",
                         "Action": [
                           "sns:AddPermission",
                           "sns:CreateTopic",
@@ -834,7 +838,7 @@ Resources:
                           "sqs:ListQueues",
                           "sqs:SetQueueAttributes"
                         ],
-                        "Resource": "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*",
+                        "Resource": "arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:*",
                         "Effect": "Allow"
                     },
                     {
@@ -847,7 +851,7 @@ Resources:
                           "states:TagResource",
                           "states:UntagResource"
                         ],
-                        "Resource": "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*",
+                        "Resource": "arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:stateMachine:*",
                         "Effect": "Allow"
                     }
                 ]
@@ -875,7 +879,9 @@ Resources:
                   !Join [
                     "",
                     [
-                      "arn:aws:codepipeline:",
+                      "arn:",
+                      !Ref "AWS::Partition",
+                      ":codepipeline:",
                       !Ref "AWS::Region",
                       ":",
                       !Ref "AWS::AccountId",
@@ -898,7 +904,9 @@ Resources:
           - !Join [
               "",
               [
-                "arn:aws:codecommit:",
+                "arn:",
+                !Ref "AWS::Partition",
+                ":codecommit:",
                 !Ref "AWS::Region",
                 ":",
                 !Ref "AWS::AccountId",
@@ -919,7 +927,9 @@ Resources:
             !Join [
               "",
               [
-                "arn:aws:codepipeline:",
+                "arn:",
+                !Ref "AWS::Partition",
+                ":codepipeline:",
                 !Ref "AWS::Region",
                 ":",
                 !Ref "AWS::AccountId",
