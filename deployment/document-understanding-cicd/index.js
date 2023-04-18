@@ -161,7 +161,7 @@ exports.handler = async (event, context) => {
 
             Logger.log(
               Logger.levels.ROBUST,
-              `Commit successful, resp is ${resp}`
+              `Commit successful, resp is ${JSON.stringify(resp)}`
             );
 
             parentCommitId = resp.commitId;
@@ -170,15 +170,15 @@ exports.handler = async (event, context) => {
           } catch (ex) {
             Logger.log(
               Logger.levels.ROBUST,
-              `It failed, continuing, error is: ${ex}`
+              `It failed on ${JSON.stringify(
+                codeCommitParams
+              )}, \n continuing, error is: ${ex}`
             );
 
             resp = "failed";
             // Avoiding throttling
             await new Promise((r) => setTimeout(r, 5000));
           }
-
-          // parentCommitId = resp.commitId;
         }
 
         const _responseData = {
