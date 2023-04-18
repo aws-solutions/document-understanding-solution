@@ -622,7 +622,8 @@ Resources:
                           "s3:GetBucketWebsite",
                           "s3:PutBucketWebsite",
                           "s3:PutLifecycleConfiguration",
-                          "s3:GetLifecycleConfiguration"
+                          "s3:GetLifecycleConfiguration",
+                          "s3:PutBucketOwnershipControls"
                           ]
                     },
                     {
