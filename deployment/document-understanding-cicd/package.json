@@ -6,8 +6,8 @@
     "name": "aws-solutions-builder"
   },
   "dependencies": {
-    "aws-sdk": "*",
     "adm-zip": "^0.4.13",
+    "aws-sdk": "^2.1354.0",
     "logger": "file:../logger"
   },
   "main": "index.js",
