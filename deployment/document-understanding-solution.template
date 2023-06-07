@@ -182,6 +182,7 @@ Resources:
                 ruby: 2.7
               commands:
                 - echo "This buildspec is based on image - aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+                - n 16
                 - node --version
                 - echo "Installing jq package"
                 - wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
@@ -192,7 +193,7 @@ Resources:
                 - python get-pip.py
                 - echo "Installing moto for running tests"
                 - pip install moto==2.3.2
-                - npm install -g cdk@1.158.0
+                - npm install -g cdk@1.203.0
                 - cdk --version
                 - npm install -g typescript
                 - tsc --version

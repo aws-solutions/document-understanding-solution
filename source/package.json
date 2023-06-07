@@ -48,28 +48,28 @@
     "test-client-build": "next build app"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigateway": "1.158.0",
-    "@aws-cdk/aws-cloudformation": "1.158.0",
-    "@aws-cdk/aws-cognito": "1.158.0",
-    "@aws-cdk/aws-dynamodb": "1.158.0",
-    "@aws-cdk/aws-ec2": "1.158.0",
-    "@aws-cdk/aws-elasticsearch": "1.158.0",
-    "@aws-cdk/aws-events": "1.158.0",
-    "@aws-cdk/aws-iam": "1.158.0",
-    "@aws-cdk/aws-lambda": "1.158.0",
-    "@aws-cdk/aws-lambda-event-sources": "1.158.0",
-    "@aws-cdk/aws-logs": "1.158.0",
-    "@aws-cdk/aws-s3": "1.158.0",
-    "@aws-cdk/aws-s3-deployment": "1.158.0",
-    "@aws-cdk/aws-s3-notifications": "1.158.0",
-    "@aws-cdk/aws-sns": "1.158.0",
-    "@aws-cdk/aws-sqs": "1.158.0",
-    "@aws-cdk/core": "1.158.0",
+    "@aws-cdk/aws-apigateway": "1.203.0",
+    "@aws-cdk/aws-cloudformation": "1.203.0",
+    "@aws-cdk/aws-cognito": "1.203.0",
+    "@aws-cdk/aws-dynamodb": "1.203.0",
+    "@aws-cdk/aws-ec2": "1.203.0",
+    "@aws-cdk/aws-elasticsearch": "1.203.0",
+    "@aws-cdk/aws-events": "1.203.0",
+    "@aws-cdk/aws-iam": "1.203.0",
+    "@aws-cdk/aws-lambda": "1.203.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.203.0",
+    "@aws-cdk/aws-logs": "1.203.0",
+    "@aws-cdk/aws-s3": "1.203.0",
+    "@aws-cdk/aws-s3-deployment": "1.203.0",
+    "@aws-cdk/aws-s3-notifications": "1.203.0",
+    "@aws-cdk/aws-sns": "1.203.0",
+    "@aws-cdk/aws-sqs": "1.203.0",
+    "@aws-cdk/core": "1.203.0",
     "@babel/helper-validator-identifier": "^7.18.6",
-    "@types/node": "^18.6.1",
-    "aws-amplify": "^4.3.28",
-    "aws-cdk": "1.158.0",
-    "aws-sdk": "^2.1354.0",
+    "@types/node": "20.2.5",
+    "aws-amplify": "^4.3.46",
+    "aws-cdk": "1.203.0",
+    "aws-sdk": "^2.1391.0",
     "classnames": "^2.3.1",
     "date-fns": "^1.30.1",
     "dotenv": "^16.0.1",
@@ -102,7 +102,7 @@
     "serialize-javascript": "^6.0.0",
     "short-uuid": "^4.2.0",
     "susy": "^3.0.7",
-    "typescript": "^4.7.4"
+    "typescript": "4.9.5"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.7",
@@ -115,5 +115,11 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "legally": "^3.5.10",
     "prettier": "^2.8.3"
+  },
+  "overrides": {
+    "fast-xml-parser": "4.2.4"
+  },
+  "resolutions": {
+    "fast-xml-parser": "4.2.4"
   }
 }
