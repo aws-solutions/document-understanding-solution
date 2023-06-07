@@ -62,7 +62,7 @@ exports.handler = async (event, context) => {
 
         Logger.log(
           Logger.levels.ROBUST,
-          "adding access permissions to Log Groups to Amazon ElasticSearch"
+          "adding access permissions to Log Groups to Amazon OpenSearch Service"
         );
 
         const _repo = process.env.CODECOMMIT_REPO;

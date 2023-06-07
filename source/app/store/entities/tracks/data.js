@@ -26,7 +26,7 @@ export const lensTrack = id => lensPath(['entities', 'tracks', id])
 const kendraModeDescription = `
 In this track, you can search through multiple documents and find information faster
 and more efficiently, using  traditional search based technologies such as Amazon 
-Elasticsearch Service (Amazon ES) as well using state-of-the-art machine learning and natural language enterprise search
+OpenSearch Service as well using state-of-the-art machine learning and natural language enterprise search
 with Amazon Kendra.
 
 Once you select a document, you'll be able to interact with Amazon Textract,
@@ -36,7 +36,7 @@ of document digitization and extraction of sensitive information.
 For demo purposes, the solution is pre-loaded with data related to certain medical conditions such as Diabetes and Kidney Disease. Ask a question related to these topics or use the suggested queries in the search bar and explore the different search capabilities.
 `
 const classicModeDescription = `In this track, you can search through multiple documents and find information faster
-and more efficiently, using Amazon Elasticsearch.
+and more efficiently, using Amazon OpenSearch Service.
 
 Once you select a document, you'll be able to interact with Amazon Textract,
 Amazon Comprehend, and Amazon Comprehend Medical to experience the power
