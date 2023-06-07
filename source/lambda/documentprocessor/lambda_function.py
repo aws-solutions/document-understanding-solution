@@ -39,7 +39,7 @@ def get_mime_type(request):
     Utilizes magic number checking via the 'filetype' library to determine if the files are of a valid type.
     """
     client = boto3.client('s3')
-    local_path = f"/tmp/{request['objectName'].rsplit('/',1)[-1]}"
+    local_path = f"/tmp/{request['objectName'].rsplit('/',1)[-1]}" # nosec B108
     client.download_file(request['bucketName'],
                          request['objectName'], local_path)
 

@@ -38,7 +38,7 @@ def generateDocumentID(bucketName, s3Client):
 def downloadDocument(bucketName, documentKey, filename, s3Client):
 
     # create a local file
-    datafile = open('/tmp/' + filename, 'wb')
+    datafile = open('/tmp/' + filename, 'wb') # nosec B108
 
     # system error
     if datafile == None:
@@ -58,7 +58,7 @@ def downloadDocument(bucketName, documentKey, filename, s3Client):
 def uploadDocument(bucketName, documentKey, filename, s3Client):
 
     # open local file
-    datafile = open('/tmp/' + filename, 'rb')
+    datafile = open('/tmp/' + filename, 'rb') # nosec B108
 
     if datafile == None:
         print("UploadDocument: failed to open local file: " + filename)

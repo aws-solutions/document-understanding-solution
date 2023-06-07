@@ -1,6 +1,6 @@
 # Document Understanding Solution
 
-DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical Amazon Elasticsearch and Amazon Kendra to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capaibilities.
+DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical Amazon OpenSearch Service and Amazon Kendra to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capabilities.
 
 ![img](./images/DUS_with_kendra.png)
 
@@ -84,7 +84,7 @@ The solution is set up to reserve lambda concurrency quota. This is both to limi
 ## Development Deploy
 
 The instructions below cover installation on Unix-based Operating systems like macOS and Linux.
-You can use a AWS Cloud9 enviornment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
+You can use a AWS Cloud9 environment or EC2 instance (recommended: t3.large or higher on Amazon Linux platform) to deploy the solution
 
 ### Requirements
 
@@ -160,7 +160,7 @@ The solution is set up to reserve lambda concurrency quota. This is both to limi
 - `yarn deploy:show` : displays the url of the client app
 - `yarn destroy` : tears down the CloudFormation backend and client stacks
 
-### Development Deploy Workflow and stacknaming
+### Development Deploy Workflow and stack naming
 
 The `package.json` script node `stackname` sets the stackname for the deploy commands. Throughout development it has been imperative to maintain multiple stacks in order to allow client app development and stack architecture development to work without creating breaking changes. When a new stackname is merged into develop it should have the most up to date deployments.
 
@@ -197,11 +197,11 @@ Run `yarn license-report` to generate a license report for all npm packages. See
 
 ### Classic Mode
 
-This is first release of the DUS solution. The major services included in this mode include Amazon Elasticsearch, Amazon Textract, Amazon Comprehend and Amazon Comprehend Medical that allow digitization, information extraction and indexing in DUS.
+This is first release of the DUS solution. The major services included in this mode include Amazon OpenSearch Service, Amazon Textract, Amazon Comprehend and Amazon Comprehend Medical that allow digitization, information extraction and indexing in DUS.
 
 ### Kendra-Enabled Mode
 
-In the Classic version, DUS supports searching/indexing of documents using Amazon Elasticsearch
+In the Classic version, DUS supports searching/indexing of documents using Amazon OpenSearch Service
 In the kendra enabled mode, Amazon Kendra is added as an additional capability and can be used for exploring features such as Semantic Search, Adding FAQs and Access Control Lists.
 Simply set the ` enableKendra: "true"` in package.json
 _Note:_ Amazon Kendra Developer edition is deployed as a part of this deployment.
@@ -226,13 +226,13 @@ In Kendra mode, you can also upload the corresponding access control list under 
 
 ## Cost
 
-- As you deploy this sample application, it creates different resources (Amazon S3 bucket, Amazon SQS Queue, Amazon DynamoDB table, Elasticsearch (and potenitally Amazon Kendra) clsuter(s) and AWS Lambda functions etc.). When you analyze documents, it calls different APIs (Amazon Textract , Amazon Comprehend and Amazon Comprehend Medical) in your AWS account. You will get charged for all the API calls made as part of the analysis as well as any AWS resources created as part of the deployment. To avoid any recurring charges, delete stack using "yarn destroy".
+- As you deploy this sample application, it creates different resources (Amazon S3 bucket, Amazon SQS Queue, Amazon DynamoDB table, OpenSearch Service (and potentially Amazon Kendra) cluster(s) and AWS Lambda functions etc.). When you analyze documents, it calls different APIs (Amazon Textract , Amazon Comprehend and Amazon Comprehend Medical) in your AWS account. You will get charged for all the API calls made as part of the analysis as well as any AWS resources created as part of the deployment. To avoid any recurring charges, delete stack using "yarn destroy".
 
 - The CDK Toolkit stacks that are created during deploy of this solution are not destroyed when you tear down the solution stacks. If you want to remove these resources, delete the S3 bucket that contains `staging-bucket` in the name, and then delete the `CDKToolkit` stack.
 
 - You are responsible for the cost of the AWS services used while running this reference
   deployment. The solution consists of some resources that have to be paid by the hour/size
-  such as Amazon Elasticsearch, Amazon Kendra and Amazon S3 while others are serverless technologies where
+  such as Amazon OpenSearch Service, Amazon Kendra and Amazon S3 while others are serverless technologies where
   costs are incurred depending on the number of requests.
   The approximate cost for the solution for 100 documents/day comes under $20/day for the Classic Mode and under $80/day for Kendra-Enabled Mode. For accurate and most up-to-date pricing information, refer [AWS Pricing](https://aws.amazon.com/pricing/)
 
@@ -258,4 +258,4 @@ The intended use is for users to use this application as a reference architectur
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-The searchable PDF functionality is inluded as a pre-compiled jar binary. See the following README for more information: `source/lambda/pdfgenerator/README.md`
+The searchable PDF functionality is included as a pre-compiled jar binary. See the following README for more information: `source/lambda/pdfgenerator/README.md`
