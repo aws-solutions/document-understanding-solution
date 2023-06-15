@@ -2,128 +2,145 @@
 # yarn lockfile v1
 
 
-"@aws-amplify/analytics@5.2.31":
-  version "5.2.31"
-  resolved "https://registry.npmjs.org/@aws-amplify/analytics/-/analytics-5.2.31.tgz"
-  integrity sha512-u2j5qZRTDGD7d1TpbKU3D7928VFJK602537TWDuUibUCQWafCDLzPj1IJCiC6UdZ1yShqEmexa02/cqtq+gbwg==
+"@aws-amplify/analytics@6.2.0":
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/analytics/-/analytics-6.2.0.tgz"
+  integrity sha512-4dLo3uTl2QxeS396n3ct89pKje6u8/4DENhW9TUUnGN0+h5DRxOZZ999Fom46mChW3dpBhjvgBRxYakNtNzaEQ==
   dependencies:
-    "@aws-amplify/cache" "4.0.66"
-    "@aws-amplify/core" "4.7.15"
+    "@aws-amplify/cache" "5.1.0"
+    "@aws-amplify/core" "5.4.0"
     "@aws-sdk/client-firehose" "3.6.1"
     "@aws-sdk/client-kinesis" "3.6.1"
     "@aws-sdk/client-personalize-events" "3.6.1"
-    "@aws-sdk/client-pinpoint" "3.6.1"
     "@aws-sdk/util-utf8-browser" "3.6.1"
     lodash "^4.17.20"
+    tslib "^1.8.0"
     uuid "^3.2.1"
 
-"@aws-amplify/api-graphql@2.3.28":
-  version "2.3.28"
-  resolved "https://registry.npmjs.org/@aws-amplify/api-graphql/-/api-graphql-2.3.28.tgz"
-  integrity sha512-n/8dwUx2i9sojcAnK1vITamx/FODGPmDM08lTfZNwpTVJ1aXB/bcA9GitF7gWa4jstVACDgQAKmTAr7j2d0tGw==
+"@aws-amplify/api-graphql@3.3.0":
+  version "3.3.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/api-graphql/-/api-graphql-3.3.0.tgz"
+  integrity sha512-2ogekgKn4fgeXhnllWRoahh7owHZz9Vd8ZmKttHC+7vSnaSQq7oc3iHTwC7DePNlLJoWdyxjyIQJ0uWOjkveEA==
   dependencies:
-    "@aws-amplify/api-rest" "2.0.64"
-    "@aws-amplify/auth" "4.6.17"
-    "@aws-amplify/cache" "4.0.66"
-    "@aws-amplify/core" "4.7.15"
-    "@aws-amplify/pubsub" "4.5.14"
+    "@aws-amplify/api-rest" "3.2.0"
+    "@aws-amplify/auth" "5.4.0"
+    "@aws-amplify/cache" "5.1.0"
+    "@aws-amplify/core" "5.4.0"
+    "@aws-amplify/pubsub" "5.2.0"
     graphql "15.8.0"
+    tslib "^1.8.0"
     uuid "^3.2.1"
     zen-observable-ts "0.8.19"
 
-"@aws-amplify/api-rest@2.0.64":
-  version "2.0.64"
-  resolved "https://registry.npmjs.org/@aws-amplify/api-rest/-/api-rest-2.0.64.tgz"
-  integrity sha512-hS+ImRnkyjGJj5gTet+Gd979Vnsp1lKTmiUngt3MXY/0b6CeUgMAACxnIQ628J00frvguUcgmOlZ502jeHsiKQ==
+"@aws-amplify/api-rest@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/api-rest/-/api-rest-3.2.0.tgz"
+  integrity sha512-xY0FSSmOrHH/xCwFcij64xBJFd+6idMP1ueoNpEwBc8t5jgV9xTmM+Za1FUOlhpImETbqwIlmy6DlVG5IQCDrA==
   dependencies:
-    "@aws-amplify/core" "4.7.15"
+    "@aws-amplify/core" "5.4.0"
     axios "0.26.0"
+    tslib "^1.8.0"
 
-"@aws-amplify/api@4.0.64":
-  version "4.0.64"
-  resolved "https://registry.npmjs.org/@aws-amplify/api/-/api-4.0.64.tgz"
-  integrity sha512-nhg7Z+TQcEnLR5ZotxvKnJgqNwDtUYVBcNuktsHgUVszkKT/Oj2vC28xv8RufdljIofrXFsBDeERviwSpVXiFA==
+"@aws-amplify/api@5.2.0":
+  version "5.2.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/api/-/api-5.2.0.tgz"
+  integrity sha512-4gd2oqb0sv22Yi7f8ptKqsMkcCo6E/+KwZ/zbk4RaKUUBuvfj9WHZjYi0q/JzkHhfHbEGRproDxhLnmTttpgBg==
   dependencies:
-    "@aws-amplify/api-graphql" "2.3.28"
-    "@aws-amplify/api-rest" "2.0.64"
+    "@aws-amplify/api-graphql" "3.3.0"
+    "@aws-amplify/api-rest" "3.2.0"
+    tslib "^1.8.0"
 
-"@aws-amplify/auth@4.6.17":
-  version "4.6.17"
-  resolved "https://registry.npmjs.org/@aws-amplify/auth/-/auth-4.6.17.tgz"
-  integrity sha512-KIWHP6qODphwtzyJ6jmcSQewH0a8dOOsQ35OtAALwmPNEaftGmoUjm8wMHAtyH3EwWv1iknhPwMVzmGylr+l1A==
+"@aws-amplify/auth@5.4.0":
+  version "5.4.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/auth/-/auth-5.4.0.tgz"
+  integrity sha512-W3CFGV2aXy5+E2egyFYMnLE1oN8VpUXjlBRNWpBu14dWtMxgMNYik6X6rRsjvF3qKVmt+VNct5udRP4hcWl0aw==
   dependencies:
-    "@aws-amplify/cache" "4.0.66"
-    "@aws-amplify/core" "4.7.15"
-    amazon-cognito-identity-js "5.2.14"
-    crypto-js "^4.1.1"
+    "@aws-amplify/core" "5.4.0"
+    amazon-cognito-identity-js "6.2.0"
+    tslib "^1.8.0"
 
-"@aws-amplify/cache@4.0.66":
-  version "4.0.66"
-  resolved "https://registry.npmjs.org/@aws-amplify/cache/-/cache-4.0.66.tgz"
-  integrity sha512-dG5TSx1VbUMnIchqwoT+Pa5W+PdPTZVcXfg/4bjpv0HJ0s3LUeYMI93cpQGg0DlegKNvwV5Ib+B7UqXlWp/JEQ==
+"@aws-amplify/cache@5.1.0":
+  version "5.1.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/cache/-/cache-5.1.0.tgz"
+  integrity sha512-YZnMeQTzLwN2JxUaPXHmQLF7gvwWDp55vlIdOcXtWrQRcsDzstoK2xH41hYIi2Q2P/y79pVzQFXLR4XcV4KKyA==
   dependencies:
-    "@aws-amplify/core" "4.7.15"
+    "@aws-amplify/core" "5.4.0"
+    tslib "^1.8.0"
 
-"@aws-amplify/core@4.7.15":
-  version "4.7.15"
-  resolved "https://registry.npmjs.org/@aws-amplify/core/-/core-4.7.15.tgz"
-  integrity sha512-upRxT6MN90pQZnJw2VwGdA7vHO6tGY1c3qLrXkq+x5XT45KrfGjbSSHmYBo7PkjWQYAUMGuX4KYwmPBuI58svg==
+"@aws-amplify/core@5.4.0":
+  version "5.4.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/core/-/core-5.4.0.tgz"
+  integrity sha512-J794EH7x/fvKmgCm7hedhNjYPcGpJ7qFz33q33FVVUJ151NMrotsQdkK6pSqJHDgtYJZB1On9c6p3W4z33gD3w==
   dependencies:
-    "@aws-crypto/sha256-js" "1.0.0-alpha.0"
+    "@aws-crypto/sha256-js" "1.2.2"
     "@aws-sdk/client-cloudwatch-logs" "3.6.1"
-    "@aws-sdk/client-cognito-identity" "3.6.1"
-    "@aws-sdk/credential-provider-cognito-identity" "3.6.1"
     "@aws-sdk/types" "3.6.1"
     "@aws-sdk/util-hex-encoding" "3.6.1"
+    isomorphic-unfetch "^3.0.0"
+    react-native-url-polyfill "^1.3.0"
+    tslib "^1.8.0"
     universal-cookie "^4.0.4"
     zen-observable-ts "0.8.19"
 
-"@aws-amplify/datastore@3.14.7":
-  version "3.14.7"
-  resolved "https://registry.npmjs.org/@aws-amplify/datastore/-/datastore-3.14.7.tgz"
-  integrity sha512-nzZHK0LXOsvmZzeBHL8VL/nrTm9dmBYdOWZOf7zSrbZBVaLEMim2l2os3DUx0+1u44XPr166QSF8OXLpl+56+w==
+"@aws-amplify/datastore@4.5.0":
+  version "4.5.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/datastore/-/datastore-4.5.0.tgz"
+  integrity sha512-Wh8W35xumZqX4SR4LlkxkEtXc+Bi8iz5iIPlgau+aDskSDyeR+kkK83w//1En0LZ3n2Bh4EYNITFXbo+EYx4Aw==
   dependencies:
-    "@aws-amplify/api" "4.0.64"
-    "@aws-amplify/auth" "4.6.17"
-    "@aws-amplify/core" "4.7.15"
-    "@aws-amplify/pubsub" "4.5.14"
-    amazon-cognito-identity-js "5.2.14"
+    "@aws-amplify/api" "5.2.0"
+    "@aws-amplify/auth" "5.4.0"
+    "@aws-amplify/core" "5.4.0"
+    "@aws-amplify/pubsub" "5.2.0"
+    amazon-cognito-identity-js "6.2.0"
     idb "5.0.6"
     immer "9.0.6"
     ulid "2.3.0"
-    uuid "3.3.2"
+    uuid "3.4.0"
     zen-observable-ts "0.8.19"
     zen-push "0.2.1"
 
-"@aws-amplify/geo@1.3.27":
-  version "1.3.27"
-  resolved "https://registry.npmjs.org/@aws-amplify/geo/-/geo-1.3.27.tgz"
-  integrity sha512-7ytYD0M3EJxq9aiqJVQSRoXXUYf/bp7MU2Bb+UvKjqxOb29theJp3RJ7yJnqjxAV+6K7+jRpjoqH8lR+y3zkwQ==
+"@aws-amplify/geo@2.0.34":
+  version "2.0.34"
+  resolved "https://registry.npmjs.org/@aws-amplify/geo/-/geo-2.0.34.tgz"
+  integrity sha512-ZfGPnVAwRIVFaeX5NyWZ+bdLQrpUg6si8/xa4O8s1oh7ThsROFa4ESnypChd0dlATA1ouLX3+8jEnMiRc3/3qA==
   dependencies:
-    "@aws-amplify/core" "4.7.15"
-    "@aws-sdk/client-location" "3.186.0"
+    "@aws-amplify/core" "5.4.0"
+    "@aws-sdk/client-location" "3.186.1"
     "@turf/boolean-clockwise" "6.5.0"
     camelcase-keys "6.2.2"
+    tslib "^1.8.0"
 
-"@aws-amplify/interactions@4.1.12":
-  version "4.1.12"
-  resolved "https://registry.npmjs.org/@aws-amplify/interactions/-/interactions-4.1.12.tgz"
-  integrity sha512-MQjq4wdGuA7DNRywMrlwjbWZ/b5VFP0ASZdMYWSGVVkjPpHKR+/iCy/kkJvUFXIl8kEXHlFQTidv4RiNd4sYdQ==
+"@aws-amplify/interactions@5.1.0":
+  version "5.1.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/interactions/-/interactions-5.1.0.tgz"
+  integrity sha512-jzEPhwmSGpJ+h+a7cQCjUOmdtN5xpMvyQKCF39YMzMcg4UB4jdvOuOi2+HudnypsbGCVxfE5lD1rqbgzRZkz+w==
   dependencies:
-    "@aws-amplify/core" "4.7.15"
-    "@aws-sdk/client-lex-runtime-service" "3.186.0"
-    "@aws-sdk/client-lex-runtime-v2" "3.186.0"
+    "@aws-amplify/core" "5.4.0"
+    "@aws-sdk/client-lex-runtime-service" "3.186.1"
+    "@aws-sdk/client-lex-runtime-v2" "3.186.1"
     base-64 "1.0.0"
     fflate "0.7.3"
     pako "2.0.4"
+    tslib "^1.8.0"
 
-"@aws-amplify/predictions@4.0.64":
-  version "4.0.64"
-  resolved "https://registry.npmjs.org/@aws-amplify/predictions/-/predictions-4.0.64.tgz"
-  integrity sha512-EcRwCqf0xFGoJLAzns7TIgKZxKZUlXubVPMTGIm9imVT/ZuF7ELX/YhIygzR33M+75rzLJxQcx5OOTFj6df/1Q==
+"@aws-amplify/notifications@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/notifications/-/notifications-1.2.0.tgz"
+  integrity sha512-BUtdSSjop8ieQ+lzwNgBZ1YaULE137zLHO4MAibcex2cOX0E/ZJZdBD/z2uoS2c7EzXfylawJ8n7w5BHWZzy0w==
   dependencies:
-    "@aws-amplify/core" "4.7.15"
-    "@aws-amplify/storage" "4.5.17"
+    "@aws-amplify/cache" "5.1.0"
+    "@aws-amplify/core" "5.4.0"
+    "@aws-amplify/rtn-push-notification" "1.1.1"
+    lodash "^4.17.21"
+    uuid "^3.2.1"
+
+"@aws-amplify/predictions@5.2.2":
+  version "5.2.2"
+  resolved "https://registry.npmjs.org/@aws-amplify/predictions/-/predictions-5.2.2.tgz"
+  integrity sha512-W5QlvAJ6IY6u5AxznSy/TxJmhLVsvO3GlKYI3X3QDnylMnf4cHROK41i7f3Z8EqpJ3IvUPezsstINVryREoQkA==
+  dependencies:
+    "@aws-amplify/core" "5.4.0"
+    "@aws-amplify/storage" "5.4.0"
     "@aws-sdk/client-comprehend" "3.6.1"
     "@aws-sdk/client-polly" "3.6.1"
     "@aws-sdk/client-rekognition" "3.6.1"
@@ -131,45 +148,41 @@
     "@aws-sdk/client-translate" "3.6.1"
     "@aws-sdk/eventstream-marshaller" "3.6.1"
     "@aws-sdk/util-utf8-node" "3.6.1"
+    buffer "4.9.2"
+    tslib "^1.8.0"
     uuid "^3.2.1"
 
-"@aws-amplify/pubsub@4.5.14":
-  version "4.5.14"
-  resolved "https://registry.npmjs.org/@aws-amplify/pubsub/-/pubsub-4.5.14.tgz"
-  integrity sha512-WGR26nOMW2+DQE1DuWE4W9Ehx1RxmNmQN6Mq27DnKicLL0nMgyKT7OGBAHmQzVtsvMzFgUo/KcMBL3GltZ0M5g==
+"@aws-amplify/pubsub@5.2.0":
+  version "5.2.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/pubsub/-/pubsub-5.2.0.tgz"
+  integrity sha512-O9Qt7oF/IIqOdC/fCYE54HJUSMbo5UjvTtWuvS5cp9VvrUjuh8zqkTzR7pcNxtrDU/RlPQtTkJzy3Ho22iYs4w==
   dependencies:
-    "@aws-amplify/auth" "4.6.17"
-    "@aws-amplify/cache" "4.0.66"
-    "@aws-amplify/core" "4.7.15"
+    "@aws-amplify/auth" "5.4.0"
+    "@aws-amplify/cache" "5.1.0"
+    "@aws-amplify/core" "5.4.0"
     graphql "15.8.0"
-    paho-mqtt "^1.1.0"
+    tslib "^1.8.0"
     uuid "^3.2.1"
     zen-observable-ts "0.8.19"
 
-"@aws-amplify/storage@4.5.17":
-  version "4.5.17"
-  resolved "https://registry.npmjs.org/@aws-amplify/storage/-/storage-4.5.17.tgz"
-  integrity sha512-GZJvTdZ8zjlSfQ32x4EY56sOTafL843s6geqd8d/ybpJYZqEyBpfbcLZnsZFStAEERBKB4hCyCs/m+E2zZg/xg==
+"@aws-amplify/rtn-push-notification@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/@aws-amplify/rtn-push-notification/-/rtn-push-notification-1.1.1.tgz"
+  integrity sha512-uYPyiNeK2r2g82U6ayluNrKA2z5280mlW9razEul94i/2XPt9LAXhIb1XnCtxGzxANMHd+FH9V7D7RAGK99pTQ==
+
+"@aws-amplify/storage@5.4.0":
+  version "5.4.0"
+  resolved "https://registry.npmjs.org/@aws-amplify/storage/-/storage-5.4.0.tgz"
+  integrity sha512-wXGxVhzNgvQJVO1nScJe6xdPUfZuu9//Uqm3WYjrkbZ/oFgS3uZOqYUJkoc4KNOiReB82resyxunJvrUj0L96Q==
   dependencies:
-    "@aws-amplify/core" "4.7.15"
-    "@aws-sdk/client-s3" "3.6.1"
+    "@aws-amplify/core" "5.4.0"
+    "@aws-sdk/client-s3" "3.6.2"
     "@aws-sdk/s3-request-presigner" "3.6.1"
     "@aws-sdk/util-create-request" "3.6.1"
     "@aws-sdk/util-format-url" "3.6.1"
     axios "0.26.0"
     events "^3.1.0"
-
-"@aws-amplify/ui@2.0.7":
-  version "2.0.7"
-  resolved "https://registry.npmjs.org/@aws-amplify/ui/-/ui-2.0.7.tgz"
-  integrity sha512-tT7onRv+OCznFhUE2mKPpbGHHV+oODZk4VDX3lYNIfJ7LXv1hVtllQbPNJF5beNBRw9r6uotlXpeJrkph6v07A==
-
-"@aws-amplify/xr@3.0.64":
-  version "3.0.64"
-  resolved "https://registry.npmjs.org/@aws-amplify/xr/-/xr-3.0.64.tgz"
-  integrity sha512-YZJbHVEU9uN8yKHms2uIWyikUPEj4go6qL40vcIDwCv9LNyer2lP+yZ1Djn1FFhqUgLi5lK+yh4PUCoqPUWE8w==
-  dependencies:
-    "@aws-amplify/core" "4.7.15"
+    tslib "^1.8.0"
 
 "@aws-cdk/assets@1.203.0":
   version "1.203.0"
@@ -797,14 +810,14 @@
     "@aws-sdk/util-locate-window" "^3.0.0"
     tslib "^1.11.1"
 
-"@aws-crypto/sha256-js@1.0.0-alpha.0":
-  version "1.0.0-alpha.0"
-  resolved "https://registry.npmjs.org/@aws-crypto/sha256-js/-/sha256-js-1.0.0-alpha.0.tgz"
-  integrity sha512-GidX2lccEtHZw8mXDKJQj6tea7qh3pAnsNSp1eZNxsN4MMu2OvSraPSqiB1EihsQkZBMg0IiZPpZHoACUX/QMQ==
+"@aws-crypto/sha256-js@1.2.2", "@aws-crypto/sha256-js@^1.0.0", "@aws-crypto/sha256-js@^1.2.2":
+  version "1.2.2"
+  resolved "https://registry.npmjs.org/@aws-crypto/sha256-js/-/sha256-js-1.2.2.tgz"
+  integrity sha512-Nr1QJIbW/afYYGzYvrF70LtaHrIRtd4TNAglX8BvlfxJLZ45SAmueIKYl5tWoNBPzp65ymXGFK0Bb1vZUpuc9g==
   dependencies:
-    "@aws-sdk/types" "^1.0.0-alpha.0"
-    "@aws-sdk/util-utf8-browser" "^1.0.0-alpha.0"
-    tslib "^1.9.3"
+    "@aws-crypto/util" "^1.2.2"
+    "@aws-sdk/types" "^3.1.0"
+    tslib "^1.11.1"
 
 "@aws-crypto/sha256-js@2.0.0", "@aws-crypto/sha256-js@^2.0.0":
   version "2.0.0"
@@ -812,15 +825,6 @@
   integrity sha512-VZY+mCY4Nmrs5WGfitmNqXzaE873fcIZDu54cbaDaaamsaTOP1DBImV9F4pICc3EHjQXujyE8jig+PFCaew9ig==
   dependencies:
     "@aws-crypto/util" "^2.0.0"
-    "@aws-sdk/types" "^3.1.0"
-    tslib "^1.11.1"
-
-"@aws-crypto/sha256-js@^1.0.0", "@aws-crypto/sha256-js@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.npmjs.org/@aws-crypto/sha256-js/-/sha256-js-1.2.2.tgz"
-  integrity sha512-Nr1QJIbW/afYYGzYvrF70LtaHrIRtd4TNAglX8BvlfxJLZ45SAmueIKYl5tWoNBPzp65ymXGFK0Bb1vZUpuc9g==
-  dependencies:
-    "@aws-crypto/util" "^1.2.2"
     "@aws-sdk/types" "^3.1.0"
     tslib "^1.11.1"
 
@@ -891,43 +895,6 @@
   version "3.6.1"
   resolved "https://registry.npmjs.org/@aws-sdk/client-cloudwatch-logs/-/client-cloudwatch-logs-3.6.1.tgz"
   integrity sha512-QOxIDnlVTpnwJ26Gap6RGz61cDLH6TKrIp30VqwdMeT1pCGy8mn9rWln6XA+ymkofHy/08RfpGp+VN4axwd4Lw==
-  dependencies:
-    "@aws-crypto/sha256-browser" "^1.0.0"
-    "@aws-crypto/sha256-js" "^1.0.0"
-    "@aws-sdk/config-resolver" "3.6.1"
-    "@aws-sdk/credential-provider-node" "3.6.1"
-    "@aws-sdk/fetch-http-handler" "3.6.1"
-    "@aws-sdk/hash-node" "3.6.1"
-    "@aws-sdk/invalid-dependency" "3.6.1"
-    "@aws-sdk/middleware-content-length" "3.6.1"
-    "@aws-sdk/middleware-host-header" "3.6.1"
-    "@aws-sdk/middleware-logger" "3.6.1"
-    "@aws-sdk/middleware-retry" "3.6.1"
-    "@aws-sdk/middleware-serde" "3.6.1"
-    "@aws-sdk/middleware-signing" "3.6.1"
-    "@aws-sdk/middleware-stack" "3.6.1"
-    "@aws-sdk/middleware-user-agent" "3.6.1"
-    "@aws-sdk/node-config-provider" "3.6.1"
-    "@aws-sdk/node-http-handler" "3.6.1"
-    "@aws-sdk/protocol-http" "3.6.1"
-    "@aws-sdk/smithy-client" "3.6.1"
-    "@aws-sdk/types" "3.6.1"
-    "@aws-sdk/url-parser" "3.6.1"
-    "@aws-sdk/url-parser-native" "3.6.1"
-    "@aws-sdk/util-base64-browser" "3.6.1"
-    "@aws-sdk/util-base64-node" "3.6.1"
-    "@aws-sdk/util-body-length-browser" "3.6.1"
-    "@aws-sdk/util-body-length-node" "3.6.1"
-    "@aws-sdk/util-user-agent-browser" "3.6.1"
-    "@aws-sdk/util-user-agent-node" "3.6.1"
-    "@aws-sdk/util-utf8-browser" "3.6.1"
-    "@aws-sdk/util-utf8-node" "3.6.1"
-    tslib "^2.0.0"
-
-"@aws-sdk/client-cognito-identity@3.6.1":
-  version "3.6.1"
-  resolved "https://registry.npmjs.org/@aws-sdk/client-cognito-identity/-/client-cognito-identity-3.6.1.tgz"
-  integrity sha512-FMj2GR9R5oCKb3/NI16GIvWeHcE4uX42fBAaQKPbjg2gALFDx9CcJYsdOtDP37V89GtPyZilLv6GJxrwJKzYGg==
   dependencies:
     "@aws-crypto/sha256-browser" "^1.0.0"
     "@aws-crypto/sha256-js" "^1.0.0"
@@ -1077,14 +1044,14 @@
     "@aws-sdk/util-waiter" "3.6.1"
     tslib "^2.0.0"
 
-"@aws-sdk/client-lex-runtime-service@3.186.0":
-  version "3.186.0"
-  resolved "https://registry.npmjs.org/@aws-sdk/client-lex-runtime-service/-/client-lex-runtime-service-3.186.0.tgz"
-  integrity sha512-EgjQvFxa/o1urxpnWV2A/D0k4m763NqrPLuL074LR+cOkNxVl9W27aYL/tddDBmmDzzx4KcuRL6/n+UBZIheTg==
+"@aws-sdk/client-lex-runtime-service@3.186.1":
+  version "3.186.1"
+  resolved "https://registry.npmjs.org/@aws-sdk/client-lex-runtime-service/-/client-lex-runtime-service-3.186.1.tgz"
+  integrity sha512-WlFKLERQ4L0Gf8Td6Uu8H6lV4+NYHc45lfo8+gouyr9/2XiAzgQJagg2NsPa6cwDFOi/dUFH3XIIqU1XNqvCUA==
   dependencies:
     "@aws-crypto/sha256-browser" "2.0.0"
     "@aws-crypto/sha256-js" "2.0.0"
-    "@aws-sdk/client-sts" "3.186.0"
+    "@aws-sdk/client-sts" "3.186.1"
     "@aws-sdk/config-resolver" "3.186.0"
     "@aws-sdk/credential-provider-node" "3.186.0"
     "@aws-sdk/fetch-http-handler" "3.186.0"
@@ -1117,14 +1084,14 @@
     "@aws-sdk/util-utf8-node" "3.186.0"
     tslib "^2.3.1"
 
-"@aws-sdk/client-lex-runtime-v2@3.186.0":
-  version "3.186.0"
-  resolved "https://registry.npmjs.org/@aws-sdk/client-lex-runtime-v2/-/client-lex-runtime-v2-3.186.0.tgz"
-  integrity sha512-oDN07yCWc9gsEYL44KSjPj8wdHHcf5Kti+w31fE7JHZqvRXxLsLx7G+kEcPmSTRk3Y4wDPXJozL6sDUAOAEb7A==
+"@aws-sdk/client-lex-runtime-v2@3.186.1":
+  version "3.186.1"
+  resolved "https://registry.npmjs.org/@aws-sdk/client-lex-runtime-v2/-/client-lex-runtime-v2-3.186.1.tgz"
+  integrity sha512-0KG6neh/HB8zVdeGRT/UHzcvoYqNMiZI2+FFwdpNDPtlqmwCWBaGJdCda2rIXix6Iz4mFu5gWjr9/fI88YBCCw==
   dependencies:
     "@aws-crypto/sha256-browser" "2.0.0"
     "@aws-crypto/sha256-js" "2.0.0"
-    "@aws-sdk/client-sts" "3.186.0"
+    "@aws-sdk/client-sts" "3.186.1"
     "@aws-sdk/config-resolver" "3.186.0"
     "@aws-sdk/credential-provider-node" "3.186.0"
     "@aws-sdk/eventstream-handler-node" "3.186.0"
@@ -1162,14 +1129,14 @@
     "@aws-sdk/util-utf8-node" "3.186.0"
     tslib "^2.3.1"
 
-"@aws-sdk/client-location@3.186.0":
-  version "3.186.0"
-  resolved "https://registry.npmjs.org/@aws-sdk/client-location/-/client-location-3.186.0.tgz"
-  integrity sha512-RXT1Z7jgYrPEdD1VkErH9Wm+z6y7c/ua1Pu9VQ8weu9vtD15S8Qnyd1m4HS8ZPQUUM/gTxs/fL9+s53wRWpfGQ==
+"@aws-sdk/client-location@3.186.1":
+  version "3.186.1"
+  resolved "https://registry.npmjs.org/@aws-sdk/client-location/-/client-location-3.186.1.tgz"
+  integrity sha512-1wRt91iHkcbG5fOztGyO0t9THugezYJEzHAJuqZqxN9pbRv6WTtrHICaHNXeLhHft2l9thg9XVuSlL1obqkjMg==
   dependencies:
     "@aws-crypto/sha256-browser" "2.0.0"
     "@aws-crypto/sha256-js" "2.0.0"
-    "@aws-sdk/client-sts" "3.186.0"
+    "@aws-sdk/client-sts" "3.186.1"
     "@aws-sdk/config-resolver" "3.186.0"
     "@aws-sdk/credential-provider-node" "3.186.0"
     "@aws-sdk/fetch-http-handler" "3.186.0"
@@ -1206,43 +1173,6 @@
   version "3.6.1"
   resolved "https://registry.npmjs.org/@aws-sdk/client-personalize-events/-/client-personalize-events-3.6.1.tgz"
   integrity sha512-x9Jl/7emSQsB6GwBvjyw5BiSO26CnH4uvjNit6n54yNMtJ26q0+oIxkplnUDyjLTfLRe373c/z5/4dQQtDffkw==
-  dependencies:
-    "@aws-crypto/sha256-browser" "^1.0.0"
-    "@aws-crypto/sha256-js" "^1.0.0"
-    "@aws-sdk/config-resolver" "3.6.1"
-    "@aws-sdk/credential-provider-node" "3.6.1"
-    "@aws-sdk/fetch-http-handler" "3.6.1"
-    "@aws-sdk/hash-node" "3.6.1"
-    "@aws-sdk/invalid-dependency" "3.6.1"
-    "@aws-sdk/middleware-content-length" "3.6.1"
-    "@aws-sdk/middleware-host-header" "3.6.1"
-    "@aws-sdk/middleware-logger" "3.6.1"
-    "@aws-sdk/middleware-retry" "3.6.1"
-    "@aws-sdk/middleware-serde" "3.6.1"
-    "@aws-sdk/middleware-signing" "3.6.1"
-    "@aws-sdk/middleware-stack" "3.6.1"
-    "@aws-sdk/middleware-user-agent" "3.6.1"
-    "@aws-sdk/node-config-provider" "3.6.1"
-    "@aws-sdk/node-http-handler" "3.6.1"
-    "@aws-sdk/protocol-http" "3.6.1"
-    "@aws-sdk/smithy-client" "3.6.1"
-    "@aws-sdk/types" "3.6.1"
-    "@aws-sdk/url-parser" "3.6.1"
-    "@aws-sdk/url-parser-native" "3.6.1"
-    "@aws-sdk/util-base64-browser" "3.6.1"
-    "@aws-sdk/util-base64-node" "3.6.1"
-    "@aws-sdk/util-body-length-browser" "3.6.1"
-    "@aws-sdk/util-body-length-node" "3.6.1"
-    "@aws-sdk/util-user-agent-browser" "3.6.1"
-    "@aws-sdk/util-user-agent-node" "3.6.1"
-    "@aws-sdk/util-utf8-browser" "3.6.1"
-    "@aws-sdk/util-utf8-node" "3.6.1"
-    tslib "^2.0.0"
-
-"@aws-sdk/client-pinpoint@3.6.1":
-  version "3.6.1"
-  resolved "https://registry.npmjs.org/@aws-sdk/client-pinpoint/-/client-pinpoint-3.6.1.tgz"
-  integrity sha512-dueBedp91EKAHxcWLR3aNx/eUEdxdF9niEQTzOO2O4iJL2yvO2Hh7ZYiO7B3g7FuuICTpWSHd//Y9mGmSVLMCg==
   dependencies:
     "@aws-crypto/sha256-browser" "^1.0.0"
     "@aws-crypto/sha256-js" "^1.0.0"
@@ -1351,10 +1281,10 @@
     "@aws-sdk/util-waiter" "3.6.1"
     tslib "^2.0.0"
 
-"@aws-sdk/client-s3@3.6.1":
-  version "3.6.1"
-  resolved "https://registry.npmjs.org/@aws-sdk/client-s3/-/client-s3-3.6.1.tgz"
-  integrity sha512-59cTmZj92iwgNoAeJirK5sZNQNXLc/oI3luqrEHRNLuOh70bjdgad70T0a5k2Ysd/v/QNamqJxnCJMPuX1bhgw==
+"@aws-sdk/client-s3@3.6.2":
+  version "3.6.2"
+  resolved "https://registry.npmjs.org/@aws-sdk/client-s3/-/client-s3-3.6.2.tgz"
+  integrity sha512-gGMFW+sy/VCr6tCwPmfvH4OuIsN10AHEwP6OTdrM2JJ6Uj/te2LRlksrNbPfPiuxF+tS8p7YReSNsiH8yw5XLw==
   dependencies:
     "@aws-crypto/sha256-browser" "^1.0.0"
     "@aws-crypto/sha256-js" "^1.0.0"
@@ -1400,7 +1330,7 @@
     "@aws-sdk/util-utf8-node" "3.6.1"
     "@aws-sdk/util-waiter" "3.6.1"
     "@aws-sdk/xml-builder" "3.6.1"
-    fast-xml-parser "^3.16.0"
+    fast-xml-parser "4.1.3"
     tslib "^2.0.0"
 
 "@aws-sdk/client-sso@3.186.0":
@@ -1440,10 +1370,10 @@
     "@aws-sdk/util-utf8-node" "3.186.0"
     tslib "^2.3.1"
 
-"@aws-sdk/client-sts@3.186.0":
-  version "3.186.0"
-  resolved "https://registry.npmjs.org/@aws-sdk/client-sts/-/client-sts-3.186.0.tgz"
-  integrity sha512-lyAPI6YmIWWYZHQ9fBZ7QgXjGMTtktL5fk8kOcZ98ja+8Vu0STH1/u837uxqvZta8/k0wijunIL3jWUhjsNRcg==
+"@aws-sdk/client-sts@3.186.1":
+  version "3.186.1"
+  resolved "https://registry.npmjs.org/@aws-sdk/client-sts/-/client-sts-3.186.1.tgz"
+  integrity sha512-2LTEmXtlat2PyC77bGojB8xu97C4o7Q3czHW+UcNO3LfZn2MTtPe5pSLeUGlcxC7Euc9PJoNCa/F7+9dzkveqg==
   dependencies:
     "@aws-crypto/sha256-browser" "2.0.0"
     "@aws-crypto/sha256-js" "2.0.0"
@@ -1479,7 +1409,7 @@
     "@aws-sdk/util-utf8-browser" "3.186.0"
     "@aws-sdk/util-utf8-node" "3.186.0"
     entities "2.2.0"
-    fast-xml-parser "3.19.0"
+    fast-xml-parser "4.1.3"
     tslib "^2.3.1"
 
 "@aws-sdk/client-textract@3.6.1":
@@ -1574,16 +1504,6 @@
   integrity sha512-qjP1g3jLIm+XvOIJ4J7VmZRi87vsDmTRzIFePVeG+EFWwYQLxQjTGMdIj3yKTh1WuZ0HByf47mGcpiS4HZLm1Q==
   dependencies:
     "@aws-sdk/signature-v4" "3.6.1"
-    "@aws-sdk/types" "3.6.1"
-    tslib "^1.8.0"
-
-"@aws-sdk/credential-provider-cognito-identity@3.6.1":
-  version "3.6.1"
-  resolved "https://registry.npmjs.org/@aws-sdk/credential-provider-cognito-identity/-/credential-provider-cognito-identity-3.6.1.tgz"
-  integrity sha512-uJ9q+yq+Dhdo32gcv0p/AT7sKSAUH0y4ts9XRK/vx0dW9Q3XJy99mOJlq/6fkh4LfWeavJJlaCo9lSHNMWXx4w==
-  dependencies:
-    "@aws-sdk/client-cognito-identity" "3.6.1"
-    "@aws-sdk/property-provider" "3.6.1"
     "@aws-sdk/types" "3.6.1"
     tslib "^1.8.0"
 
@@ -2356,11 +2276,6 @@
   resolved "https://registry.npmjs.org/@aws-sdk/types/-/types-3.6.1.tgz"
   integrity sha512-4Dx3eRTrUHLxhFdLJL8zdNGzVsJfAxtxPYYGmIddUkO2Gj3WA1TGjdfG4XN/ClI6e1XonCHafQX3UYO/mgnH3g==
 
-"@aws-sdk/types@^1.0.0-alpha.0":
-  version "1.0.0-rc.10"
-  resolved "https://registry.npmjs.org/@aws-sdk/types/-/types-1.0.0-rc.10.tgz"
-  integrity sha512-9gwhYnkTNuYZ+etCtM4T8gjpZ0SWSXbzQxY34UjSS+dt3C/UnbX0J22tMahp/9Z1yCa9pihtXrkD+nO2xn7nVQ==
-
 "@aws-sdk/url-parser-native@3.6.1":
   version "3.6.1"
   resolved "https://registry.npmjs.org/@aws-sdk/url-parser-native/-/url-parser-native-3.6.1.tgz"
@@ -2610,13 +2525,6 @@
   dependencies:
     tslib "^1.8.0"
 
-"@aws-sdk/util-utf8-browser@^1.0.0-alpha.0":
-  version "1.0.0-rc.8"
-  resolved "https://registry.npmjs.org/@aws-sdk/util-utf8-browser/-/util-utf8-browser-1.0.0-rc.8.tgz"
-  integrity sha512-clncPMJ23rxCIkZ9LoUC8SowwZGxWyN2TwRb0XvW/Cv9EavkRgRCOrCpneGyC326lqtMKx36onnpaSRHxErUYw==
-  dependencies:
-    tslib "^1.8.0"
-
 "@aws-sdk/util-utf8-node@3.186.0":
   version "3.186.0"
   resolved "https://registry.npmjs.org/@aws-sdk/util-utf8-node/-/util-utf8-node-3.186.0.tgz"
@@ -2860,7 +2768,7 @@
 
 "@next/swc-darwin-x64@12.2.4":
   version "12.2.4"
-  resolved "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-12.2.4.tgz"
+  resolved "https://registry.yarnpkg.com/@next/swc-darwin-x64/-/swc-darwin-x64-12.2.4.tgz#820125d2a4d35cd9c807156a403a447360b5923f"
   integrity sha512-IUlFMqeLjdIzDorrGC2Dt+2Ae3DbKQbRzCzmDq4/CP1+jJGeDXo/2AHnlE+WYnwQAC4KtAz6pbVnd3KstZWsVA==
 
 "@next/swc-freebsd-x64@12.2.4":
@@ -2974,10 +2882,10 @@
   resolved "https://registry.npmjs.org/@types/json5/-/json5-0.0.29.tgz"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
 
-"@types/node@20.2.5":
-  version "20.2.5"
-  resolved "https://registry.npmjs.org/@types/node/-/node-20.2.5.tgz"
-  integrity sha512-JJulVEQXmiY9Px5axXHeYGLSjhkZEnD+MDPDGbCbIAbMslkKwmygtZFy1X6s/075Yo94sf8GuSlFfPzysQrWZQ==
+"@types/node@20.3.1":
+  version "20.3.1"
+  resolved "https://registry.npmjs.org/@types/node/-/node-20.3.1.tgz"
+  integrity sha512-EhcH/wvidPy1WeML3TtYFGR83UzjxeWRen9V402T8aUGYsCHOmfoisV3ZSg03gAFIbLq8TnWOJ0f4cALtnSEUg==
 
 "@types/prop-types@*":
   version "15.7.5"
@@ -2985,18 +2893,18 @@
   integrity sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==
 
 "@types/react@*":
-  version "18.0.25"
-  resolved "https://registry.npmjs.org/@types/react/-/react-18.0.25.tgz"
-  integrity sha512-xD6c0KDT4m7n9uD4ZHi02lzskaiqcBxf4zi+tXZY98a04wvc0hi/TcCPC2FOESZi51Nd7tlUeOJY8RofL799/g==
+  version "18.2.12"
+  resolved "https://registry.npmjs.org/@types/react/-/react-18.2.12.tgz"
+  integrity sha512-ndmBMLCgn38v3SntMeoJaIrO6tGHYKMEBohCUmw8HoLLQdRMOIGXfeYaBTLe2lsFaSB3MOK1VXscYFnmLtTSmw==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
 "@types/scheduler@*":
-  version "0.16.2"
-  resolved "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.2.tgz"
-  integrity sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==
+  version "0.16.3"
+  resolved "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.3.tgz"
+  integrity sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==
 
 "@types/use-sync-external-store@^0.0.3":
   version "0.0.3"
@@ -3036,13 +2944,13 @@ ajv@^6.1.0, ajv@^6.10.0, ajv@^6.12.4:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-amazon-cognito-identity-js@5.2.14:
-  version "5.2.14"
-  resolved "https://registry.npmjs.org/amazon-cognito-identity-js/-/amazon-cognito-identity-js-5.2.14.tgz"
-  integrity sha512-9LMgLZfbypbbGTpARQ+QqglE09b1MWti11NXhcD/wPom0uhU/L90dfmUOpTwknz//eE6/dGYf004mJucWzrfxQ==
+amazon-cognito-identity-js@6.2.0:
+  version "6.2.0"
+  resolved "https://registry.npmjs.org/amazon-cognito-identity-js/-/amazon-cognito-identity-js-6.2.0.tgz"
+  integrity sha512-9Fxrp9+MtLdsJvqOwSaE3ll+pneICeuE3pwj2yDkiyGNWuHx97b8bVLR2bOgfDmDJnY0Hq8QoeXtwdM4aaXJjg==
   dependencies:
+    "@aws-crypto/sha256-js" "1.2.2"
     buffer "4.9.2"
-    crypto-js "^4.1.1"
     fast-base64-decode "^1.0.0"
     isomorphic-unfetch "^3.0.0"
     js-cookie "^2.2.1"
@@ -3175,24 +3083,24 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.npmjs.org/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
-aws-amplify@^4.3.46:
-  version "4.3.46"
-  resolved "https://registry.npmjs.org/aws-amplify/-/aws-amplify-4.3.46.tgz"
-  integrity sha512-LygkBq+mrV+hFf3DCrVcyYNxFsiYwL0HLN89X1Eg+s3f7df6T2xpjh4JuaDJFbmodEdAlZNfdtRGLMk6ApnPcA==
+aws-amplify@5.2.5:
+  version "5.2.5"
+  resolved "https://registry.npmjs.org/aws-amplify/-/aws-amplify-5.2.5.tgz"
+  integrity sha512-GlT2ELeWqGAqRdsnMrYh1O8LYBP7LbcRNdbUmchhmOJ88TcAr5fcXS8qrMsrcKetcMoU/J0wgVuNoda2evLgaw==
   dependencies:
-    "@aws-amplify/analytics" "5.2.31"
-    "@aws-amplify/api" "4.0.64"
-    "@aws-amplify/auth" "4.6.17"
-    "@aws-amplify/cache" "4.0.66"
-    "@aws-amplify/core" "4.7.15"
-    "@aws-amplify/datastore" "3.14.7"
-    "@aws-amplify/geo" "1.3.27"
-    "@aws-amplify/interactions" "4.1.12"
-    "@aws-amplify/predictions" "4.0.64"
-    "@aws-amplify/pubsub" "4.5.14"
-    "@aws-amplify/storage" "4.5.17"
-    "@aws-amplify/ui" "2.0.7"
-    "@aws-amplify/xr" "3.0.64"
+    "@aws-amplify/analytics" "6.2.0"
+    "@aws-amplify/api" "5.2.0"
+    "@aws-amplify/auth" "5.4.0"
+    "@aws-amplify/cache" "5.1.0"
+    "@aws-amplify/core" "5.4.0"
+    "@aws-amplify/datastore" "4.5.0"
+    "@aws-amplify/geo" "2.0.34"
+    "@aws-amplify/interactions" "5.1.0"
+    "@aws-amplify/notifications" "1.2.0"
+    "@aws-amplify/predictions" "5.2.2"
+    "@aws-amplify/pubsub" "5.2.0"
+    "@aws-amplify/storage" "5.4.0"
+    tslib "^2.0.0"
 
 aws-cdk@1.203.0:
   version "1.203.0"
@@ -3201,10 +3109,10 @@ aws-cdk@1.203.0:
   optionalDependencies:
     fsevents "2.3.2"
 
-aws-sdk@^2.1391.0:
-  version "2.1392.0"
-  resolved "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.1392.0.tgz"
-  integrity sha512-WWY3S4wyBzt+pkRcQ7il/wW6FvFvlkkXBXY34ZvuWd91fvI0ovuq1tmqq4eVlvLacblzUkGHgq7TejwpU67OIg==
+aws-sdk@2.1397.0:
+  version "2.1397.0"
+  resolved "https://registry.npmjs.org/aws-sdk/-/aws-sdk-2.1397.0.tgz"
+  integrity sha512-Km+jUscV6vW3vuurSsGrTjEqaNfrE9ykA3IJmJb85V2z5tklJvoBU+7JcCiF6h3BDKegNjiFOM7uoL3cGVGz4g==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -3331,6 +3239,14 @@ buffer@4.9.2:
     base64-js "^1.0.2"
     ieee754 "^1.1.4"
     isarray "^1.0.0"
+
+buffer@^5.4.3:
+  version "5.7.1"
+  resolved "https://registry.npmjs.org/buffer/-/buffer-5.7.1.tgz"
+  integrity sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==
+  dependencies:
+    base64-js "^1.3.1"
+    ieee754 "^1.1.13"
 
 buffer@^6.0.3:
   version "6.0.3"
@@ -3534,15 +3450,10 @@ cross-spawn@^7.0.2:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-crypto-js@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.npmjs.org/crypto-js/-/crypto-js-4.1.1.tgz"
-  integrity sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==
-
 csstype@^3.0.2:
-  version "3.1.1"
-  resolved "https://registry.npmjs.org/csstype/-/csstype-3.1.1.tgz"
-  integrity sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==
+  version "3.1.2"
+  resolved "https://registry.npmjs.org/csstype/-/csstype-3.1.2.tgz"
+  integrity sha512-I7K1Uu0MBPzaFKg4nI5Q7Vs2t+3gWWW648spaF+Rg7pI9ds18Ugn+lvg4SHczUdKlHI5LWBXyqfS8+DufyBsgQ==
 
 data-uri-to-buffer@^4.0.0:
   version "4.0.0"
@@ -4014,7 +3925,7 @@ fast-levenshtein@^2.0.6:
   resolved "https://registry.npmjs.org/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz"
   integrity sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==
 
-fast-xml-parser@3.19.0, fast-xml-parser@4.2.4, fast-xml-parser@^3.16.0:
+fast-xml-parser@4.1.3, fast-xml-parser@4.2.4:
   version "4.2.4"
   resolved "https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-4.2.4.tgz"
   integrity sha512-fbfMDvgBNIdDJLdLOwacjFAPYt67tr31H9ZhWSm45CDAxvd0I6WTlSOUo7K2P/K5sA5JgMKG64PI3DMcaFdWpQ==
@@ -4344,7 +4255,7 @@ ieee754@1.1.13:
   resolved "https://registry.npmjs.org/ieee754/-/ieee754-1.1.13.tgz"
   integrity sha512-4vf7I2LYV/HaWerSo3XmlMkp5eZ83i+/CDluXi/IGTs/O1sejBNhTtnxzmRZfvOUqj7lZjqHkeTvpgSFDlWZTg==
 
-ieee754@^1.1.4, ieee754@^1.2.1:
+ieee754@^1.1.13, ieee754@^1.1.4, ieee754@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz"
   integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
@@ -5067,11 +4978,6 @@ p-locate@^5.0.0:
   dependencies:
     p-limit "^3.0.2"
 
-paho-mqtt@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.npmjs.org/paho-mqtt/-/paho-mqtt-1.1.0.tgz"
-  integrity sha512-KPbL9KAB0ASvhSDbOrZBaccXS+/s7/LIofbPyERww8hM5Ko71GUJQ6Nmg0BWqj8phAIT8zdf/Sd/RftHU9i2HA==
-
 pako@2.0.4:
   version "2.0.4"
   resolved "https://registry.npmjs.org/pako/-/pako-2.0.4.tgz"
@@ -5195,7 +5101,7 @@ punycode@^2.1.0:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.1.1.tgz"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-punycode@^2.3.0:
+punycode@^2.1.1, punycode@^2.3.0:
   version "2.3.0"
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.0.tgz"
   integrity sha512-rRV+zQD8tVFys26lAGR9WUuS4iUAngJScM+ZRSKtvl5tKeZ2t5bvdNFdNHBW9FWR4guGHlgmsZ1G7BSm2wTbuA==
@@ -5259,13 +5165,14 @@ raw-body@2.5.1:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
-react-dom@18.2.0:
-  version "18.2.0"
-  resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz"
-  integrity sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==
+react-dom@17.0.2:
+  version "17.0.2"
+  resolved "https://registry.npmjs.org/react-dom/-/react-dom-17.0.2.tgz"
+  integrity sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA==
   dependencies:
     loose-envify "^1.1.0"
-    scheduler "^0.23.0"
+    object-assign "^4.1.1"
+    scheduler "^0.20.2"
 
 react-dropzone@^14.2.2:
   version "14.2.2"
@@ -5335,6 +5242,13 @@ react-native-get-random-values@^1.4.0:
   dependencies:
     fast-base64-decode "^1.0.0"
 
+react-native-url-polyfill@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/react-native-url-polyfill/-/react-native-url-polyfill-1.3.0.tgz"
+  integrity sha512-w9JfSkvpqqlix9UjDvJjm1EjSt652zVQ6iwCIj1cVVkwXf4jQhQgTNXY6EVTwuAmUjg6BC6k9RHCBynoLFo3IQ==
+  dependencies:
+    whatwg-url-without-unicode "8.0.0-3"
+
 react-pdf@^4.1.0:
   version "4.2.0"
   resolved "https://registry.npmjs.org/react-pdf/-/react-pdf-4.2.0.tgz"
@@ -5352,10 +5266,10 @@ react-proptype-conditional-require@^1.0.4:
   resolved "https://registry.npmjs.org/react-proptype-conditional-require/-/react-proptype-conditional-require-1.0.4.tgz"
   integrity sha512-nopsRn7KnGgazBe2c3H2+Kf+Csp6PGDRLiBkYEDMKY8o/EIgft/WnIm/OnAKTawZiLnJXHAqhpFBddvs6NiXlw==
 
-react-redux@^8.0.2:
-  version "8.0.2"
-  resolved "https://registry.npmjs.org/react-redux/-/react-redux-8.0.2.tgz"
-  integrity sha512-nBwiscMw3NoP59NFCXFf02f8xdo+vSHT/uZ1ldDwF7XaTpzm+Phk97VT4urYBl5TYAPNVaFm12UHAEyzkpNzRA==
+react-redux@^8.0.7:
+  version "8.1.0"
+  resolved "https://registry.npmjs.org/react-redux/-/react-redux-8.1.0.tgz"
+  integrity sha512-CtHZzAOxi7GQvTph4dVLWwZHAWUjV2kMEQtk50OrN8z3gKxpWg3Tz7JfDw32N3Rpd7fh02z73cF6yZkK467gbQ==
   dependencies:
     "@babel/runtime" "^7.12.1"
     "@types/hoist-non-react-statics" "^3.3.1"
@@ -5553,12 +5467,13 @@ sax@1.2.1, sax@>=0.6.0:
   resolved "https://registry.npmjs.org/sax/-/sax-1.2.1.tgz"
   integrity sha512-8I2a3LovHTOpm7NV5yOyO8IHqgVsfK4+UuySrXU8YXkSRX7k6hCV9b3HrkKCr3nMpgj+0bmocaJJWpvp1oc7ZA==
 
-scheduler@^0.23.0:
-  version "0.23.0"
-  resolved "https://registry.npmjs.org/scheduler/-/scheduler-0.23.0.tgz"
-  integrity sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==
+scheduler@^0.20.2:
+  version "0.20.2"
+  resolved "https://registry.npmjs.org/scheduler/-/scheduler-0.20.2.tgz"
+  integrity sha512-2eWfGgAqqWFGqtdMmcL5zCMK1U8KlXv8SQFGglL3CEtd0aDVDWgeF/YoCmvln55m5zSk3J/20hTaSBeSObsQDQ==
   dependencies:
     loose-envify "^1.1.0"
+    object-assign "^4.1.1"
 
 schema-utils@^0.4.0:
   version "0.4.7"
@@ -6007,20 +5922,15 @@ utils-merge@1.0.1:
   resolved "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
 
-uuid@3.3.2:
-  version "3.3.2"
-  resolved "https://registry.npmjs.org/uuid/-/uuid-3.3.2.tgz"
-  integrity sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==
+uuid@3.4.0, uuid@^3.0.0, uuid@^3.2.1:
+  version "3.4.0"
+  resolved "https://registry.npmjs.org/uuid/-/uuid-3.4.0.tgz"
+  integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
 uuid@8.0.0:
   version "8.0.0"
   resolved "https://registry.npmjs.org/uuid/-/uuid-8.0.0.tgz"
   integrity sha512-jOXGuXZAWdsTH7eZLtyXMqUb9EcWMGZNbL9YcGBJl4MH4nrxHmZJhEHvyLFrkxo+28uLb/NYRcStH48fnD0Vzw==
-
-uuid@^3.0.0, uuid@^3.2.1:
-  version "3.4.0"
-  resolved "https://registry.npmjs.org/uuid/-/uuid-3.4.0.tgz"
-  integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
 uuid@^8.3.2:
   version "8.3.2"
@@ -6048,6 +5958,20 @@ webidl-conversions@^3.0.0:
   version "3.0.1"
   resolved "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz"
   integrity sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==
+
+webidl-conversions@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-5.0.0.tgz"
+  integrity sha512-VlZwKPCkYKxQgeSbH5EyngOmRp7Ww7I9rQLERETtf5ofd9pGeswWiOtogpEO850jziPRarreGxn5QIiTqpb2wA==
+
+whatwg-url-without-unicode@8.0.0-3:
+  version "8.0.0-3"
+  resolved "https://registry.npmjs.org/whatwg-url-without-unicode/-/whatwg-url-without-unicode-8.0.0-3.tgz"
+  integrity sha512-HoKuzZrUlgpz35YO27XgD28uh/WJH4B0+3ttFqRo//lmq+9T/mIOJ6kqmINI9HpUpz1imRC/nR/lxKpJiv0uig==
+  dependencies:
+    buffer "^5.4.3"
+    punycode "^2.1.1"
+    webidl-conversions "^5.0.0"
 
 whatwg-url@^5.0.0:
   version "5.0.0"
