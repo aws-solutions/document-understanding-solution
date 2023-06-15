@@ -17,7 +17,7 @@ import App, { Container } from "next/app";
 import getConfig from "next/config";
 import Head from "next/head";
 import Router from "next/router";
-import Amplify, { Auth } from "aws-amplify";
+import { Amplify, Auth } from 'aws-amplify'
 import { times, reject, isNil } from "ramda";
 import { Provider } from "react-redux";
 import withRedux from "next-redux-wrapper";
