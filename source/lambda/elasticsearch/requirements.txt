@@ -3,6 +3,6 @@ elasticsearch==7.9.1
 requests==2.31.0
 idna==3.3
 chardet==5.1.0
-certifi==2022.12.07
+certifi==2023.7.22
 urllib3==1.26.11
 
