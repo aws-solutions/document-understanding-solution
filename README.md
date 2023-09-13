@@ -1,3 +1,7 @@
+# Deprecation Notice
+
+As of 09/14/2023, Document Understanding Solution has been deprecated and will not be receiving any additional features or updates. We encourage customers to explore the new solution: https://aws.amazon.com/solutions/implementations/enhanced-document-understanding-on-aws/.
+
 # Document Understanding Solution
 
 DUS leverages the power of Amazon Textract, Amazon Comprehend , Amazon Comprehend Medical Amazon OpenSearch Service and Amazon Kendra to provide digitization , domain-specific data discovery, redaction controls , structural component extraction and other document processing & understanding capabilities.
